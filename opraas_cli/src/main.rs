@@ -30,11 +30,8 @@ async fn main() {
     let args = Args::parse();
     let config = config::config::load_config();
 
-    
-
     match args.cmd {
-        // Commands::Setup{} => commands::setup(&config),
-        Commands::Setup{} => println!("config: {:?}", config),
+        Commands::Setup{} => commands::setup(&config),
         Commands::Build{target} => commands::build(&config, &target),
         Commands::Deploy{target} => commands::deploy(&config, &target).await,
     }
