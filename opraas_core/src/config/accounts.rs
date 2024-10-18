@@ -19,6 +19,10 @@ pub struct AccountsConfig {
     pub proposer_address: String,
     #[serde(default = "defaults::proposer_private_key")]
     pub proposer_private_key: String,
+    #[serde(default = "defaults::deployer_address")]
+    pub deployer_address: String,
+    #[serde(default = "defaults::deployer_private_key")]
+    pub deployer_private_key: String,
 }
 
 
@@ -49,5 +53,11 @@ mod defaults {
     }
     pub fn sequencer_private_key() -> String {
         env::var("SEQUENCER_PRIVATE_KEY").expect("SEQUENCER_PRIVATE_KEY must be set")
+    }
+    pub fn deployer_address() -> String {
+        env::var("DEPLOYER_ADDRESS").expect("DEPLOYER_ADDRESS must be set")
+    }
+    pub fn deployer_private_key() -> String {
+        env::var("DEPLOYER_PRIVATE_KEY").expect("DEPLOYER_PRIVATE_KEY must be set")
     }
 }

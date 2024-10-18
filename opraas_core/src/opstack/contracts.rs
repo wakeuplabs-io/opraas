@@ -1,6 +1,8 @@
+use crate::config::{AccountsConfig, DeployConfig, NetworkConfig};
+use std::fs::File;
+use std::io::Write;
 use std::path::Path;
 use std::process::Command;
-use crate::opstack::network::NetworkConfig;
 
 pub fn build<P: AsRef<Path>>(source: &P) -> Result<(), String> {
     let build_out = Command::new("make")
@@ -12,26 +14,52 @@ pub fn build<P: AsRef<Path>>(source: &P) -> Result<(), String> {
         let error_message = String::from_utf8_lossy(&build_out.stderr);
         return Err(format!("Error building source: {}", error_message));
     }
-    
+
     Ok(())
 }
 
-pub fn deploy<P: AsRef<Path>>(source: &P, cfg: &NetworkConfig) -> Result<(), String> {
-    println!("Deploying contracts...");
+pub async fn deploy<P: AsRef<Path>, Q: AsRef<Path>>(
+    source: &P,
+    target: &Q,
+    network_cfg: &NetworkConfig,
+    accounts_cfg: &AccountsConfig,
+) -> Result<(), String> {
+    let deploy_cfg_path = Path::new(target.as_ref()).join("deploy-config.json");
+    let artifacts_path = Path::new(target.as_ref()).join("artifact.json");
 
-    // write config where script needs to find it, maybe inside deployments folder where artifacts will also be...
+    // generate the deploy config and save it as a file
+    let deploy_cfg = DeployConfig::create(accounts_cfg, network_cfg).await;
+    File::create(&deploy_cfg_path)
+        .unwrap()
+        .write_all(
+            serde_json::to_string_pretty(&deploy_cfg)
+                .unwrap()
+                .as_bytes(),
+        )
+        .unwrap();
 
-    // run deploy script
+    // TODO: generate salt
 
-//     DEPLOYMENT_OUTFILE=deployments/artifact.json \
-// DEPLOY_CONFIG_PATH=<PATH_TO_MY_DEPLOY_CONFIG> \
-//   forge script scripts/deploy/Deploy.s.sol:Deploy \
-//   --broadcast --private-key $PRIVATE_KEY \
-//   --rpc-url $ETH_RPC_URL
-// ```
+    // run the deploy script
+    let deploy_out = Command::new("forge")
+        .current_dir(source)
+        .env("IMPL_SALT", "salt")
+        .env("DEPLOY_CONFIG_PATH", deploy_cfg_path.to_str().expect("Invalid UTF-8 path"))
+        .env("DEPLOYMENT_OUTFILE", artifacts_path.to_str().expect("Invalid UTF-8 path"))
+        .arg("script")
+        .arg("scripts/deploy/Deploy.s.sol:Deploy")
+        .arg("--broadcast")
+        .arg("--private-key")
+        .arg(accounts_cfg.deployer_private_key.clone())
+        .arg("--rpc-url")
+        .arg(network_cfg.l1_rpc_url.clone())
+        .output()
+        .expect("Failed to execute deploy command");
 
-// The `IMPL_SALT` env var can be used to set the `create2` salt for deploying the implementation
-// contracts.
-    
+    if !deploy_out.status.success() {
+        let error_message = String::from_utf8_lossy(&deploy_out.stderr);
+        return Err(format!("Error deploying source: {}", error_message));
+    }
+
     Ok(())
 }

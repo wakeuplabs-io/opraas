@@ -11,3 +11,4 @@ serde = { version = "1.0.210", features = ["derive"] }
 tokio = { version = "1.40.0", features = ["full"] }
 toml = "0.8.19"
 opraas_core = { path = "../opraas_core" }
+serde_json = "1.0.129"

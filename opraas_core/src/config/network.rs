@@ -2,6 +2,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct NetworkConfig {
+    pub l1_rpc_url: String,
     pub max_sequencer_drift: u32,
     pub sequencer_window_size: u32,
     pub channel_timeout: u32,

@@ -4,4 +4,3 @@ pub mod batcher;
 pub mod node;
 pub mod contracts;
 pub mod geth;
-pub mod network;
