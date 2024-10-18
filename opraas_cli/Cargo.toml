@@ -1,0 +1,13 @@
+[package]
+name = "opraas_cli"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+clap = { version = "4.5.20", features = ["derive"] }
+dotenv = "0.15.0"
+reqwest = { version = "0.12.8", features = ["json"] }
+serde = { version = "1.0.210", features = ["derive"] }
+tokio = { version = "1.40.0", features = ["full"] }
+toml = "0.8.19"
+opraas_core = { path = "../opraas_core" }
