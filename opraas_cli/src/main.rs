@@ -31,7 +31,7 @@ async fn main() {
     opraas_core::config::requirements::check_requirements().unwrap();
 
     match args.cmd {
-        Commands::Setup {} => println!("Setting up project..."),
+        Commands::Setup {} => commands::setup(&config),
         Commands::Build { target } => commands::build(&config, &target),
         Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
     }
