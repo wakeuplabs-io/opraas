@@ -1,4 +1,5 @@
 use crate::config::{AccountsConfig, DeployConfig, NetworkConfig};
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::Path;
@@ -24,6 +25,12 @@ pub async fn deploy<P: AsRef<Path>, Q: AsRef<Path>>(
     network_cfg: &NetworkConfig,
     accounts_cfg: &AccountsConfig,
 ) -> Result<(), String> {
+    // ensure we're not overwriting an existing deployment
+    if target.as_ref().exists() {
+        return Err(String::from("Deployment already exists")); 
+    }
+    fs::create_dir_all(target.as_ref()).expect("Failed to create target directory");
+
     let deploy_cfg_path = Path::new(target.as_ref()).join("deploy-config.json");
     let artifacts_path = Path::new(target.as_ref()).join("artifact.json");
 
@@ -41,25 +48,25 @@ pub async fn deploy<P: AsRef<Path>, Q: AsRef<Path>>(
     // TODO: generate salt
 
     // run the deploy script
-    let deploy_out = Command::new("forge")
-        .current_dir(source)
-        .env("IMPL_SALT", "salt")
-        .env("DEPLOY_CONFIG_PATH", deploy_cfg_path.to_str().expect("Invalid UTF-8 path"))
-        .env("DEPLOYMENT_OUTFILE", artifacts_path.to_str().expect("Invalid UTF-8 path"))
-        .arg("script")
-        .arg("scripts/deploy/Deploy.s.sol:Deploy")
-        .arg("--broadcast")
-        .arg("--private-key")
-        .arg(accounts_cfg.deployer_private_key.clone())
-        .arg("--rpc-url")
-        .arg(network_cfg.l1_rpc_url.clone())
-        .output()
-        .expect("Failed to execute deploy command");
+    // let deploy_out = Command::new("forge")
+    //     .current_dir(source)
+    //     .env("IMPL_SALT", "salt")
+    //     .env("DEPLOY_CONFIG_PATH", deploy_cfg_path.to_str().expect("Invalid UTF-8 path"))
+    //     .env("DEPLOYMENT_OUTFILE", artifacts_path.to_str().expect("Invalid UTF-8 path"))
+    //     .arg("script")
+    //     .arg("scripts/deploy/Deploy.s.sol:Deploy")
+    //     .arg("--broadcast")
+    //     .arg("--private-key")
+    //     .arg(accounts_cfg.deployer_private_key.clone())
+    //     .arg("--rpc-url")
+    //     .arg(network_cfg.l1_rpc_url.clone())
+    //     .output()
+    //     .expect("Failed to execute deploy command");
 
-    if !deploy_out.status.success() {
-        let error_message = String::from_utf8_lossy(&deploy_out.stderr);
-        return Err(format!("Error deploying source: {}", error_message));
-    }
+    // if !deploy_out.status.success() {
+    //     let error_message = String::from_utf8_lossy(&deploy_out.stderr);
+    //     return Err(format!("Error deploying source: {}", error_message));
+    // }
 
     Ok(())
 }

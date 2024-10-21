@@ -1,8 +1,8 @@
+use crate::config::{AccountsConfig, NetworkConfig};
 use serde::Serialize;
-use crate::config::{NetworkConfig, AccountsConfig};
 
 #[derive(Debug, Serialize)]
-#[serde(rename_all = "camelCase")]     
+#[serde(rename_all = "camelCase")]
 pub struct DeployConfig {
     final_system_owner: String,
     superchain_config_guardian: String,
@@ -67,52 +67,75 @@ impl DeployConfig {
         accounts_cfg: &AccountsConfig,
         network_cfg: &NetworkConfig,
     ) -> DeployConfig {
-        let l1_chain_id = 2; // TODO:
-        let l2_output_oracle_starting_timestamp = 2; // TODO:
-        let l1_starting_block_tag = String::from("latest"); // TODO:
+        let transport = web3::transports::Http::new(&network_cfg.l1_rpc_url).unwrap();
+        let web3 = web3::Web3::new(transport);
+
+        let l1_chain_id = web3.eth().chain_id().await.unwrap().as_u32();
+
+        let finalized_block = web3
+            .eth()
+            .block({ web3::types::BlockId::Number(web3::types::BlockNumber::Finalized) })
+            .await
+            .unwrap()
+            .unwrap();
+        let l2_output_oracle_starting_timestamp = finalized_block.timestamp.as_u32();
+        let l1_starting_block_tag = finalized_block.hash.unwrap();
 
         DeployConfig {
-            // computed
-            l1_chain_id,
-            l1_starting_block_tag,
-            l2_output_oracle_starting_timestamp,
-
             // accounts
             final_system_owner: accounts_cfg.admin_address.clone(),
             superchain_config_guardian: accounts_cfg.admin_address.clone(),
-            // TODO:
+            l2_output_oracle_challenger: accounts_cfg.admin_address.clone(),
+            proxy_admin_owner: accounts_cfg.admin_address.clone(),
+            base_fee_vault_recipient: accounts_cfg.admin_address.clone(),
+            l1_fee_vault_recipient: accounts_cfg.admin_address.clone(),
+            sequencer_fee_vault_recipient: accounts_cfg.admin_address.clone(),
+            governance_token_owner: accounts_cfg.admin_address.clone(),
+            p2p_sequencer_address: accounts_cfg.sequencer_address.clone(),
+            batch_sender_address: accounts_cfg.batcher_address.clone(),
+            l2_output_oracle_proposer: accounts_cfg.proposer_address.clone(),
+            
+            // TODO: this should be computed as a keccak
+            batch_inbox_address: network_cfg.batch_inbox_address.clone(),
 
-            //  user provided
-            l2_block_time: network_cfg.l2_block_time,
+            // l1 params
+            l1_chain_id,
             l1_block_time: network_cfg.l1_block_time,
+            l1_starting_block_tag: format!("{:#x}", l1_starting_block_tag),
+            
+            // l2 params
             l2_chain_id: network_cfg.l2_chain_id,
+            l2_output_oracle_starting_timestamp,
+            l2_block_time: network_cfg.l2_block_time,
+
+            // other params
             max_sequencer_drift: network_cfg.max_sequencer_drift,
             sequencer_window_size: network_cfg.sequencer_window_size,
             channel_timeout: network_cfg.channel_timeout,
-            p2p_sequencer_address: network_cfg.p2p_sequencer_address.clone(),
-            batch_inbox_address: network_cfg.batch_inbox_address.clone(),
-            batch_sender_address: network_cfg.batch_sender_address.clone(),
             l2_output_oracle_submission_interval: network_cfg.l2_output_oracle_submission_interval,
-            l2_output_oracle_starting_block_number: network_cfg.l2_output_oracle_starting_block_number,
-            l2_output_oracle_proposer: network_cfg.l2_output_oracle_proposer.clone(),
-            l2_output_oracle_challenger: network_cfg.l2_output_oracle_challenger.clone(),
+            l2_output_oracle_starting_block_number: network_cfg
+                .l2_output_oracle_starting_block_number,
             finalization_period_seconds: network_cfg.finalization_period_seconds,
-            proxy_admin_owner: network_cfg.proxy_admin_owner.clone(),
-            base_fee_vault_recipient: network_cfg.base_fee_vault_recipient.clone(),
-            l1_fee_vault_recipient: network_cfg.l1_fee_vault_recipient.clone(),
-            sequencer_fee_vault_recipient: network_cfg.sequencer_fee_vault_recipient.clone(),
-            base_fee_vault_minimum_withdrawal_amount: network_cfg.base_fee_vault_minimum_withdrawal_amount.clone(),
-            l1_fee_vault_minimum_withdrawal_amount: network_cfg.l1_fee_vault_minimum_withdrawal_amount.clone(),
-            sequencer_fee_vault_minimum_withdrawal_amount: network_cfg.sequencer_fee_vault_minimum_withdrawal_amount.clone(),
+            base_fee_vault_minimum_withdrawal_amount: network_cfg
+                .base_fee_vault_minimum_withdrawal_amount
+                .clone(),
+            l1_fee_vault_minimum_withdrawal_amount: network_cfg
+                .l1_fee_vault_minimum_withdrawal_amount
+                .clone(),
+            sequencer_fee_vault_minimum_withdrawal_amount: network_cfg
+                .sequencer_fee_vault_minimum_withdrawal_amount
+                .clone(),
             base_fee_vault_withdrawal_network: network_cfg.base_fee_vault_withdrawal_network,
             l1_fee_vault_withdrawal_network: network_cfg.l1_fee_vault_withdrawal_network,
-            sequencer_fee_vault_withdrawal_network: network_cfg.sequencer_fee_vault_withdrawal_network,
+            sequencer_fee_vault_withdrawal_network: network_cfg
+                .sequencer_fee_vault_withdrawal_network,
             enable_governance: network_cfg.enable_governance,
             governance_token_symbol: network_cfg.governance_token_symbol.clone(),
             governance_token_name: network_cfg.governance_token_name.clone(),
-            governance_token_owner: network_cfg.governance_token_owner.clone(),
             l2_genesis_block_gas_limit: network_cfg.l2_genesis_block_gas_limit.clone(),
-            l2_genesis_block_base_fee_per_gas: network_cfg.l2_genesis_block_base_fee_per_gas.clone(),
+            l2_genesis_block_base_fee_per_gas: network_cfg
+                .l2_genesis_block_base_fee_per_gas
+                .clone(),
             eip1559_denominator: network_cfg.eip1559_denominator,
             eip1559_elasticity: network_cfg.eip1559_elasticity,
             l2_genesis_regolith_time_offset: network_cfg.l2_genesis_regolith_time_offset.clone(),

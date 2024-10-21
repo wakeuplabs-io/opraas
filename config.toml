@@ -1,64 +1,57 @@
 [sources]
 
 [accounts]
-admin_address = "0x0000000000000000000000000000000000000000"
-admin_private_key = "0x0000000000000000000000000000000000000000000000000000000000000000" # can be in the .env as well
-batcher_address = "0x0000000000000000000000000000000000000000"
-batcher_private_key = "0x0000000000000000000000000000000000000000000000000000000000000000" # can be in the .env as well
-sequencer_address = "0x0000000000000000000000000000000000000000"
-sequencer_private_key = "0x0000000000000000000000000000000000000000000000000000000000000000" # can be in the .env as well
-proposer_address = "0x0000000000000000000000000000000000000000"
-proposer_private_key = "0x0000000000000000000000000000000000000000000000000000000000000000" # can be in the .env as well
+# private keys in .env
+admin_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
+batcher_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
+sequencer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
+proposer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
+deployer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
 
 [network]
+batch_inbox_address = "0xff00000000000000000000000000000011155420" # TODO: pending compute
+# l1 params
 l1_block_time = 12
+# l2 params
+l2_chain_id = 11_155_420
 l2_block_time = 2
-l2_chain_id = 11155420
+# deploy params
 max_sequencer_drift = 600
-sequencer_window_size = 3600
+sequencer_window_size = 3_600
 channel_timeout = 300
-p2p_sequencer_address = "TODO:"
-batch_inbox_address = "TODO:"
-batch_sender_address = "TODO:"
-l2_output_oracle_proposer = "TODO:"
-l2_output_oracle_challenger = "TODO:"
-proxy_admin_owner = "TODO:"
 l2_output_oracle_submission_interval = 120
 l2_output_oracle_starting_block_number = 0
+l2_output_oracle_starting_timestamp = 1_690_493_568
 finalization_period_seconds = 12
-base_fee_vault_recipient = "TODO:"
-l1_fee_vault_recipient = "TODO:"
-sequencer_fee_vault_recipient = "TODO:"
-governance_token_owner = "TODO:"
-base_fee_vault_minimum_withdrawal_amount = "TODO:"
-l1_fee_vault_minimum_withdrawal_amount = "TODO:"
-sequencer_fee_vault_minimum_withdrawal_amount = "TODO:"
+base_fee_vault_minimum_withdrawal_amount = "0x8ac7230489e80000"
+l1_fee_vault_minimum_withdrawal_amount = "0x8ac7230489e80000"
+sequencer_fee_vault_minimum_withdrawal_amount = "0x8ac7230489e80000"
 base_fee_vault_withdrawal_network = 0
 l1_fee_vault_withdrawal_network = 0
 sequencer_fee_vault_withdrawal_network = 0
 enable_governance = true
 governance_token_symbol = "OP"
 governance_token_name = "Optimism"
-l2_genesis_block_gas_limit = "TODO:"
-l2_genesis_block_base_fee_per_gas = "TODO:"
+l2_genesis_block_gas_limit = "0x1c9c380"
+l2_genesis_block_base_fee_per_gas = "0x3b9aca00"
 eip1559_denominator = 50
 eip1559_elasticity = 6
 l2_genesis_regolith_time_offset = "0x0"
-system_config_start_block = 0
+system_config_start_block = 4_071_248 # TODO: should be computed?
 required_protocol_version = "0x0000000000000000000000000000000000000004000000000000000000000001"
 recommended_protocol_version = "0x0000000000000000000000000000000000000004000000000000000000000001"
-fund_dev_accounts = true
-fault_game_absolute_prestate = "0x037bbcc23684afbb7f608024369242c5cdea261a4f63981387efb7cd81763536"
-fault_game_max_depth = 0
-fault_game_clock_extension = 0
-fault_game_max_clock_duration = 0
-fault_game_genesis_block = 0
-fault_game_genesis_output_root = "TODO:"
-fault_game_split_depth = 0
-fault_game_withdrawal_delay = 0
-preimage_oracle_min_proposal_size = 0
-preimage_oracle_challenge_period = 0
-proof_maturity_delay_seconds = 0
-dispute_game_finality_delay_seconds = 0
+fund_dev_accounts = false
+fault_game_absolute_prestate = "0x030de10d9da911a2b180ecfae2aeaba8758961fc28262ce989458c6f9a547922"
+fault_game_max_depth = 73
+fault_game_clock_extension = 10_800
+fault_game_max_clock_duration = 302_400
+fault_game_genesis_block = 9_496_192
+fault_game_genesis_output_root = "0x63b1cda487c072b020a57c1203f7c2921754005cadbd54bed7f558111b8278d8"
+fault_game_split_depth = 30
+fault_game_withdrawal_delay = 604_800
+preimage_oracle_min_proposal_size = 126_000
+preimage_oracle_challenge_period = 86_400
+proof_maturity_delay_seconds = 604_800
+dispute_game_finality_delay_seconds = 302_400
 respected_game_type = 0
-use_fault_proofs = false
+use_fault_proofs = true

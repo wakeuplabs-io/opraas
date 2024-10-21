@@ -2,3 +2,5 @@
 /op-geth
 /bin
 /target
+/deployments
+.env

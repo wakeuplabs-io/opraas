@@ -2,6 +2,7 @@ use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
 pub struct NetworkConfig {
+    #[serde(default = "defaults::l1_rpc_url")]
     pub l1_rpc_url: String,
     pub max_sequencer_drift: u32,
     pub sequencer_window_size: u32,
@@ -9,18 +10,10 @@ pub struct NetworkConfig {
     pub l2_block_time: u32,
     pub l1_block_time: u32,
     pub l2_chain_id: u32,
-    pub p2p_sequencer_address: String,
     pub batch_inbox_address: String,
-    pub batch_sender_address: String,
     pub l2_output_oracle_submission_interval: u32,
     pub l2_output_oracle_starting_block_number: u32,
-    pub l2_output_oracle_proposer: String,
-    pub l2_output_oracle_challenger: String,
     pub finalization_period_seconds: u32,
-    pub proxy_admin_owner: String,
-    pub base_fee_vault_recipient: String,
-    pub l1_fee_vault_recipient: String,
-    pub sequencer_fee_vault_recipient: String,
     pub base_fee_vault_minimum_withdrawal_amount: String,
     pub l1_fee_vault_minimum_withdrawal_amount: String,
     pub sequencer_fee_vault_minimum_withdrawal_amount: String,
@@ -30,7 +23,6 @@ pub struct NetworkConfig {
     pub enable_governance: bool,
     pub governance_token_symbol: String,
     pub governance_token_name: String,
-    pub governance_token_owner: String,
     pub l2_genesis_block_gas_limit: String,
     pub l2_genesis_block_base_fee_per_gas: String,
     pub eip1559_denominator: u32,
@@ -56,3 +48,13 @@ pub struct NetworkConfig {
     pub use_fault_proofs: bool,
 }
 
+
+
+mod defaults {
+    use std::env;
+
+    // accounts
+    pub fn l1_rpc_url() -> String {
+        env::var("L1_RPC_URL").expect("L1_RPC_URL must be set")
+    }
+}
