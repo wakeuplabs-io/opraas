@@ -254,6 +254,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3fd119d74b830634cea2a0f58bbd0d54540518a14397557951e79340abc28c0"
 
 [[package]]
+name = "colored"
+version = "2.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbf2150cce219b664a8a70df7a1f933836724b503f8a413af9365b4dcc4d90b8"
+dependencies = [
+ "lazy_static",
+ "windows-sys 0.48.0",
+]
+
+[[package]]
 name = "convert_case"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -966,6 +976,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "lazy_static"
+version = "1.5.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bbd2bcb4c963f2ddae06a2efc7e9f3591312473c50c6685e1f298068316e66fe"
+
+[[package]]
 name = "libc"
 version = "0.2.160"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1113,6 +1129,7 @@ name = "opraas_cli"
 version = "0.1.0"
 dependencies = [
  "clap",
+ "colored",
  "dotenv",
  "opraas_core",
  "reqwest 0.12.8",
@@ -1126,6 +1143,7 @@ dependencies = [
 name = "opraas_core"
 version = "0.1.0"
 dependencies = [
+ "semver",
  "serde",
  "serde_json",
  "sha3",

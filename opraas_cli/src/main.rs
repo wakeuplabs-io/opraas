@@ -20,14 +20,18 @@ enum Commands {
     Deploy { target: String, name: String },
 }
 
+
 #[tokio::main]
 async fn main() {
     dotenv().ok();
     let args = Args::parse();
     let config = config::config::load_config();
 
+    // Check requirements
+    opraas_core::config::requirements::check_requirements().unwrap();
+
     match args.cmd {
-        Commands::Setup {} => commands::setup(&config),
+        Commands::Setup {} => println!("Setting up project..."),
         Commands::Build { target } => commands::build(&config, &target),
         Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
     }
