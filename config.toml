@@ -9,7 +9,6 @@ proposer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
 deployer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
 
 [network]
-batch_inbox_address = "0xff00000000000000000000000000000011155420" # TODO: pending compute
 # l1 params
 l1_block_time = 12
 # l2 params

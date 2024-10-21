@@ -10,7 +10,6 @@ pub struct NetworkConfig {
     pub l2_block_time: u32,
     pub l1_block_time: u32,
     pub l2_chain_id: u32,
-    pub batch_inbox_address: String,
     pub l2_output_oracle_submission_interval: u32,
     pub l2_output_oracle_starting_block_number: u32,
     pub finalization_period_seconds: u32,

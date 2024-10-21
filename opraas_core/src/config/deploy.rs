@@ -1,14 +1,17 @@
 use crate::config::{AccountsConfig, NetworkConfig};
 use serde::Serialize;
+use sha3::{Digest, Keccak256};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 pub struct DeployConfig {
+    #[serde(rename = "l1ChainID")]
+    l1_chain_id: u32,
+    #[serde(rename = "l2ChainID")]
+    l2_chain_id: u32,
     final_system_owner: String,
     superchain_config_guardian: String,
     l1_starting_block_tag: String,
-    l1_chain_id: u32,
-    l2_chain_id: u32,
     l2_block_time: u32,
     l1_block_time: u32,
     max_sequencer_drift: u32,
@@ -71,10 +74,15 @@ impl DeployConfig {
         let web3 = web3::Web3::new(transport);
 
         let l1_chain_id = web3.eth().chain_id().await.unwrap().as_u32();
+        let mut hasher = Keccak256::new();
+        hasher.update(l1_chain_id.to_be_bytes());
+        let batch_inbox_address =  hasher.finalize();
 
         let finalized_block = web3
             .eth()
-            .block({ web3::types::BlockId::Number(web3::types::BlockNumber::Finalized) })
+            .block(web3::types::BlockId::Number(
+                web3::types::BlockNumber::Finalized,
+            ))
             .await
             .unwrap()
             .unwrap();
@@ -94,15 +102,13 @@ impl DeployConfig {
             p2p_sequencer_address: accounts_cfg.sequencer_address.clone(),
             batch_sender_address: accounts_cfg.batcher_address.clone(),
             l2_output_oracle_proposer: accounts_cfg.proposer_address.clone(),
-            
-            // TODO: this should be computed as a keccak
-            batch_inbox_address: network_cfg.batch_inbox_address.clone(),
+            batch_inbox_address: format!("{:#x}", batch_inbox_address),
 
             // l1 params
             l1_chain_id,
             l1_block_time: network_cfg.l1_block_time,
             l1_starting_block_tag: format!("{:#x}", l1_starting_block_tag),
-            
+
             // l2 params
             l2_chain_id: network_cfg.l2_chain_id,
             l2_output_oracle_starting_timestamp,

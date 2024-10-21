@@ -7,10 +7,11 @@ pub async fn deploy(cfg: &Config, target: &str, name: &str) {
 
     let cwd = env::current_dir().expect("Failed to get current working directory");
     let target_folder = cwd.join("deployments").join(name);
+    let source_folder = cwd.join(&cfg.sources.op_repo_target);
 
     match target {
         "contracts" => opstack::contracts::deploy(
-            &cfg.sources.op_repo_target,
+            &source_folder,
             &target_folder, 
             &cfg.network,
             &cfg.accounts,
