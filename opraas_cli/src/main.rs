@@ -2,6 +2,7 @@ mod commands;
 mod config;
 use clap::{Parser, Subcommand};
 use dotenv::dotenv;
+use colored::*;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -28,7 +29,10 @@ async fn main() {
     let config = config::config::load_config();
 
     // Check requirements
-    opraas_core::config::requirements::check_requirements().unwrap();
+    opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
+        eprintln!("{}", format!("Panic: {}", e).bold().red());
+        std::process::exit(1);
+    });
 
     match args.cmd {
         Commands::Setup {} => commands::setup(&config),

@@ -20,7 +20,7 @@ pub struct Requirement {
 pub fn get_requirements() -> Vec<Requirement> {
     vec![Requirement {
         program: "go".to_string(),
-        version: Version::parse("10.1.1").unwrap(),
+        version: Version::parse("1.22.0").unwrap(),
         comparison: Comparison::GreaterThanOrEqual,
         get_version: || {
             let output = std::process::Command::new("go")
