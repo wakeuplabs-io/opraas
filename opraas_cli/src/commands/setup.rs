@@ -12,11 +12,7 @@ pub fn setup(cfg: &Config) {
 
     println!("Downloading source...");
     opstack::source::download(
-        &cfg.sources.op_repo_url,
-        &cfg.sources.op_repo_tag,
         &cfg.sources.op_repo_target,
-        &cfg.sources.op_geth_repo_url,
-        &cfg.sources.op_geth_repo_tag,
         &cfg.sources.op_geth_repo_target,
     )
     .expect("Failed to download optimism source");

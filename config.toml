@@ -1,4 +1,41 @@
-[sources]
+
+##################################################
+#                 Sources                        #
+##################################################
+
+[sources.op-batcher]
+url = "https://rpc.ankr.com/eth"
+tag = "latest"
+fixes = []
+build = []
+
+[sources.op-proposer]
+url = "https://rpc.ankr.com/eth"
+tag = "latest"
+fixes = []
+build = []
+
+[sources.op-node]
+url = "https://rpc.ankr.com/eth"
+tag = "latest"
+fixes = []
+build = []
+
+[sources.op-geth]
+url = "https://rpc.ankr.com/eth"
+tag = "latest"
+fixes = []
+build = []
+
+[sources.contracts]
+url = "https://rpc.ankr.com/eth"
+tag = "latest"
+fixes = []
+build = []
+
+##################################################
+#                 Accounts                       #
+##################################################
 
 [accounts]
 # private keys in .env
@@ -8,13 +45,14 @@ sequencer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
 proposer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
 deployer_address = "0x5Cff4762B7a50553586D52F96c11Aa65e9281D5a"
 
+##################################################
+#                 Network                        #
+##################################################
+
 [network]
-# l1 params
 l1_block_time = 12
-# l2 params
 l2_chain_id = 11_155_420
 l2_block_time = 2
-# deploy params
 max_sequencer_drift = 600
 sequencer_window_size = 3_600
 channel_timeout = 300

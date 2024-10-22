@@ -22,3 +22,23 @@ pub fn clone_repo_at_tag<P: AsRef<Path>>(repo_url: &str, branch: &str, destinati
         ))
     }
 }
+
+
+pub fn cherry_pick<P: AsRef<Path>>(repo_path: &P, commit_hash: &str) -> Result<(), String> {
+    let output = Command::new("git")
+        .arg("cherry-pick")
+        .arg(commit_hash)
+        .current_dir(repo_path.as_ref())
+        .output()
+        .expect("Failed to execute git cherry-pick command");
+
+    if !output.status.success() {
+        Ok(())
+    } else {
+        let error_message = String::from_utf8_lossy(&output.stderr);
+        Err(format!(
+            "Error cherry-picking commit: {}",
+            error_message
+        ))
+    }
+}
