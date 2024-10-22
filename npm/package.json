@@ -1,0 +1,32 @@
+{
+    "name": "opraas",
+    "version": "0.0.1",
+    "description": "Spin up Optimsim rollups with ease",
+    "private": true,
+    "bin": {
+        "opraas": "./lib/run.js"
+    },
+    "scripts": {
+        "test": "jest",
+        "postinstall": "node ./lib/install.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wakeuplabs-io/opraas"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/wakeuplabs-io/opraas/issues"
+    },
+    "homepage": "https://github.com/wakeuplabs-io/opraas#readme",
+    "dependencies": {
+        "console.table": "^0.10.0"
+    },
+    "devDependencies": {
+        "binary-install": "1.1.0",
+        "jest": "^27.5.1",
+        "prettier": "^1.19.1",
+        "rimraf": "^3.0.2",
+        "shelljs": "^0.8.5"
+    }
+}

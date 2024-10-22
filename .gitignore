@@ -3,4 +3,5 @@
 /bin
 /target
 /deployments
+/releases
 .env
