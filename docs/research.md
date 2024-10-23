@@ -65,12 +65,32 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 
 ## Decisions and drivers
 
+General
 - We chose Rust for its performance, cost efficiency, and growing popularity, ensuring reliable and scalable solutions.
-- The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
+
+CLI
 - CLI for local self-service
+- The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
+- We'll distribute the binaries through github releases and make them widely available with an npm package.
+- To allow for a more flexible build process we'll allow the user to specify a build process in the config file in the shape of:
+
+	```toml
+	[sources.op_node]
+	release_tag = "op-node/v1.3.1"
+	build = ["make op-node"]
+
+	[sources.op_contracts]
+	release_tag = "op-contracts/v1.6.0"
+	build = ["pnpm install", "pnpm build", "cd packages/bedrock-contracts", "forge install", "..."]
+	```
+- Artifacts will be built downloaded form github releases
+
+Infrastructure
 - We will deploy using `Helm` based on `opstack-compose`. Leveraging `Kubernetes` enables us to expand the number of providers that can support us while providing the scalability we need. This approach will simplify the user experience during deployment. We may incorporate `Terraform` to further facilitate the process.
 - Cloud service App: UI + Lambda API implementing Core
-- Blockexplorer. For the block explorer [Blockscout](https://www.blockscout.com/) appears to be the best choice. BlockScout is an open-source block explorer that supports OP Stack chains, is recommended by the Optimism documentation, and is widely implemented in many current solutions.
+
+Block explorer
+- Block explorer. For the block explorer [Blockscout](https://www.blockscout.com/) appears to be the best choice. BlockScout is an open-source block explorer that supports OP Stack chains, is recommended by the Optimism documentation, and is widely implemented in many current solutions.
 
 # Risk and uncertainties 
 
@@ -79,7 +99,3 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 3. Contemplate testing environments. 
 4. Avoid overloading user with enviroment setup complexities.
 5. Testnet tokens availability and proper config setup
-
- 
-
- 
