@@ -95,6 +95,8 @@ CLI
   build = ["pnpm install", "pnpm build", "cd packages/bedrock-contracts", "forge install", "..."]
   ```
 
+  Note this also gives flexibility for patches or cherry picks on top of releases like roll-op does.
+
 - Artifacts will be built downloaded form github releases.
 - To reduce dependencies the user needs to manage we can provide a docker image with the binaries already available so with some volume mapping we reduce the boilerplate setup to just docker.
 
