@@ -1,5 +1,20 @@
 use std::path::Path;
 use std::process::Command;
+use std::error::Error;
+use std::io::Cursor;
+
+pub async fn download_release<P: AsRef<Path>>(
+    url: &str,
+    destination: &P,
+) -> Result<(),  Box<dyn Error>> {
+    let response = reqwest::get(url).await?;
+    let bytes =  response.bytes().await?;
+
+    let target = Path::new(destination.as_ref());
+    zip_extract::extract(Cursor::new(bytes), &target, true)?;
+
+    Ok(())
+}
 
 pub fn clone_repo_at_tag<P: AsRef<Path>>(
     repo_url: &str,

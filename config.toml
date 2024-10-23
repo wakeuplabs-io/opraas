@@ -3,34 +3,24 @@
 #                 Sources                        #
 ##################################################
 
-[sources.op-batcher]
-url = "https://rpc.ankr.com/eth"
-tag = "latest"
-fixes = []
+[sources.op_batcher]
+release_tag = "https://rpc.ankr.com/eth"
 build = []
 
-[sources.op-proposer]
-url = "https://rpc.ankr.com/eth"
-tag = "latest"
-fixes = []
+[sources.op_proposer]
+release_tag = "https://rpc.ankr.com/eth"
 build = []
 
-[sources.op-node]
-url = "https://rpc.ankr.com/eth"
-tag = "latest"
-fixes = []
+[sources.op_node]
+release_tag = "https://rpc.ankr.com/eth"
 build = []
 
-[sources.op-geth]
-url = "https://rpc.ankr.com/eth"
-tag = "latest"
-fixes = []
+[sources.op_geth]
+release_tag = "https://rpc.ankr.com/eth"
 build = []
 
 [sources.contracts]
-url = "https://rpc.ankr.com/eth"
-tag = "latest"
-fixes = []
+release_tag = "https://rpc.ankr.com/eth"
 build = []
 
 ##################################################

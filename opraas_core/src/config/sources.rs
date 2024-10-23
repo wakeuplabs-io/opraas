@@ -1,42 +1,61 @@
 use serde::Deserialize;
 
+
 #[derive(Debug, Deserialize)]
 pub struct SourcesConfig {
-    #[serde(default = "defaults::op_repo_url")]
-    pub op_repo_url: String,
-    #[serde(default = "defaults::op_repo_tag")]
-    pub op_repo_tag: String,
-    #[serde(default = "defaults::op_repo_target")]
-    pub op_repo_target: String,
-
-    #[serde(default = "defaults::op_geth_repo_repo")]
-    pub op_geth_repo_url: String,
-    #[serde(default = "defaults::op_geth_repo_tag")]
-    pub op_geth_repo_tag: String,
-    #[serde(default = "defaults::op_geth_repo_target")]
-    pub op_geth_repo_target: String,
+    #[serde(default = "defaults::op_batcher")]
+    pub op_batcher: Source,
+    #[serde(default = "defaults::op_node")]
+    pub op_node: Source,
+    #[serde(default = "defaults::op_proposer")]
+    pub op_proposer: Source,
+    #[serde(default = "defaults::op_contracts")]
+    pub op_contracts: Source,
+    #[serde(default = "defaults::op_geth")]
+    pub op_geth: Source,
 }
 
+#[derive(Debug, Deserialize)]
+pub struct Source {
+    pub release_tag: String,
+    pub build: Vec<String>,
+}
+
+
 mod defaults {
-    // optimism repo
-    pub fn op_repo_url() -> String {
-        "https://github.com/ethereum-optimism/optimism.git".to_string()
-    }
-    pub fn op_repo_tag() -> String {
-        "v1.9.3".to_string()
-    }
-    pub fn op_repo_target() -> String {
-        "optimism".to_string()
+
+    pub fn op_batcher() -> super::Source {
+        super::Source {
+            release_tag: "v0.4.0".to_string(),
+            build: vec![],
+        }
     }
 
-    // op-geth repo
-    pub fn op_geth_repo_repo() -> String {
-        "https://github.com/ethereum-optimism/op-geth.git".to_string()
+    pub fn op_node() -> super::Source {
+        super::Source {
+            release_tag: "v0.4.0".to_string(),
+            build: vec![],
+        }
     }
-    pub fn op_geth_repo_tag() -> String {
-        "v1.101315.3".to_string()
+
+    pub fn op_proposer() -> super::Source {
+        super::Source {
+            release_tag: "v0.4.0".to_string(),
+            build: vec![],
+        }
     }
-    pub fn op_geth_repo_target() -> String {
-        "op-geth".to_string()
+
+    pub fn op_contracts() -> super::Source {
+        super::Source {
+            release_tag: "v0.4.0".to_string(),
+            build: vec![],
+        }
+    }
+
+    pub fn op_geth() -> super::Source {
+        super::Source {
+            release_tag: "v0.4.0".to_string(),
+            build: vec![],
+        }
     }
 }

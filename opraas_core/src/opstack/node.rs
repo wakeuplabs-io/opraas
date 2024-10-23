@@ -2,6 +2,23 @@ use crate::utils;
 use std::fs;
 use std::path::Path;
 use std::process::Command;
+use std::{error::Error};
+use crate::config::sources::Source;
+
+
+pub async fn download<P: AsRef<Path>>(
+    source: &Source,
+) -> Result<(),   Box<dyn Error>> {
+
+    utils::git::download_release(
+        &source.release_tag,
+        &"src/op_node",
+    ).await?;
+
+
+    Ok(())
+}
+
 
 pub fn build<P: AsRef<Path>, Q: AsRef<Path>>(source: &P, destination: &Q) -> Result<(), String> {
     let build_out = Command::new("make")
