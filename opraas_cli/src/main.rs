@@ -25,7 +25,7 @@ enum Commands {
 async fn main() {
     dotenv().ok();
     let args = Args::parse();
-    let config = config::config::load_config();
+    let config = config::load_config();
 
     // Check requirements
     opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
