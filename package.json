@@ -1,0 +1,11 @@
+{
+  "name": "Ruas",
+  "version": "1.0.0",
+  "description": "Easy optimism rollups",
+  "scripts": {
+    "format:md": "prettier --write \"**/*.md\"" 
+  },  
+  "devDependencies": {
+    "prettier": "3.3.3"
+  }
+}
