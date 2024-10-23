@@ -1,8 +1,8 @@
 mod commands;
 mod config;
 use clap::{Parser, Subcommand};
-use dotenv::dotenv;
 use colored::*;
+use dotenv::dotenv;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -21,12 +21,11 @@ enum Commands {
     Deploy { target: String, name: String },
 }
 
-
 #[tokio::main]
 async fn main() {
     dotenv().ok();
     let args = Args::parse();
-    let config = config::config::load_config();
+    let config = config::load_config();
 
     // Check requirements
     opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {

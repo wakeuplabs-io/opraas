@@ -33,8 +33,12 @@ pub async fn deploy<P: AsRef<Path>, Q: AsRef<Path>>(
 
     // create paths, in is inside the bedrock directory and what the scripts consume. out is a copy to the target
     let contracts_source = Path::new(source.as_ref()).join("packages/contracts-bedrock");
-    let deploy_cfg_path_in = contracts_source.clone().join("deploy-config/opraas-config.json");
-    let artifacts_path_in = contracts_source.clone().join("deployments/opraas-artifacts.json");
+    let deploy_cfg_path_in = contracts_source
+        .clone()
+        .join("deploy-config/opraas-config.json");
+    let artifacts_path_in = contracts_source
+        .clone()
+        .join("deployments/opraas-artifacts.json");
     let deploy_cfg_path_out = Path::new(target.as_ref()).join("deploy-config.json");
     let artifacts_path_out = Path::new(target.as_ref()).join("artifact.json");
 
@@ -70,14 +74,18 @@ pub async fn deploy<P: AsRef<Path>, Q: AsRef<Path>>(
         .arg(network_cfg.l1_rpc_url.clone())
         .output()
         .expect("Failed to execute deploy command");
-    
+
     if !deploy_out.status.success() {
-        println!("Error deploying source: {}", String::from_utf8_lossy(&deploy_out.stdout));
+        println!(
+            "Error deploying source: {}",
+            String::from_utf8_lossy(&deploy_out.stdout)
+        );
         let error_message = String::from_utf8_lossy(&deploy_out.stderr);
         return Err(format!("Error deploying source: {}", error_message));
     }
-    
-    fs::copy(&artifacts_path_in, &artifacts_path_out).expect("Failed to copy deploy artifacts file");
+
+    fs::copy(&artifacts_path_in, &artifacts_path_out)
+        .expect("Failed to copy deploy artifacts file");
 
     Ok(())
 }

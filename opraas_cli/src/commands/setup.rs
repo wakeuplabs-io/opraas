@@ -1,4 +1,4 @@
-use crate::config::config::Config;
+use crate::config::Config;
 use opraas_core::opstack;
 use std::env;
 

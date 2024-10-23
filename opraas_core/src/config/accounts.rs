@@ -1,4 +1,3 @@
-
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize)]
@@ -24,7 +23,6 @@ pub struct AccountsConfig {
     #[serde(default = "defaults::deployer_private_key")]
     pub deployer_private_key: String,
 }
-
 
 mod defaults {
     use std::env;

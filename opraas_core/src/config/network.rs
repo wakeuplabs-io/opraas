@@ -47,8 +47,6 @@ pub struct NetworkConfig {
     pub use_fault_proofs: bool,
 }
 
-
-
 mod defaults {
     use std::env;
 

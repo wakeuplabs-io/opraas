@@ -13,7 +13,7 @@ pub fn build<P: AsRef<Path>, Q: AsRef<Path>>(source: &P, destination: &Q) -> Res
         let error_message = String::from_utf8_lossy(&build_out.stderr);
         return Err(format!("Error building source: {}", error_message));
     }
-    
+
     // create the destination if it doesn't exist
     if !destination.as_ref().exists() {
         fs::create_dir_all(destination.as_ref()).expect("Failed to create destination directory");
