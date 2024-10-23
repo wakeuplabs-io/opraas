@@ -78,6 +78,7 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 2. Upgrades management 
 3. Contemplate testing environments. 
 4. Avoid overloading user with enviroment setup complexities.
+5. Testnet tokens availability and proper config setup
 
  
 
