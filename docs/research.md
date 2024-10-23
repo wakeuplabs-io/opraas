@@ -83,7 +83,7 @@ CLI
 - CLI for local self-service
 - The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
 - We'll distribute the binaries through github releases and make them widely available with an npm package.
-- To allow for a more flexible build process we'll allow the user to specify a build process in the config file in the shape of:
+- To allow for a more flexible build process we'll allow the user to specify the steps in the config file in the shape of:
 
   ```toml
   [sources.op_node]
@@ -95,7 +95,8 @@ CLI
   build = ["pnpm install", "pnpm build", "cd packages/bedrock-contracts", "forge install", "..."]
   ```
 
-- Artifacts will be built downloaded form github releases
+- Artifacts will be built downloaded form github releases.
+- To reduce dependencies the user needs to manage we can provide a docker image with the binaries already available so with some volume mapping we reduce the boilerplate setup to just docker.
 
 Infrastructure
 
