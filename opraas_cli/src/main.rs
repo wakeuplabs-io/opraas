@@ -1,8 +1,8 @@
 mod commands;
 mod config;
 use clap::{Parser, Subcommand};
-use dotenv::dotenv;
 use colored::*;
+use dotenv::dotenv;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -20,7 +20,6 @@ enum Commands {
     /// Deploy the project
     Deploy { target: String, name: String },
 }
-
 
 #[tokio::main]
 async fn main() {

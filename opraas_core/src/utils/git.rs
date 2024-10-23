@@ -1,7 +1,11 @@
-use std::process::Command;
 use std::path::Path;
+use std::process::Command;
 
-pub fn clone_repo_at_tag<P: AsRef<Path>>(repo_url: &str, branch: &str, destination: &P) -> Result<(), String> {
+pub fn clone_repo_at_tag<P: AsRef<Path>>(
+    repo_url: &str,
+    branch: &str,
+    destination: &P,
+) -> Result<(), String> {
     let output = Command::new("git")
         .arg("clone")
         .arg("--branch")
@@ -16,9 +20,6 @@ pub fn clone_repo_at_tag<P: AsRef<Path>>(repo_url: &str, branch: &str, destinati
         Ok(())
     } else {
         let error_message = String::from_utf8_lossy(&output.stderr);
-        Err(format!(
-            "Error cloning repository: {}",
-            error_message
-        ))
+        Err(format!("Error cloning repository: {}", error_message))
     }
 }

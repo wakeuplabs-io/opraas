@@ -76,7 +76,7 @@ impl DeployConfig {
         let l1_chain_id = web3.eth().chain_id().await.unwrap().as_u32();
         let mut hasher = Keccak256::new();
         hasher.update(l1_chain_id.to_be_bytes());
-        let batch_inbox_address =  hasher.finalize();
+        let batch_inbox_address = hasher.finalize();
 
         let finalized_block = web3
             .eth()

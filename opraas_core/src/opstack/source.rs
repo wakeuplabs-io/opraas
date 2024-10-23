@@ -3,12 +3,12 @@ use std::path::Path;
 use std::process::Command;
 
 pub fn download<P: AsRef<Path>>(
-    opt_url: &str, 
-    opt_tag: &str, 
+    opt_url: &str,
+    opt_tag: &str,
     opt_dst: &P,
-    geth_url: &str, 
-    geth_tag: &str, 
-    geth_dst: &P
+    geth_url: &str,
+    geth_tag: &str,
+    geth_dst: &P,
 ) -> Result<(), String> {
     // clone optimism repo and update submodules
     utils::git::clone_repo_at_tag(opt_url, opt_tag, opt_dst)?;
