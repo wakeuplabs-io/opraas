@@ -12,8 +12,8 @@ release_tag = "https://rpc.ankr.com/eth"
 build = []
 
 [sources.op_node]
-release_tag = "https://rpc.ankr.com/eth"
-build = []
+release_tag = "op-node/v1.3.1"
+build = ["make op-node"]
 
 [sources.op_geth]
 release_tag = "https://rpc.ankr.com/eth"

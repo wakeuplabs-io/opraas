@@ -1,14 +1,23 @@
-use std::path::Path;
-use std::process::Command;
 use std::error::Error;
 use std::io::Cursor;
+use std::path::Path;
+use std::process::Command;
 
 pub async fn download_release<P: AsRef<Path>>(
     url: &str,
     destination: &P,
-) -> Result<(),  Box<dyn Error>> {
+) -> Result<(), Box<dyn Error>> {
     let response = reqwest::get(url).await?;
-    let bytes =  response.bytes().await?;
+    if response.status() != 200 {
+        return Err("Failed to download release".into());
+    }
+
+    let bytes = response.bytes().await?;
+
+    // ensure destination exists
+    if !destination.as_ref().exists() {
+        std::fs::create_dir_all(destination.as_ref())?;
+    }
 
     let target = Path::new(destination.as_ref());
     zip_extract::extract(Cursor::new(bytes), &target, true)?;
@@ -39,7 +48,6 @@ pub fn clone_repo_at_tag<P: AsRef<Path>>(
     }
 }
 
-
 pub fn cherry_pick<P: AsRef<Path>>(repo_path: &P, commit_hash: &str) -> Result<(), String> {
     let output = Command::new("git")
         .arg("cherry-pick")
@@ -52,9 +60,6 @@ pub fn cherry_pick<P: AsRef<Path>>(repo_path: &P, commit_hash: &str) -> Result<(
         Ok(())
     } else {
         let error_message = String::from_utf8_lossy(&output.stderr);
-        Err(format!(
-            "Error cherry-picking commit: {}",
-            error_message
-        ))
+        Err(format!("Error cherry-picking commit: {}", error_message))
     }
 }

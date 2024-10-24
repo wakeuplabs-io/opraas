@@ -24,18 +24,21 @@ enum Commands {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let args = Args::parse();
+    // let args = Args::parse();
     let config = config::load_config();
 
-    // Check requirements
-    opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
-        eprintln!("{}", format!("Panic: {}", e).bold().red());
-        std::process::exit(1);
-    });
+    opraas_core::opstack::node::download(&config.sources.op_node).await.unwrap();
+    opraas_core::opstack::node::build(&config.sources.op_node).unwrap();
 
-    match args.cmd {
-        Commands::Setup {} => commands::setup(&config),
-        Commands::Build { target } => commands::build(&config, &target),
-        Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
-    }
+    // // Check requirements
+    // opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
+    //     eprintln!("{}", format!("Panic: {}", e).bold().red());
+    //     std::process::exit(1);
+    // });
+
+    // match args.cmd {
+    //     Commands::Setup {} => commands::setup(&config),
+    //     Commands::Build { target } => commands::build(&config, &target),
+    //     Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
+    // }
 }
