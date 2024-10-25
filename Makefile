@@ -15,6 +15,9 @@ LINUX_TARGET=x86_64-unknown-linux-musl
 run:
 	@cargo run -p opraas_cli -- $(RUN_ARGS)
 
+format-md:
+	npx prettier --write "**/*.md"
+
 release-windows:
 	cargo build --target=${WINDOW_TARGET} --release
 	mkdir -p releases/${RELEASE_VERSION}/${WINDOW_TARGET}/dist
