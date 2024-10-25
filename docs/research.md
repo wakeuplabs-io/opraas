@@ -1,12 +1,22 @@
 # Research & Discovery
 
-# Porpoise
+# Summary
+
+This document describes our entire process of research, problem tackling and decision making.
+
+# Purpose
 
 The goal of this project is to enable users to easily deploy and manage their own rollups through cloud providers. The service will include a Command Line Interface (CLI) and a web-based development console for management. By eliminating vendor lock-in, we empower users to fully own their rollups and switch cloud providers with minimal effort.
 
-# Summary
-
 # Problem statement + Context
+
+Optimism's long-term vision is focused on dApps being able to span as many rollup chains as needed, as easy and as fast as it can be.
+
+So far, Optimism has developed awesome tools to reduce the limitations and knowledge required, but it seems it's still not as easy, since there are providers getting in the middle which end up restricting the users on the matter.
+
+We want to give full power to developers looking forward to make use of the Superchain capabilities, and having an open tool to put up and operate a chain inside Optimism is another step closer to our goal.
+
+Current tools excel on some features and lack others, all of them contribute on gathering ideas, but none of them tackles the problem end to end, which is what this project's mission is about.
 
 # Alternatives considered
 
@@ -72,11 +82,37 @@ Source:
 
 We have decided to develop our own CLI and infrastructure tooling to create a more flexible deployment process and address some of the inconveniences we encountered while testing existing solutions. Given the challenges in getting current solutions to work easily and the relatively short time required to replicate them, we aim for our development to also meet new requirements, including a user interface and scalable deployment.
 
-## Decisions and drivers
+# Decisions and drivers
+
+We thrive to make things the best way possible, our tech decisions are focused on popularity, usability, simplicity and efficiency.
+
+## Technology
+
+#### Rust
+
+It's increasing popularity, long-term maintainability and suitability for the task.
+
+#### Kubernetes & Helm
+
+Taking a step on top of docker-compose, Kubernetes with Helm allow for scalability and simplify resource management.
+
+#### HashiCorp's Terraform
+
+Terraform is a powerful IaC tool that simplifies the deployment-provider relationship.
+It works through the generation of agnostic resource templates for their deployment on different providers with minimal changes.
+
+#### AWS
+
+We use AWS as an example provider to deploy to.
+The web services provider may be up to the developr to chose, shifting using Terraform should ease the way.
+
+#### Github actions
+
+CI/CD integrated on the same repository, it uses yaml files to make automated pipelines and drive new releases delivery. 
 
 ### General
 
-- A cli that can handle deployments will be developed.
+- A CLI that can handle deployments will be developed.
 - A Web UI to quickly and easily spin off projects will be created.
 - We chose Rust for its performance, cost efficiency, and growing popularity, ensuring reliable and scalable solutions.
 
@@ -99,7 +135,7 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 
   Note this also gives flexibility for patches or cherry picks on top of releases like roll-op does.
 
-- Artifacts will be downloaded form github releases.
+- Artifacts will be downloaded from github releases.
 - Build processes will all happen within docker images to reduce setup to just docker.
 
 Commands provided:
