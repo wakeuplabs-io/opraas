@@ -114,9 +114,10 @@ Commands provided:
   - With a full config available, we can run also do a setup and a build from this command. This will be the starting point when coming from the ui.
 - `inspect <contracts | infra>`:
   - `contracts`: Lists deployed contracts
-  - `infra`: Showcases terraform outputs, indicating relevant nodes urls and statuses
-- `monitor`: Monitoring outputs
-- `logs <service>`: Logs from particular service
+  - `infra`: Showcases terraform outputs, indicating relevant urls and statuses. Among others here user will be pointed to monitoring tools.
+- `monitor <onchain | offchain>`:
+  - `onchain`: Will be a wrappers around [monitorism](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#monitorism) and [dispute-mon](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#dispute-mon) customized to the user chain.
+  - `offchain`: Will be a pointer to the graphana deployment url.
 
 Some commands may depend on others and may require some local state available. We'll do this checks and inform everything to the users to best guide them through the process.
 
@@ -146,6 +147,7 @@ config.toml
 
 - For the deployment we'll leverage `Kubernetes` to coordinate all the services and enable scaling in combination with `Helm` for a simple deployment customization and management plus `Terraform` to specify the resources and allow the one click experience we want.
 - One fundamental reasoning behind picking `Kubernetes` over other potential solutions is compatibility with providers, we want users to be capable of selecting where to host their chain and removing small differences in setup k8s seems to be a common 'interface' available. We'll provide `Terraform` just for a few cloud vendors but the helm chart will be open for users to take wherever they want.
+- Regarding monitoring as specified in the [docs](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#offchain-component-monitoring) we'll include in the deployment chart services for `prometheus` and `graphana` along with dashboards for the last one. This way out of the box users will get a robust monitoring system.
 
 ### Block explorer
 
@@ -154,8 +156,6 @@ config.toml
 ### Web dev console
 
 The dev console will focus on generating a full config for the user to download and deploy in one command with the cli. We'll ask users input for filling up the kick off config and generate a zip for them to download and deploy. To achieve this the zip will contain a full config.toml file and the cli binaries so that `./opraas dev` or `./opraas deploy` is all they need.
-
-<!-- TODO: Monitoring? stats? -->
 
 # Risk and uncertainties
 
