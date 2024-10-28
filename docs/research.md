@@ -149,6 +149,25 @@ config.toml
 - One fundamental reasoning behind picking `Kubernetes` over other potential solutions is compatibility with providers, we want users to be capable of selecting where to host their chain and removing small differences in setup k8s seems to be a common 'interface' available. We'll provide `Terraform` just for a few cloud vendors but the helm chart will be open for users to take wherever they want.
 - Regarding monitoring as specified in the [docs](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#offchain-component-monitoring) we'll include in the deployment chart services for `prometheus` and `graphana` along with dashboards for the last one. This way out of the box users will get a robust monitoring system.
 
+Scaling diagram:
+
+![infra](./assets/infra.png)
+
+To ensure the infrastructure scales properly when the chain grows in usage we'll follow the indications provided by the [architecture](https://docs.optimism.io/builders/chain-operators/architecture) section in the optimism docs.
+
+In order to let the sequencer focus on creating new transactions we'll set up node replicas that will handle read requests. All this powered by proxyd that:
+
+- Whitelists RPC methods.
+- Routes RPC methods to groups of backend services.
+- Automatically retries failed backend requests.
+- Track backend consensus (latest, safe, finalized blocks), peer count and sync state.
+- Re-write requests and responses to enforce consensus.
+- Load balance requests across backend services.
+- Cache immutable responses from backends.
+- Provides metrics to measure request latency, error rates, and the like.
+
+As per networking this implies the only services exposed will be `proxyd` and those for analytics.
+
 ### Block explorer
 
 - Block explorer. For the block explorer [Blockscout](https://www.blockscout.com/) appears to be the best choice. BlockScout is an open-source block explorer that supports OP Stack chains, is recommended by the Optimism documentation, and is widely implemented in many current solutions.
