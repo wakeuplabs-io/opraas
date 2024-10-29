@@ -84,32 +84,6 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 
 # Decisions and drivers
 
-We thrive to make things the best way possible, our tech decisions are focused on popularity, usability, simplicity and efficiency.
-
-## Technology
-
-#### Rust
-
-It's increasing popularity, long-term maintainability and suitability for the task.
-
-#### Kubernetes & Helm
-
-Taking a step on top of docker-compose, Kubernetes with Helm allow for scalability and simplify resource management.
-
-#### HashiCorp's Terraform
-
-Terraform is a powerful IaC tool that simplifies the deployment-provider relationship.
-It works through the generation of agnostic resource templates for their deployment on different providers with minimal changes.
-
-#### AWS
-
-We use AWS as an example provider to deploy to.
-The web services provider may be up to the developr to chose, shifting using Terraform should ease the way.
-
-#### Github actions
-
-CI/CD integrated on the same repository, it uses yaml files to make automated pipelines and drive new releases delivery. 
-
 ### General
 
 - A CLI that can handle deployments will be developed.
