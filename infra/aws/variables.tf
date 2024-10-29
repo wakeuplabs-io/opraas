@@ -8,11 +8,11 @@ variable "region" {
 variable "proy-name" {
   description = "Name of the project"
   type        = string
-  default     = "proy-name"
+  default     = "opraas-chain"
 }
 
 variable "cluster-name" {
   description = "Name of the cluster"
   type        = string
-  default     = "cluster-name"
+  default     = "opraas-cluster"
 }
