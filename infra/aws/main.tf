@@ -125,10 +125,10 @@ resource "helm_release" "cert_manager" {
   }
 }
 
-resource "helm_release" "demo" {
-  name      = "demo"
+resource "helm_release" "opraas" {
+  name      = "opraas"
   chart     = "../helm"
-  namespace = "demo"
+  namespace = "opraas"
 
   create_namespace = true
 
