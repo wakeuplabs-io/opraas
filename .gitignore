@@ -5,3 +5,4 @@
 /deployments
 /releases
 .env
+/node_modules
