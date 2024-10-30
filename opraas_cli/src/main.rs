@@ -2,8 +2,10 @@ mod commands;
 mod config;
 use clap::{Parser, Subcommand};
 use colored::*;
+use commands::*;
 use config::Config;
 use dotenv::dotenv;
+use async_trait::async_trait;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -24,13 +26,9 @@ enum Commands {
     Version {},
 }
 
-async fn run(cmd: Commands, config: &Config) -> Result<(), Box<dyn std::error::Error>> {
-    match cmd {
-        Commands::Setup {} => commands::setup(config),
-        Commands::Build { target } => commands::build(&config, &target),
-        Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
-        Commands::Version {} => commands::version().await,
-    }
+#[async_trait]
+pub trait Runnable {
+  async fn run(&self, cfg: &Config) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 #[tokio::main]
@@ -45,7 +43,12 @@ async fn main() {
         std::process::exit(1);
     });
 
-    if let Err(e) = run(args.cmd, &config).await {
+    if let Err(e) =  match args.cmd {
+        Commands::Version {} => VersionCommand.run(&config).await,
+        Commands::Setup {} => SetupCommand.run(&config).await,
+        Commands::Build { target } => BuildCommand { target }.run(&config).await,
+        Commands::Deploy { target, name } => DeployCommand { target, name }.run(&config).await,
+    } {
         eprintln!("{}", format!("Panic: {}", e).bold().red());
         std::process::exit(1);
     }

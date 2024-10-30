@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+async-trait = "0.1.83"
 clap = { version = "4.5.20", features = ["derive"] }
 dotenv = "0.15.0"
 reqwest = { version = "0.12.8", features = ["json"] }
