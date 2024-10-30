@@ -1,12 +1,13 @@
 use async_trait::async_trait;
 use opraas_core::opstack;
+use crate::console;
 
 pub struct SetupCommand;
 
 #[async_trait]
 impl crate::Runnable for SetupCommand {
     async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Setting up project");
+        console::info("Setting up project");
 
         let cwd = std::env::current_dir().expect("Failed to get current directory");
         let op_target = cwd.join(&cfg.sources.op_repo_target);

@@ -8,8 +8,6 @@ pub struct BuildCommand {
 #[async_trait]
 impl crate::Runnable for BuildCommand {
     async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Building {}...", self.target);
-
         match self.target.as_ref() {
             "op-geth" => opstack::geth::build(&cfg.sources.op_geth_repo_target, &self.target)?,
             // "op-proposer" => opstack::proposer::build(&cfg.sources.op_repo_target, &target).unwrap(),
@@ -23,10 +21,9 @@ impl crate::Runnable for BuildCommand {
             //     opstack::node::build(&cfg.sources.op_repo_target, &target).unwrap();
             //     opstack::contracts::build(&cfg.sources.op_repo_target).unwrap();
             // }
-            _ => panic!("Unknown target: {}", self.target),
+            _ => return Err("Invalid target".into()),
         }
     
         Ok(())
     }
-    
 }

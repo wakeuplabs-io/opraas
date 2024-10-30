@@ -1,5 +1,7 @@
 mod commands;
 mod config;
+mod console;
+
 use clap::{Parser, Subcommand};
 use colored::*;
 use commands::*;
@@ -45,7 +47,7 @@ async fn main() {
 
     // Check requirements
     opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
-        eprintln!("{}", format!("Panic: {}", e).bold().red());
+        eprintln!("{}", format!("Error: {}", e).bold().red());
         std::process::exit(1);
     });
 
@@ -59,7 +61,7 @@ async fn main() {
         Commands::Deploy { target, name } => DeployCommand { target, name }.run(&config).await,
         Commands::Version {} => VersionCommand.run(&config).await,
     } {
-        eprintln!("{}", format!("Panic: {}", e).bold().red());
+        eprintln!("{}", format!("Error: {}", e).bold().red());
         std::process::exit(1);
     }
 }
