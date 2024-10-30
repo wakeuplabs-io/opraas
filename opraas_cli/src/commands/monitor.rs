@@ -7,7 +7,6 @@ pub struct MonitorCommand {
 #[async_trait]
 impl crate::Runnable for MonitorCommand {
     async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        
         match self.target.as_ref() {
             "contracts" => {
                 info!("Monitoring contracts...");

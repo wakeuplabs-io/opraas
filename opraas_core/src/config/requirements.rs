@@ -20,13 +20,13 @@ pub struct Requirement {
 pub fn get_requirements() -> Vec<Requirement> {
     vec![Requirement {
         program: "docker".to_string(),
-        version: Version::parse("1.22.0").unwrap(),
+        version: Version::parse("24.0.0").unwrap(),
         comparison: Comparison::GreaterThanOrEqual,
         get_version: || {
-            let output = std::process::Command::new("go")
-                .arg("version")
+            let output = std::process::Command::new("docker")
+                .arg("-v")
                 .output()
-                .expect("Failed to execute go command");
+                .expect("Failed to get docker version");
             Version::parse(
                 String::from_utf8_lossy(&output.stdout)
                     .split_whitespace()
@@ -34,8 +34,8 @@ pub fn get_requirements() -> Vec<Requirement> {
                     .get(2)
                     .unwrap()
                     .to_string()
-                    .strip_prefix("go")
-                    .unwrap_or("default"),
+                    .strip_suffix(",")
+                    .unwrap_or("-"),
             )
             .unwrap()
         },

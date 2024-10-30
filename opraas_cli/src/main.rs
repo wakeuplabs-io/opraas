@@ -44,10 +44,9 @@ pub trait Runnable {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    pretty_env_logger::init_custom_env("LOG_LEVEL");
 
-    let args = Args::parse();
-    let config = Config::new_from_root(&std::env::current_dir().unwrap().as_path());
+    // enable logging
+    pretty_env_logger::init_custom_env("LOG_LEVEL");
 
     // Check requirements
     opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
@@ -55,7 +54,11 @@ async fn main() {
         std::process::exit(1);
     });
 
+    // load config
+    let config = Config::new_from_root(&std::env::current_dir().unwrap().as_path());
+
     // run commands
+    let args = Args::parse();
     if let Err(e) =  match args.cmd {
         Commands::Setup {} => SetupCommand.run(&config).await,
         Commands::Build { target } => BuildCommand { target }.run(&config).await,

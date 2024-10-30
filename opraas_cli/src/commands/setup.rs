@@ -4,8 +4,9 @@ pub struct SetupCommand;
 
 #[async_trait]
 impl crate::Runnable for SetupCommand {
-    async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-       
+    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        // if no core config exists, create one, prompting for user input
+
         Ok(())
     }
 }

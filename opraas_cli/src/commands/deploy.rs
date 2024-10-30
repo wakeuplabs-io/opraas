@@ -7,7 +7,9 @@ pub struct  DeployCommand {
 
 #[async_trait]
 impl crate::Runnable for DeployCommand {
-    async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        cfg.core.as_ref().ok_or_else(|| "Core config not found. Run setup first")?;
+
         match self.target.as_ref() {
             "contracts" => {
                 info!("Deploying contracts for {}...", self.name);

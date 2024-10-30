@@ -9,10 +9,10 @@ pub struct CoreConfig {
 }
 
 impl CoreConfig {
-    pub fn new_from_toml<P: AsRef<std::path::Path>>(p: &P) -> Self {
-        let config_content = std::fs::read_to_string(p).expect("Failed to read config from toml");
-        let config: CoreConfig = toml::from_str(&config_content).expect("Failed to parse config.toml");
+    pub fn new_from_toml<P: AsRef<std::path::Path>>(p: &P) -> Result<Self, Box<dyn std::error::Error>> {
+        let config_content = std::fs::read_to_string(p)?;
+        let config: CoreConfig = toml::from_str(&config_content)?;
     
-        config
+        Ok(config)
     }
 }
