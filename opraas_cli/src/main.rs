@@ -2,6 +2,7 @@ mod commands;
 mod config;
 use clap::{Parser, Subcommand};
 use colored::*;
+use config::Config;
 use dotenv::dotenv;
 
 #[derive(Parser)]
@@ -19,6 +20,17 @@ enum Commands {
     Build { target: String },
     /// Deploy the project
     Deploy { target: String, name: String },
+    /// Version
+    Version {},
+}
+
+async fn run(cmd: Commands, config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    match cmd {
+        Commands::Setup {} => commands::setup(config),
+        Commands::Build { target } => commands::build(&config, &target),
+        Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
+        Commands::Version {} => commands::version().await,
+    }
 }
 
 #[tokio::main]
@@ -33,9 +45,8 @@ async fn main() {
         std::process::exit(1);
     });
 
-    match args.cmd {
-        Commands::Setup {} => commands::setup(&config),
-        Commands::Build { target } => commands::build(&config, &target),
-        Commands::Deploy { target, name } => commands::deploy(&config, &target, &name).await,
+    if let Err(e) = run(args.cmd, &config).await {
+        eprintln!("{}", format!("Panic: {}", e).bold().red());
+        std::process::exit(1);
     }
 }

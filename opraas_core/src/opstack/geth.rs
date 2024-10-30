@@ -3,7 +3,7 @@ use std::fs;
 use std::path::Path;
 use std::process::Command;
 
-pub fn build<P: AsRef<Path>, Q: AsRef<Path>>(source: &P, destination: &Q) -> Result<(), String> {
+pub fn build<P: AsRef<Path>, Q: AsRef<Path>>(source: &P, destination: &Q) -> Result<(), Box<dyn std::error::Error>> {
     let build_out = Command::new("make")
         .arg("geth")
         .current_dir(source)
@@ -11,7 +11,7 @@ pub fn build<P: AsRef<Path>, Q: AsRef<Path>>(source: &P, destination: &Q) -> Res
         .expect("Failed to execute build command");
     if !build_out.status.success() {
         let error_message = String::from_utf8_lossy(&build_out.stderr);
-        return Err(format!("Error building source: {}", error_message));
+        return Err(format!("Error building source: {}", error_message).into());
     }
 
     // create the destination if it doesn't exist

@@ -1,8 +1,10 @@
 use crate::config::Config;
 use opraas_core::opstack;
 use std::env;
+use std::error::Error;
 
-pub fn setup(cfg: &Config) {
+
+pub fn setup(cfg: &Config) -> Result<(), Box<dyn Error>> {
     println!("Setting up project");
 
     let cwd = env::current_dir().expect("Failed to get current directory");
@@ -35,4 +37,6 @@ pub fn setup(cfg: &Config) {
 
     println!("Building op-geth...");
     opstack::geth::build(&op_geth_target, &bin_target).expect("Failed to build op-geth");
+
+    Ok(())
 }
