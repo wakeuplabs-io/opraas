@@ -1,6 +1,8 @@
 mod commands;
 mod config;
-mod console;
+
+extern crate pretty_env_logger;
+#[macro_use] extern crate log;
 
 use clap::{Parser, Subcommand};
 use colored::*;
@@ -42,6 +44,8 @@ pub trait Runnable {
 #[tokio::main]
 async fn main() {
     dotenv().ok();
+    pretty_env_logger::init_custom_env("LOG_LEVEL");
+
     let args = Args::parse();
     let config = config::load_config();
 

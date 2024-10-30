@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use crate::console;
 
 pub struct InspectCommand {
     pub target: String
@@ -7,14 +6,14 @@ pub struct InspectCommand {
 
 #[async_trait]
 impl crate::Runnable for InspectCommand {
-    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
 
         match self.target.as_ref() {
             "contracts" => {
-                console::info("Inspecting contracts...");
+                info!("Inspecting contracts...");
             },
             "infra" => {
-                console::info("Inspecting infra...");
+                info!("Inspecting infra...");
             },
             _ => return Err("Invalid target".into()),
         }

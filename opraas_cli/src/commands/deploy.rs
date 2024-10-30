@@ -1,6 +1,5 @@
 use opraas_core::opstack;
 use async_trait::async_trait;
-use crate::console;
 
 pub struct  DeployCommand {
     pub target: String,
@@ -16,7 +15,7 @@ impl crate::Runnable for DeployCommand {
     
         match self.target.as_ref() {
             "contracts" => {
-                console::info("Deploying contracts...");
+                info!("Deploying contracts...");
                 opstack::contracts::deploy(&source_folder, &target_folder, &cfg.network, &cfg.accounts)
                     .await?;
             }
