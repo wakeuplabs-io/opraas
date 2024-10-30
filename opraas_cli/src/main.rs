@@ -38,7 +38,7 @@ enum Commands {
 
 #[async_trait]
 pub trait Runnable {
-  async fn run(&self, cfg: &Config) -> Result<(), Box<dyn std::error::Error>>;
+  async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 #[tokio::main]
@@ -47,7 +47,7 @@ async fn main() {
     pretty_env_logger::init_custom_env("LOG_LEVEL");
 
     let args = Args::parse();
-    let config = config::load_config();
+    let config = Config::new_from_root(&std::env::current_dir().unwrap().as_path());
 
     // Check requirements
     opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {

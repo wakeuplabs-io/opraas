@@ -4,7 +4,7 @@ use sha3::{Digest, Keccak256};
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct DeployConfig {
+pub struct ContractsConfig {
     #[serde(rename = "l1ChainID")]
     l1_chain_id: u32,
     #[serde(rename = "l2ChainID")]
@@ -65,11 +65,11 @@ pub struct DeployConfig {
     use_fault_proofs: bool,
 }
 
-impl DeployConfig {
+impl ContractsConfig {
     pub async fn create(
         accounts_cfg: &AccountsConfig,
         network_cfg: &NetworkConfig,
-    ) -> DeployConfig {
+    ) -> ContractsConfig {
         let transport = web3::transports::Http::new(&network_cfg.l1_rpc_url).unwrap();
         let web3 = web3::Web3::new(transport);
 
@@ -89,7 +89,7 @@ impl DeployConfig {
         let l2_output_oracle_starting_timestamp = finalized_block.timestamp.as_u32();
         let l1_starting_block_tag = finalized_block.hash.unwrap();
 
-        DeployConfig {
+        ContractsConfig {
             // accounts
             final_system_owner: accounts_cfg.admin_address.clone(),
             superchain_config_guardian: accounts_cfg.admin_address.clone(),

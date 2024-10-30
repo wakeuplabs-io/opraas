@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 log = "0.4.22"
+toml = "0.8.19"
 pretty_env_logger = "0.5.0"
 semver = "1.0.23"
 serde = { version = "1.0.210", features = ["derive"] }
@@ -12,3 +13,4 @@ serde_json = "1.0.129"
 sha3 = "0.10.8"
 uuid = { version = "1.11.0", features = ["v4"] }
 web3 = "0.19.0"
+async-trait = "0.1.83"

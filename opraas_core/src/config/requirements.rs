@@ -19,7 +19,7 @@ pub struct Requirement {
 
 pub fn get_requirements() -> Vec<Requirement> {
     vec![Requirement {
-        program: "go".to_string(),
+        program: "docker".to_string(),
         version: Version::parse("1.22.0").unwrap(),
         comparison: Comparison::GreaterThanOrEqual,
         get_version: || {

@@ -1,4 +1,3 @@
-use opraas_core::opstack;
 use async_trait::async_trait;
 
 pub struct  DeployCommand {
@@ -8,16 +7,16 @@ pub struct  DeployCommand {
 
 #[async_trait]
 impl crate::Runnable for DeployCommand {
-    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        let cwd = std::env::current_dir()?;
-        let target_folder = cwd.join("deployments").join(self.name.as_str());
-        let source_folder = cwd.join(&cfg.sources.op_repo_target);
-    
+    async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         match self.target.as_ref() {
             "contracts" => {
-                info!("Deploying contracts...");
-                opstack::contracts::deploy(&source_folder, &target_folder, &cfg.network, &cfg.accounts)
-                    .await?;
+                info!("Deploying contracts for {}...", self.name);
+            },
+            "infra" => {
+                info!("Deploying infra for {}...", self.name);
+            },
+            "all" => {
+                info!("Deploying all artifacts for {}...", self.name);
             }
             _ => return Err("Invalid target".into()),
         }
