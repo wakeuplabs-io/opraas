@@ -18,10 +18,16 @@ struct Args {
 enum Commands {
     /// Setup a new project
     Setup {},
-    /// Build the project
+    /// Compile sources and create docker images for it
     Build { target: String },
-    /// Deploy the project
+    /// Spin up local dev environment
+    Dev {},
+    /// Deploy your blockchain. Target must be one of: contracts, infra, all
     Deploy { target: String, name: String },
+    /// Get details about the current deployment. Target must be one of: contracts, infra
+    Inspect { target: String },
+    /// Monitor your chain. Target must be one of: onchain, offchain
+    Monitor { target: String },
     /// Version
     Version {},
 }
@@ -43,11 +49,15 @@ async fn main() {
         std::process::exit(1);
     });
 
+    // run commands
     if let Err(e) =  match args.cmd {
-        Commands::Version {} => VersionCommand.run(&config).await,
         Commands::Setup {} => SetupCommand.run(&config).await,
         Commands::Build { target } => BuildCommand { target }.run(&config).await,
+        Commands::Dev {} => DevCommand.run(&config).await,
+        Commands::Inspect { target } => InspectCommand { target }.run(&config).await,
+        Commands::Monitor { target } => MonitorCommand { target }.run(&config).await,
         Commands::Deploy { target, name } => DeployCommand { target, name }.run(&config).await,
+        Commands::Version {} => VersionCommand.run(&config).await,
     } {
         eprintln!("{}", format!("Panic: {}", e).bold().red());
         std::process::exit(1);
