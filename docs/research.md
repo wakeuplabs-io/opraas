@@ -100,8 +100,9 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 
 Commands provided:
 
-- `setup`: It'll set up the initial project structure. First it'll ask the user information about the chain to deploy, desired l2ChainId, artifacts versions to use and etc. Then it'll create a started config file for it and set up the `src` and `infra` folder as shown below.
-- `build <artifact>`: Compiles each of the artifacts and generates the corresponding docker image.
+- `new`: It'll create a new folder with a template config for the user to review and run a setup on. In particular `.env`, `config.toml`, `README.md` and `.gitignore` will be created
+- `setup`: It'll download sources and infra based on what the user specified in the config
+- `build <artifact>`: Compiles each of the artifacts and generates a corresponding docker image.
 - `dev`: It'll spin up a local `anvil` testnet node forking the l1 chain, deploy contracts to it using the user configuration and start all the nodes for the user to test his chain locally.
 - `deploy <contracts | infra>`:
   - `contracts`: Deploys contracts to l1 and generates `genesis.json` and `rollup.json`
