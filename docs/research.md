@@ -135,9 +135,11 @@ src/
 	op_node/
 	op_geth/
 	op_batcher/
-	blockscout/
+	explorer/
+README.md
 config.toml
-.env.local
+.gitignore
+.env
 ```
 
 ### Infrastructure
