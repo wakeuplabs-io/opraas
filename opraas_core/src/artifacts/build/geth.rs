@@ -6,7 +6,7 @@ pub struct GethBuildArtifact;
 impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
     async fn download<T: ProgressTracker>(&self, cfg: &crate::config::Config, progress: &T) -> Result<(), Box<dyn std::error::Error>> {
         git::download_release(
-            &cfg.core.sources.geth.release_url,
+            &cfg.core.sources.geth.base_url,
             &cfg.core.sources.geth.release_tag,
             &cfg.tree.src.geth,
             progress

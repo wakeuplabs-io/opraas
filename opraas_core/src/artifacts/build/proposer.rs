@@ -6,7 +6,7 @@ pub struct ProposerBuildArtifact;
 impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
     async fn download<T: ProgressTracker>(&self, cfg: &crate::config::Config, progress: &T) -> Result<(), Box<dyn std::error::Error>> {
         git::download_release(
-            &cfg.core.sources.proposer.release_url,
+            &cfg.core.sources.proposer.base_url,
             &cfg.core.sources.proposer.release_tag,
             &cfg.tree.src.proposer,
             progress

@@ -6,7 +6,7 @@ pub struct BatcherBuildArtifact;
 impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
     async fn download<T: ProgressTracker>(&self, cfg: &crate::config::Config, progress: &T) -> Result<(), Box<dyn std::error::Error>> {
         git::download_release(
-            &cfg.core.sources.batcher.release_url,
+            &cfg.core.sources.batcher.base_url,
             &cfg.core.sources.batcher.release_tag,
             &cfg.tree.src.batcher,
             progress,

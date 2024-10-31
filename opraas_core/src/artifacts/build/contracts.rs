@@ -1,4 +1,4 @@
-use crate::{git, progress::{ProgressTracker}};
+use crate::{git, progress::ProgressTracker};
 
 pub struct ContractsBuildArtifact;
 
@@ -6,7 +6,7 @@ pub struct ContractsBuildArtifact;
 impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
     async fn download<T: ProgressTracker>(&self, cfg: &crate::config::Config, progress: &T) -> Result<(), Box<dyn std::error::Error>> {
         git::download_release(
-            &cfg.core.sources.contracts.release_url,
+            &cfg.core.sources.contracts.base_url,
             &cfg.core.sources.contracts.release_tag,
             &cfg.tree.src.contracts,
             progress
