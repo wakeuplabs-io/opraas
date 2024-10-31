@@ -2,9 +2,6 @@ mod commands;
 mod config;
 mod console;
 
-extern crate pretty_env_logger;
-#[macro_use] extern crate log;
-
 use clap::{Parser, Subcommand};
 use colored::*;
 use commands::*;

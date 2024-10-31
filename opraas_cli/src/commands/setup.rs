@@ -1,3 +1,4 @@
+use crate::console::ConsoleProgressTracker;
 use async_trait::async_trait;
 use opraas_core::artifacts::build::BuildArtifact;
 
@@ -9,10 +10,11 @@ impl crate::Runnable for SetupCommand {
         let core_cfg = cfg.build_core()?;
 
         if !cfg.tree.src.batcher.exists() {
-            println!("Batcher source not found. Downloading...");
-
             opraas_core::artifacts::build::batcher::BatcherBuildArtifact
-                .download(&core_cfg)
+                .download(
+                    &core_cfg,
+                    &ConsoleProgressTracker::new_progress_bar("⏳ Downloading batcher...", "✅ Downloaded!"),
+                )
                 .await?;
         }
 
