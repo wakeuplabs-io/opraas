@@ -1,5 +1,6 @@
 mod commands;
 mod config;
+mod console;
 
 extern crate pretty_env_logger;
 #[macro_use] extern crate log;
@@ -75,3 +76,4 @@ async fn main() {
         std::process::exit(1);
     }
 }
+
