@@ -1,7 +1,6 @@
 use std::io::Cursor;
 use std::path::Path;
 use std::process::Command;
-use log::debug;
 use web3::futures::TryStreamExt;
 
 use crate::progress::ProgressTracker;
@@ -16,7 +15,7 @@ pub async fn download_release<P: AsRef<Path>, T: ProgressTracker>(
     if response.status() != 200 {
         return Err("Failed to download release".into());
     }
-    
+
     // estimate download size
     let total_size = response.content_length().unwrap_or(0);
     progress.set_length(total_size);
@@ -39,7 +38,6 @@ pub async fn download_release<P: AsRef<Path>, T: ProgressTracker>(
     let target = Path::new(destination.as_ref());
     zip_extract::extract(Cursor::new(bytes), &target, true)?;
 
-    progress.finish();
     Ok(())
 }
 
