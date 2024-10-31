@@ -95,22 +95,8 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 - CLI for local self-service
 - The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
 - We'll distribute the binaries through github releases and make them widely available with an npm package.
-- To allow for a more flexible build process we'll allow the user to specify the steps in the config file in the shape of:
-
-  ```toml
-  [sources.op_node]
-  release_tag = "op-node/v1.3.1"
-  build = ["make op-node"]
-
-  [sources.op_contracts]
-  release_tag = "op-contracts/v1.6.0"
-  build = ["pnpm install", "pnpm build", "cd packages/bedrock-contracts", "forge install", "..."]
-  ```
-
-  Note this also gives flexibility for patches or cherry picks on top of releases like roll-op does.
-
-- Artifacts will be downloaded from github releases.
-- Build processes will all happen within docker images to reduce setup to just docker.
+- To allow for a more flexible build process we'll avoid hardcoding the build process like most current solutions do and instead we'll just pull docker files into the infra directory as shown below. This will allow us to support most cases while staying relevant in case the user decides to go custom. Also this reduces our dependencies to basically Docker.
+- Sources will be downloaded from github releases.
 
 Commands provided:
 
@@ -142,6 +128,7 @@ deployments/
 infra/
 	aws/
 	gcp/
+  docker/
 	helm/
 src/
 	op_contracts/
