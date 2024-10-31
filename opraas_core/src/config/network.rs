@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct NetworkConfig {
-    #[serde(default = "defaults::l1_rpc_url")]
+    #[serde(default = "defaults::l1_rpc_url", skip_serializing)]
     pub l1_rpc_url: String,
     pub max_sequencer_drift: u32,
     pub sequencer_window_size: u32,
