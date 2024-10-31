@@ -1,17 +1,20 @@
 use std::path::PathBuf;
 
+#[derive(Debug, Clone)]
 pub struct TreeConfig {
     pub root: PathBuf,
     pub infra: Infra,
     pub src: Src,
 }
 
+#[derive(Debug, Clone)]
 pub struct  Infra {
     pub root: PathBuf,
     pub aws: PathBuf,
     pub helm: PathBuf,
 }
 
+#[derive(Debug, Clone)]
 pub struct Src {
     pub root: PathBuf,
     pub contracts: PathBuf,

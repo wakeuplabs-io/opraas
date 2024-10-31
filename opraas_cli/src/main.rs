@@ -20,6 +20,8 @@ struct Args {
 
 #[derive(Subcommand, Debug, Clone)]
 enum Commands {
+    /// Create new project, template config file and folders
+    New { name: String },
     /// Setup a new project
     Setup {},
     /// Compile sources and create docker images for it
@@ -60,6 +62,7 @@ async fn main() {
     // run commands
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
+        Commands::New { name } => NewCommand { name }.run(&config).await,
         Commands::Setup {} => SetupCommand.run(&config).await,
         Commands::Build { target } => BuildCommand { target }.run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,

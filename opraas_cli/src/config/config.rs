@@ -14,4 +14,16 @@ impl Config {
 
         Self { tree, core }
     }
+
+    pub fn build_core(&self) -> Result<opraas_core::config::Config, Box<dyn std::error::Error>> {
+        if let Some(core) = &Self::new_from_root(&std::env::current_dir()?).core {
+            Ok(opraas_core::config::Config {
+                tree: self.tree.clone(),
+                core: core.clone(),
+            })
+        } else {
+            Err("Core config not found. Create project with opraas new".into())
+        }
+    }
+
 }

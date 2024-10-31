@@ -1,7 +1,7 @@
 use crate::config::{AccountsConfig, NetworkConfig, SourcesConfig};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CoreConfig {
     pub sources: SourcesConfig,
     pub accounts: AccountsConfig,
@@ -14,5 +14,20 @@ impl CoreConfig {
         let config: CoreConfig = toml::from_str(&config_content)?;
     
         Ok(config)
+    }
+
+    pub fn to_toml<P: AsRef<std::path::Path>>(&self, p: &P) -> Result<(), Box<dyn std::error::Error>> {
+        let config_content = toml::to_string(&self).unwrap();
+        std::fs::write(p, config_content)?;
+
+        Ok(())
+    }
+
+    pub fn new_from_null() -> Self {
+        Self {
+            sources: SourcesConfig::null(),
+            accounts: AccountsConfig::null(),
+            network: NetworkConfig::null(),
+        }
     }
 }
