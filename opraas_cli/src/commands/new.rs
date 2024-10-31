@@ -47,6 +47,30 @@ const README: &str = r#"
 # Opraas
 
 Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
+
+## Commands
+
+- `opraas new <name>` to create a new project
+- `opraas setup` to setup a new project
+- `opraas build <target>` to compile sources and create docker images for it
+- `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
+- `opraas dev` to spin up local dev environment
+- `opraas version` to check the opraas version
+
+## Instructions
+
+1. Create a new project with `opraas new <name>`
+2. Update `<name>/config.toml` and `<name>/.env` to match your needs
+2. Run `opraas setup` to download the code for your chain
+3. Run `opraas build <target>` to compile sources and create docker images for them
+4. Run `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
+5. Run `opraas dev` to spin up local dev environment
+6. Run `opraas version` to check the opraas version
+
+
+## Notes
+
+...
 "#;
 
 const GITIGNORE: &str = r#"
