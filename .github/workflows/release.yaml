@@ -131,9 +131,11 @@ jobs:
             node-version: '16'  
 
         - name: Install dependencies
+          working-directory: ./npm 
           run: npm install
 
         - name: Publish to npm
+          working-directory: ./npm 
           run: npm publish
           env:
             NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 
