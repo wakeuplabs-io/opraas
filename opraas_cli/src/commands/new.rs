@@ -1,5 +1,4 @@
 use async_trait::async_trait;
-use log::info;
 
 pub struct NewCommand {
     pub name: String,
@@ -10,7 +9,6 @@ impl crate::Runnable for NewCommand {
     async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         let cwd = std::env::current_dir()?;
         let proy_dir = cwd.join(&self.name);
-        info!("Creating new project at {}...", proy_dir.display());
 
         if proy_dir.exists() {
             return Err("Directory already exists".into());

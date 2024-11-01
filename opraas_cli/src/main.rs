@@ -32,8 +32,6 @@ enum Commands {
     Inspect { target: String },
     /// Monitor your chain. Target must be one of: onchain, offchain
     Monitor { target: String },
-    /// Version
-    Version {},
 }
 
 #[async_trait]
@@ -67,7 +65,6 @@ async fn main() {
         Commands::Inspect { target } => InspectCommand { target }.run(&config).await,
         Commands::Monitor { target } => MonitorCommand { target }.run(&config).await,
         Commands::Deploy { target, name } => DeployCommand { target, name }.run(&config).await,
-        Commands::Version {} => VersionCommand.run(&config).await,
     } {
         eprintln!("{}", format!("Error: {}", e).bold().red());
         std::process::exit(1);
