@@ -95,27 +95,14 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 - CLI for local self-service
 - The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
 - We'll distribute the binaries through github releases and make them widely available with an npm package.
-- To allow for a more flexible build process we'll allow the user to specify the steps in the config file in the shape of:
-
-  ```toml
-  [sources.op_node]
-  release_tag = "op-node/v1.3.1"
-  build = ["make op-node"]
-
-  [sources.op_contracts]
-  release_tag = "op-contracts/v1.6.0"
-  build = ["pnpm install", "pnpm build", "cd packages/bedrock-contracts", "forge install", "..."]
-  ```
-
-  Note this also gives flexibility for patches or cherry picks on top of releases like roll-op does.
-
-- Artifacts will be downloaded from github releases.
-- Build processes will all happen within docker images to reduce setup to just docker.
+- To allow for a more flexible build process we'll avoid hardcoding the build process like most current solutions do and instead we'll just pull docker files into the infra directory as shown below. This will allow us to support most cases while staying relevant in case the user decides to go custom. Also this reduces our dependencies to basically Docker.
+- Sources will be downloaded from github releases.
 
 Commands provided:
 
-- `setup`: It'll set up the initial project structure. First it'll ask the user information about the chain to deploy, desired l2ChainId, artifacts versions to use and etc. Then it'll create a started config file for it and set up the `src` and `infra` folder as shown below.
-- `build <artifact>`: Compiles each of the artifacts and generates the corresponding docker image.
+- `new`: It'll create a new folder with a template config for the user to review and run a setup on. In particular `.env`, `config.toml`, `README.md` and `.gitignore` will be created
+- `setup`: It'll download sources and infra based on what the user specified in the config
+- `build <artifact>`: Compiles each of the artifacts and generates a corresponding docker image.
 - `dev`: It'll spin up a local `anvil` testnet node forking the l1 chain, deploy contracts to it using the user configuration and start all the nodes for the user to test his chain locally.
 - `deploy <contracts | infra>`:
   - `contracts`: Deploys contracts to l1 and generates `genesis.json` and `rollup.json`
@@ -142,15 +129,18 @@ deployments/
 infra/
 	aws/
 	gcp/
+  docker/
 	helm/
 src/
 	op_contracts/
 	op_node/
 	op_geth/
 	op_batcher/
-	blockscout/
+	explorer/
+README.md
 config.toml
-.env.local
+.gitignore
+.env
 ```
 
 ### Infrastructure
