@@ -12,9 +12,13 @@ impl ContractsBuildArtifact {
 
 impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
 
-    fn download(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+    fn setup(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+        if cfg.tree.src.contracts.exists() {
+            return Ok(());
+        }
+
         self.downloader.download_release(
-            &cfg.core.sources.contracts.base_url,
+            &cfg.core.sources.contracts.release_url,
             &cfg.core.sources.contracts.release_tag,
             &cfg.tree.src.contracts.as_path().to_str().unwrap(),
             progress

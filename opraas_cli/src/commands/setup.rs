@@ -25,7 +25,7 @@ impl crate::Runnable for SetupCommand {
         for (name, artifact) in artifacts {
             let progress = ConsoleProgressTracker::new(format!("⏳ Preparing {}", name).as_str());
 
-            artifact.download(&core_cfg, &progress)?;
+            artifact.setup(&core_cfg, &progress)?;
 
             progress.finish(format!("✅ {} ready", name).as_str());
         }

@@ -12,9 +12,13 @@ impl ExplorerBuildArtifact {
 
 impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
 
-    fn download(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+    fn setup(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+        if cfg.tree.src.explorer.exists() {
+            return Ok(());
+        }
+        
         self.downloader.download_release(
-            &cfg.core.sources.explorer.base_url,
+            &cfg.core.sources.explorer.release_url,
             &cfg.core.sources.explorer.release_tag,
             &cfg.tree.src.explorer.as_path().to_str().unwrap(),
             progress

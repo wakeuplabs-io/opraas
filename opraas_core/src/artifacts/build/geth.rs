@@ -12,9 +12,13 @@ impl GethBuildArtifact {
 
 impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
 
-    fn download(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+    fn setup(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+        if cfg.tree.src.geth.exists() {
+            return Ok(());
+        }
+
         self.downloader.download_release(
-            &cfg.core.sources.geth.base_url,
+            &cfg.core.sources.geth.release_url,
             &cfg.core.sources.geth.release_tag,
             &cfg.tree.src.geth.as_path().to_str().unwrap(),
             progress

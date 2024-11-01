@@ -3,7 +3,6 @@ use std::path::Path;
 use reqwest::header::CONTENT_LENGTH;
 use crate::progress::ProgressTracker;
 
-
 pub struct Git {
     client: reqwest::blocking::Client,
 }
