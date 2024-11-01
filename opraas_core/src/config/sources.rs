@@ -25,7 +25,7 @@ impl SourcesConfig {
             },
             contracts: Source {
                 base_url: String::from("https://github.com/ethereum-optimism/optimism"),
-                release_tag: String::from("op-contracts/v1.9.4"),
+                release_tag: String::from("op-contracts/v1.6.0"),
             },
             batcher: Source {
                 base_url: String::from("https://github.com/ethereum-optimism/optimism"),
@@ -36,12 +36,12 @@ impl SourcesConfig {
                 release_tag: String::from("op-proposer/v1.9.4"),
             },
             geth: Source {
-                base_url: String::from("https://github.com/ethereum-optimism/go-ethereum"),
-                release_tag: String::from("v1.10.23"),
+                base_url: String::from("https://github.com/ethereum-optimism/op-geth"),
+                release_tag: String::from("v1.101315.3"),
             },
             explorer: Source {
-                base_url: String::from("https://github.com/ethereum-optimism/op-explorer"),
-                release_tag: String::from("v0.1.0"),
+                base_url: String::from("https://github.com/blockscout/blockscout"),
+                release_tag: String::from("v6.9.0-beta"),
             },
         }
     }

@@ -1,5 +1,5 @@
 mod artifact;
-pub use artifact::BuildArtifact;
+pub use artifact::*;
 
 pub mod batcher;
 pub use batcher::BatcherBuildArtifact;
@@ -15,3 +15,6 @@ pub use node::NodeBuildArtifact;
 
 pub mod proposer;
 pub use proposer::ProposerBuildArtifact;
+
+pub mod explorer;
+pub use explorer::ExplorerBuildArtifact;
