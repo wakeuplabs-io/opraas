@@ -1,20 +1,32 @@
 use crate::{git, progress::ProgressTracker};
-pub struct NodeBuildArtifact;
 
-#[async_trait::async_trait]
-impl crate::artifacts::build::BuildArtifact for NodeBuildArtifact {
-    async fn download<T: ProgressTracker>(&self, cfg: &crate::config::Config, progress: &T) -> Result<(), Box<dyn std::error::Error>> {
-        git::download_release(
-            &cfg.core.sources.node.base_url,
-            &cfg.core.sources.node.release_tag,
-            &cfg.tree.src.node,
-            progress
-            
-        )
-        .await
-    }
+pub struct NodeBuildArtifact {
+    downloader: Box<dyn git::GitReleaseDownloader>,
+}
 
-    async fn build<T: ProgressTracker>(&self, _cfg: &crate::config::Config, _progress: &T) -> Result<(), Box<dyn std::error::Error>> {
-        todo!()
+impl NodeBuildArtifact {
+    pub fn new() -> Self {
+        Self { downloader: Box::new(git::Git::new()) }
     }
 }
+
+impl crate::artifacts::build::BuildArtifact for NodeBuildArtifact {
+
+    fn download(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+        self.downloader.download_release(
+            &cfg.core.sources.node.base_url,
+            &cfg.core.sources.node.release_tag,
+            &cfg.tree.src.node.as_path().to_str().unwrap(),
+            progress
+        )?;
+
+        Ok(())
+    }
+
+    fn build(&self, _cfg: &crate::config::Config, _progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+
+}
+
+
