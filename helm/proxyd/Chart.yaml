@@ -1,0 +1,4 @@
+apiVersion: v2
+name: proxyd-helm-chart
+description: A Helm chart for deploying Proxyd and Redis
+version: 0.1.0

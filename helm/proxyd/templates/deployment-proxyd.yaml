@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: proxyd
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: proxyd
+  template:
+    metadata:
+      labels:
+        app: proxyd
+    spec:
+      containers:
+      - name: proxyd
+        image: "{{ .Values.proxyd.image.repository }}:{{ .Values.proxyd.image.tag }}"
+        ports:
+        - containerPort: {{ .Values.proxyd.service.port }}
+        volumeMounts:
+        - name: proxyd-config-volume
+          mountPath: /etc/proxyd
+        command: ["/bin/entrypoint.sh"]
+        args: ["/bin/proxyd", "/etc/proxyd/proxyd.toml"]
+      volumes:
+      - name: proxyd-config-volume
+        configMap:
+          name: proxyd-config
