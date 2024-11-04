@@ -1,14 +1,16 @@
 # Research & Discovery
 
-# Summary
+# Cloud Raas
+
+## Summary
 
 This document describes our entire process of research, problem tackling and decision making.
 
-# Purpose
+## Purpose
 
 The goal of this project is to enable users to easily deploy and manage their own rollups through cloud providers. The service will include a Command Line Interface (CLI) and a web-based development console for management. By eliminating vendor lock-in, we empower users to fully own their rollups and switch cloud providers with minimal effort.
 
-# Problem statement + Context
+## Problem statement + Context
 
 Optimism's long-term vision is focused on dApps being able to span as many rollup chains as needed, as easy and as fast as it can be.
 
@@ -18,7 +20,7 @@ We want to give full power to developers looking forward to make use of the Supe
 
 Current tools excel on some features and lack others, all of them contribute on gathering ideas, but none of them tackles the problem end to end, which is what this project's mission is about.
 
-# Alternatives considered
+## Alternatives considered
 
 ### 0xFableOrg/roll-op
 
@@ -78,11 +80,11 @@ Source:
 
 - https://docs.optimism.io/builders/chain-operators/tools/op-deployer
 
-# Proposed solutions
+## Proposed solutions
 
 We have decided to develop our own CLI and infrastructure tooling to create a more flexible deployment process and address some of the inconveniences we encountered while testing existing solutions. Given the challenges in getting current solutions to work easily and the relatively short time required to replicate them, we aim for our development to also meet new requirements, including a user interface and scalable deployment.
 
-# Decisions and drivers
+## Decisions and drivers
 
 ### General
 
@@ -176,10 +178,42 @@ As per networking this implies the only services exposed will be `proxyd` and th
 
 The dev console will focus on generating a full config for the user to download and deploy in one command with the cli. We'll ask users input for filling up the kick off config and generate a zip for them to download and deploy. To achieve this the zip will contain a full config.toml file and the cli binaries so that `./opraas dev` or `./opraas deploy` is all they need.
 
-# Risk and uncertainties
+## Risk and uncertainties
 
 1. It must be sufficiently extensible to handle new features.
 2. Upgrades management
 3. Contemplate testing environments.
 4. Avoid overloading user with environment setup complexities.
 5. Testnet tokens availability and proper config setup
+
+# (Optional extra) Decentralized marketplace
+
+This stage is about adding the possibility to decentralize as much as possible the interaction between RaaS clients and vendors by creating a marketplace.
+
+## Proposed solution
+
+We propose the creation of a marketplace contract in which users that wish to deploy a blockchain with the optimism stack submit requests and vendors who have the infrastructure to host the necessary services full fill them.
+
+## Decisions and drivers
+
+We'll create a series of smart contracts to coordinate the relationship between vendors and clients and ensure a healthy relationship between them.
+We'll also create a frontend application to interact with these contracts.
+
+### Contracts
+
+- Opstack contracts: These should be deployed by the user who should never expose any of his keys.
+- Marketplace:
+  - It'll include micro-payments in a selection of tokens for the services.
+  - Users will submit new orders with the addresses of their deployments and config files. Vendors will lock these orders by submitting `batcher`, `proposer` and `challenger` addresses for the deployment. These should be unique to the chain to maximize security. Once this is up the user with `L1Admin` and `L2Admin` permissions will whitelist the addresses given by the vendor. At this point vendor will do the proper deployment and post the relevant endpoints onchain. This will start the payments.
+  - At any moment any of the parties can close the deal. The chain owner can quickly take away all power from the vendor by updating addresses using `L1Admin` and `L2Admin` permissions. To stop the payments user should do an additional tx.
+  - Reputation system: We'll create a reputation system that will be based in the number of open contracts, the length of each and a series of proofs indicating proper functioning of the services.
+
+### Dapp
+
+The dapp aims to facilitate all interactions with the marketplace contracts. The deployment of the chain contracts should be through the `Cloud Raas` website and cli.
+
+## Risks and uncertainties
+
+- Given the cli that makes it super easy to deploy new chains with optimism stack the value of a marketplace may be diminished to just paying for the infrastructure in crypto.
+- There may be security concerns regarding key manager as we don't have any other way around giving away keys for services like batcher, proposer, etc.
+- Proving proper execution of services may be challenging, specially within reasonable amount of time
