@@ -1,0 +1,20 @@
+domain:
+  host: localhost # demo.example.com
+  email: email@email.com
+
+demo:
+  ingress:
+    path: /
+  deployment:
+    name: demo-deployment
+    appLabel: demo-app
+    replicaCount: 1
+    containerPort: 80
+    containerName: demo
+    image:
+      repository: nginx
+      tag: latest
+  service:
+    name: demo-service
+    port: 80
+    targetPort: 80
