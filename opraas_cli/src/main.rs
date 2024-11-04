@@ -1,13 +1,15 @@
 mod commands;
 mod config;
 mod console;
+mod utils;
 
 use clap::{Parser, Subcommand};
 use colored::*;
 use commands::*;
-use config::Config;
+use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
 use dotenv::dotenv;
 use async_trait::async_trait;
+use semver::Version;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -47,7 +49,12 @@ async fn main() {
     pretty_env_logger::init_custom_env("LOG_LEVEL");
 
     // Check requirements
-    opraas_core::config::requirements::check_requirements().unwrap_or_else(|e| {
+    SystemRequirementsChecker::new().check(vec![Requirement {
+        program: "docker",
+        version_arg: "-v",
+        required_version: Version::parse("24.0.0").unwrap(),
+        required_comparator: Comparison::GreaterThanOrEqual,
+    }]).unwrap_or_else(|e| {
         eprintln!("{}", format!("Error: {}", e).bold().red());
         std::process::exit(1);
     });
