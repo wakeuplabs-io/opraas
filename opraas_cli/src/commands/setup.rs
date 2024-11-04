@@ -8,7 +8,7 @@ use opraas_core::artifacts::build::{
 use std::{sync::Arc, thread, time::Instant};
 
 pub struct SetupCommand {
-    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>, // Use Arc for shared ownership
+    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>, 
 }
 
 impl SetupCommand {
@@ -22,7 +22,7 @@ impl SetupCommand {
             ("Geth", Arc::new(GethBuildArtifact::new())),
         ];
 
-        Self { artifacts } // Initialize the artifacts field
+        Self { artifacts } 
     }
 }
 

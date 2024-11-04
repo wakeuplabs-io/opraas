@@ -65,7 +65,7 @@ async fn main() {
     // run commands
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
-        Commands::New { name } => NewCommand { name }.run(&config).await,
+        Commands::New { name } => NewCommand::new(name).run(&config).await,
         Commands::Setup {} => SetupCommand::new().run(&config).await,
         Commands::Build { target } => BuildCommand { target }.run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,

@@ -4,6 +4,12 @@ pub struct NewCommand {
     pub name: String,
 }
 
+impl NewCommand {
+    pub fn new(name: String) -> Self {
+        Self { name }
+    }
+}
+
 #[async_trait]
 impl crate::Runnable for NewCommand {
     async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
