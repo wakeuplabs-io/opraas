@@ -5,6 +5,12 @@ pub struct InspectCommand {
     pub target: String
 }
 
+impl InspectCommand {
+    pub fn new(target: String) -> Self {
+        Self { target }
+    }
+}
+
 #[async_trait]
 impl crate::Runnable for InspectCommand {
     async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {

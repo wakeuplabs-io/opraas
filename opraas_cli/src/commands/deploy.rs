@@ -6,6 +6,12 @@ pub struct  DeployCommand {
     pub name: String,
 }
 
+impl DeployCommand {
+    pub fn new(target: String, name: String) -> Self {
+        Self { target, name }
+    }
+}
+
 #[async_trait]
 impl crate::Runnable for DeployCommand {
     async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {

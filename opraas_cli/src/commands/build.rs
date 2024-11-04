@@ -5,6 +5,12 @@ pub struct BuildCommand {
     pub target: String,
 }
 
+impl BuildCommand {
+    pub fn new(target: String) -> Self {
+        Self { target }
+    }
+}
+
 #[async_trait]
 impl crate::Runnable for BuildCommand {
     async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
