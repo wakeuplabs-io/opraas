@@ -1,7 +1,7 @@
 use std::io::{self, Cursor, Read};
 use std::path::Path;
+use mockall::automock;
 use reqwest::header::CONTENT_LENGTH;
-use crate::progress::ProgressTracker;
 
 pub struct Git {
     client: reqwest::blocking::Client,
@@ -13,13 +13,13 @@ impl Git {
     }
 }
 
+#[automock]
 pub trait GitReleaseDownloader {
     fn download_release(
         &self,
         release_url: &str,
         release_tag: &str,
         destination: &str,
-        progress: &dyn ProgressTracker,
     ) -> Result<(), Box<dyn std::error::Error>>;
 }
 
@@ -29,7 +29,6 @@ impl GitReleaseDownloader for Git {
         release_url: &str,
         release_tag: &str,
         destination: &str,
-        progress: &dyn ProgressTracker,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let url = format!("{}/archive/refs/tags/{}.zip", release_url, release_tag);
         let mut response = self.client.get(&url).send()?;
@@ -41,7 +40,6 @@ impl GitReleaseDownloader for Git {
             .and_then(|h| h.to_str().ok())
             .and_then(|s| s.parse::<u64>().ok())
             .unwrap_or(0);
-        progress.set_length(total_size);
     
         // Use a stream to read the response body
         let mut bytes = Vec::new();
@@ -55,7 +53,6 @@ impl GitReleaseDownloader for Git {
             buffer.truncate(bcount);
             
             if !buffer.is_empty() {
-                progress.inc(buffer.len() as u64);
                 bytes.extend(buffer.into_boxed_slice().into_vec().iter().cloned());
             } else { break; }
         }

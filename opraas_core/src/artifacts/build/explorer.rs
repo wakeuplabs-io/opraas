@@ -1,4 +1,4 @@
-use crate::{git, progress::ProgressTracker};
+use crate::git;
 
 pub struct ExplorerBuildArtifact {
     downloader: Box<dyn git::GitReleaseDownloader>,
@@ -12,7 +12,7 @@ impl ExplorerBuildArtifact {
 
 impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
 
-    fn setup(&self, cfg: &crate::config::Config, progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+    fn setup(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         if cfg.tree.src.explorer.exists() {
             return Ok(());
         }
@@ -21,13 +21,12 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
             &cfg.core.sources.explorer.release_url,
             &cfg.core.sources.explorer.release_tag,
             &cfg.tree.src.explorer.as_path().to_str().unwrap(),
-            progress
         )?;
 
         Ok(())
     }
 
-    fn build(&self, _cfg: &crate::config::Config, _progress: &dyn ProgressTracker) -> Result<(), Box<dyn std::error::Error>> {
+    fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 
