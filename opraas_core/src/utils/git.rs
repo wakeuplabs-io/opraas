@@ -14,7 +14,7 @@ impl Git {
 }
 
 #[automock]
-pub trait GitReleaseDownloader {
+pub trait GitReleaseDownloader: Send + Sync  {
     fn download_release(
         &self,
         release_url: &str,
