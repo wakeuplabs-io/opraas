@@ -1,19 +1,22 @@
-use crate::git;
+use crate::{filesystem, git};
 
 pub struct BatcherBuildArtifact {
+    filesystem: Box<dyn filesystem::Filesystem>,
     downloader: Box<dyn git::GitReleaseDownloader>,
 }
 
 impl BatcherBuildArtifact {
     pub fn new() -> Self {
-        Self { downloader: Box::new(git::Git::new()) }
+        Self {
+            downloader: Box::new(git::Git::new()),
+            filesystem: Box::new(filesystem::Fs::new()),
+        }
     }
 }
 
 impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
-
     fn setup(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        if cfg.tree.src.batcher.exists() {
+        if self.filesystem.exists(&cfg.tree.src.batcher) {
             return Ok(());
         }
 
@@ -29,43 +32,75 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
     fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
-
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::config::Config; // Import necessary modules and traits
     use crate::artifacts::build::artifact::BuildArtifact;
-    
+    use crate::config::Config;
+    use mockall::predicate;
 
     #[test]
     fn test_setup_downloads_release_if_not_exists() {
-        std::env::set_var("L1_RPC_URL", "mocked_value");
-
-        let mut mock_downloader = git::MockGitReleaseDownloader::new();
-        mock_downloader.expect_download_release().times(1).returning(|_, _, _| Ok(()));
-        
         let config = Config {
             tree: crate::config::TreeConfig::new_from_root(std::env::current_dir().unwrap()),
             core: crate::config::CoreConfig::new_from_null(),
         };
 
+        let mut mock_filesystem = filesystem::MockFilesystem::new();
+        mock_filesystem
+            .expect_exists()
+            .with( predicate::eq(config.tree.src.batcher.clone()))
+            .times(1) // Expect 1 call to `exists`
+            .returning(|_| false); // Return false to indicate that the file does not exist
+
+        let mut mock_downloader = git::MockGitReleaseDownloader::new();
+        mock_downloader
+            .expect_download_release()
+            .times(1) // Expect 1 call to `download_release`
+            .returning(|_, _, _| Ok(())); // Return Ok to indicate successful download
+
+
+
         let batcher_artifact = BatcherBuildArtifact {
             downloader: Box::new(mock_downloader),
+            filesystem: Box::new(mock_filesystem),
         };
 
-        // Act
+        // act
         let result = batcher_artifact.setup(&config);
 
-        // Assert
+        // assert
         assert!(result.is_ok());
     }
 
-    // #[test]
-    // fn test_setup_does_not_download_if_exists() {
-       
-    // }
+    #[test]
+    fn test_setup_does_not_download_if_exists() {
+        let config = Config {
+            tree: crate::config::TreeConfig::new_from_root(std::env::current_dir().unwrap()),
+            core: crate::config::CoreConfig::new_from_null(),
+        };
 
+        let mut mock_filesystem = filesystem::MockFilesystem::new();
+        mock_filesystem
+            .expect_exists()
+            .with( predicate::eq(config.tree.src.batcher.clone()))
+            .times(1) // Expect 1 call to `exists`
+            .returning(|_| true); // Return true to indicate that the file exists
 
+        let mut mock_downloader = git::MockGitReleaseDownloader::new();
+        mock_downloader.expect_download_release().times(0); // Expect 0 calls to `download_release`
+
+        let batcher_artifact = BatcherBuildArtifact {
+            downloader: Box::new(mock_downloader),
+            filesystem: Box::new(mock_filesystem),
+        };
+
+        // act
+        let result = batcher_artifact.setup(&config);
+
+        // assert
+        assert!(result.is_ok());
+    }
 }

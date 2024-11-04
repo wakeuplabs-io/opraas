@@ -59,7 +59,7 @@ mod defaults {
 impl NetworkConfig {
     pub fn null() -> Self {
         NetworkConfig {
-            l1_rpc_url: defaults::l1_rpc_url(),
+            l1_rpc_url: "http://127.0.0.1:8545".to_string(),
             max_sequencer_drift: 10,
             sequencer_window_size: 10,
             channel_timeout: 60,
