@@ -186,34 +186,77 @@ The dev console will focus on generating a full config for the user to download 
 4. Avoid overloading user with environment setup complexities.
 5. Testnet tokens availability and proper config setup
 
-# (Optional extra) Decentralized marketplace
+# (Optional) Decentralized marketplace
 
-This stage is about adding the possibility to decentralize as much as possible the interaction between RaaS clients and vendors by creating a marketplace.
+Some users may still not want to run the infrastructure themselves, this is for them. An attempt to get closer to this one button click rollup without giving away decentralization.
 
 ## Proposed solution
 
-We propose the creation of a marketplace contract in which users that wish to deploy a blockchain with the optimism stack submit requests and vendors who have the infrastructure to host the necessary services full fill them.
+We propose the establishment of a marketplace contract where users looking to deploy a blockchain using the Optimism stack can submit requests, and vendors with the necessary infrastructure can fulfill those requests.
 
 ## Decisions and drivers
 
-We'll create a series of smart contracts to coordinate the relationship between vendors and clients and ensure a healthy relationship between them.
-We'll also create a frontend application to interact with these contracts.
+We will develop a suite of smart contracts to effectively manage the relationship between vendors and clients, fostering a positive and sustainable interaction. Additionally, we will build a frontend application to facilitate user interaction with these contracts.
 
-### Contracts
+### General
 
-- Opstack contracts: These should be deployed by the user who should never expose any of his keys.
-- Marketplace:
-  - It'll include micro-payments in a selection of tokens for the services.
-  - Users will submit new orders with the addresses of their deployments and config files. Vendors will lock these orders by submitting `batcher`, `proposer` and `challenger` addresses for the deployment. These should be unique to the chain to maximize security. Once this is up the user with `L1Admin` and `L2Admin` permissions will whitelist the addresses given by the vendor. At this point vendor will do the proper deployment and post the relevant endpoints onchain. This will start the payments.
-  - At any moment any of the parties can close the deal. The chain owner can quickly take away all power from the vendor by updating addresses using `L1Admin` and `L2Admin` permissions. To stop the payments user should do an additional tx.
-  - Reputation system: We'll create a reputation system that will be based in the number of open contracts, the length of each and a series of proofs indicating proper functioning of the services.
+Example marketplace interaction
+
+```mermaid
+sequenceDiagram
+    Vendor->>+Marketplace: Create offering, sla, svc addresses
+	Marketplace->>-Vendor: OfferingId
+    Client->>+L1: Deploy opstack
+    L1->>-Client: L1 contracts
+	Client->>L1: Whitelist Vendor wallets
+    Client->>+Marketplace: Accept offering (publish l1 depls)
+    Marketplace->>-Client: RequestId
+    Vendor->>+Infra: Deploy infra services
+    Infra->>-Vendor: Public endpoints
+    Vendor->>Marketplace: Publish endpoints and start service
+    loop As per sla until termination
+        Vendor->>+Marketplace: Call reputation
+        Marketplace->>+Oracle: Check infra
+        Oracle->>+Infra: Prometheus
+        Infra->>-Oracle: Ok ...
+        Oracle->>-Marketplace: requestId, OK
+        Marketplace->>-Vendor: Ok (update balance and reputation)
+    end
+```
+
+Example termination
+
+```mermaid
+sequenceDiagram
+    alt Vendor terminates
+    Vendor->>Marketplace: Terminate service
+    else client terminates
+    Client->>L1Proxy: Replace batcher, proposer and challenger addresses
+    Client->>Marketplace: Terminate service
+   end
+```
+
+### Marketplace contract
+
+The marketplace contract will include the following features:
+
+- **Micro-Payments**: The contract will support micro-payments in various tokens for services provided.
+- **Order Submission and Locking**: Vendors will submit offerings by submitting unique batcher, proposer as well as SLA terms, (frequency of oracle checks, cost per term, etc). Clients will accept these offers by submitting the addresses to their deployments and configuring the vendor wallets in them. The vendor can then proceed with the deployment and post the relevant endpoints on-chain to initiate the payments.
+- **Contract Termination**: Either party can terminate the contract at any time. As per [security/privileged-roles](https://docs.optimism.io/chain/security/privileged-roles) the chain owner can revoke the vendor's permissions by updating addresses via L1Admin and L2Admin. After this a new transaction with the marketplace is required.
+- **Reputation System**: A reputation system will be established based on the number of active contracts, contract duration, and oracle calls that monitor service endpoints. Payments will be subject to oracle calls.
+- **Service Level Agreement (SLA)**: Customers and vendors will agree on an SLA at the start of the engagement, specifying the frequency and type of metrics the vendor will report through oracles. The initial setup will cover basic metrics but can expand to more detailed proofs as needed. We’ll use [Chainlink](https://docs.chain.link/any-api/introduction) for oracle integration.
 
 ### Dapp
 
-The dapp aims to facilitate all interactions with the marketplace contracts. The deployment of the chain contracts should be through the `Cloud Raas` website and cli.
+The marketplace will take place as another page in the Cloud Raas website described above. The main functionality will be to facilitate the interaction with the contract:
+
+- Vendors create offerings.
+- Clients accept offers and submit data required.
+- Vendor and Client monitor their relationship, balances, health status, endpoints and etc.
+- The deployment of l1 contracts can be facilitated by the website but it's still a task the Client should do, as well as keeping his Admin keys secure.
 
 ## Risks and uncertainties
 
-- Given the cli that makes it super easy to deploy new chains with optimism stack the value of a marketplace may be diminished to just paying for the infrastructure in crypto.
-- There may be security concerns regarding key manager as we don't have any other way around giving away keys for services like batcher, proposer, etc.
-- Proving proper execution of services may be challenging, specially within reasonable amount of time
+- Given the Cloud Raas cli that makes it super easy to deploy new chains with optimism stack the marketplace will try to cover those who don't want any involvement with infrastructure running.
+- There may be security concerns regarding key manager as we don't have any other way around giving away keys for services like batcher, proposer, etc. We aim for honesty and rely on the power of reputation and L1Proxy and L2Proxy admin roles power to mitigate damages.
+- Providing a proper proof of execution of services may be challenging, we aim to cover a broad case but malicious actors may still have work arounds.
