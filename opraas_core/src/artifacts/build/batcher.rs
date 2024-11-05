@@ -29,7 +29,11 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
         Ok(())
     }
 
-    fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        if self.filesystem.exists(&cfg.tree.src.batcher) {
+            return Err("Batcher src is not available".into());
+        }
+
         Ok(())
     }
 }

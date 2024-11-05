@@ -3,12 +3,16 @@ mod config;
 mod console;
 mod utils;
 
+use build::BuildTargets;
 use clap::{Parser, Subcommand};
 use colored::*;
 use commands::*;
 use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
+use deploy::DeployTarget;
 use dotenv::dotenv;
 use async_trait::async_trait;
+use inspect::InspectTarget;
+use monitor::MonitorTarget;
 use semver::Version;
 use setup::SetupTargets;
 
@@ -26,15 +30,15 @@ enum Commands {
     /// Setup a new project
     Setup { target: SetupTargets },
     /// Compile sources and create docker images for it
-    Build { target: String },
+    Build { target: BuildTargets },
     /// Spin up local dev environment
     Dev {},
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
-    Deploy { target: String, name: String },
+    Deploy { name: String, target: DeployTarget },
     /// Get details about the current deployment. Target must be one of: contracts, infra
-    Inspect { target: String },
+    Inspect { target: InspectTarget },
     /// Monitor your chain. Target must be one of: onchain, offchain
-    Monitor { target: String },
+    Monitor { target: MonitorTarget },
 }
 
 
@@ -69,11 +73,11 @@ async fn main() {
     if let Err(e) =  match args.cmd {
         Commands::New { name } => NewCommand::new(name).run(&config).await,
         Commands::Setup { target } => SetupCommand::new(target).run(&config).await,
-        Commands::Build { target } => BuildCommand { target }.run(&config).await,
+        Commands::Build { target } => BuildCommand::new(target).run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,
-        Commands::Inspect { target } => InspectCommand { target }.run(&config).await,
-        Commands::Monitor { target } => MonitorCommand { target }.run(&config).await,
-        Commands::Deploy { target, name } => DeployCommand { target, name }.run(&config).await,
+        Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
+        Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
+        Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,
     } {
         eprintln!("{}", format!("Error: {}", e).bold().red());
         std::process::exit(1);

@@ -1,12 +1,19 @@
-use async_trait::async_trait;
 use log::info;
+use async_trait::async_trait;
+use clap::ValueEnum;
 
 pub struct InspectCommand {
-    pub target: String
+     target: InspectTarget
+}
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum InspectTarget {
+    Contracts,
+    Infra
 }
 
 impl InspectCommand {
-    pub fn new(target: String) -> Self {
+    pub fn new(target: InspectTarget) -> Self {
         Self { target }
     }
 }
@@ -15,14 +22,13 @@ impl InspectCommand {
 impl crate::Runnable for InspectCommand {
     async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
 
-        match self.target.as_ref() {
-            "contracts" => {
-                info!("Inspecting contracts...");
+        match self.target {
+            InspectTarget::Contracts => {
+                info!("Inspecting contracts");
             },
-            "infra" => {
-                info!("Inspecting infra...");
-            },
-            _ => return Err("Invalid target".into()),
+            InspectTarget::Infra => {
+                info!("Inspecting infra");
+            }
         }
 
         Ok(())
