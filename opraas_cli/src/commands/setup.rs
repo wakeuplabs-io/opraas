@@ -6,21 +6,43 @@ use opraas_core::artifacts::build::{
     GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
 };
 use std::{sync::Arc, thread, time::Instant};
+use clap::ValueEnum;
 
 pub struct SetupCommand {
     artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>, 
 }
 
+#[derive(Debug, Clone, ValueEnum)]
+pub enum SetupTargets {
+    Batcher,
+    Node,
+    Contracts,
+    Explorer,
+    Proposer,
+    Geth,
+    All,
+}
+
 impl SetupCommand {
-    pub fn new() -> Self {
-        let artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)> = vec![
-            ("Batcher", Arc::new(BatcherBuildArtifact::new())),
-            ("Node", Arc::new(NodeBuildArtifact::new())),
-            ("Contracts", Arc::new(ContractsBuildArtifact::new())),
-            ("Explorer", Arc::new(ExplorerBuildArtifact::new())),
-            ("Proposer", Arc::new(ProposerBuildArtifact::new())),
-            ("Geth", Arc::new(GethBuildArtifact::new())),
-        ];
+    pub fn new(target: SetupTargets) -> Self {
+        let mut artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)> = vec![];
+
+        match target {
+            SetupTargets::Batcher => artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new()))),
+            SetupTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
+            SetupTargets::Contracts => artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new()))),
+            SetupTargets::Explorer => artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new()))),
+            SetupTargets::Proposer => artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new()))),
+            SetupTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
+            SetupTargets::All => {
+                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())));
+                artifacts.push(("Node", Arc::new(NodeBuildArtifact::new())));
+                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())));
+                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())));
+                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())));
+                artifacts.push(("Geth", Arc::new(GethBuildArtifact::new())));
+            },
+        }
 
         Self { artifacts } 
     }
@@ -33,6 +55,7 @@ impl crate::Runnable for SetupCommand {
         let core_cfg = Arc::new(cfg.build_core()?);
 
         println!("📦 Downloading and preparing artifacts...");
+
 
         // Iterate over the artifacts and download
         let m = MultiProgress::new();

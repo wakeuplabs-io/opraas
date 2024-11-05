@@ -10,6 +10,7 @@ use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystem
 use dotenv::dotenv;
 use async_trait::async_trait;
 use semver::Version;
+use setup::SetupTargets;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -23,7 +24,7 @@ enum Commands {
     /// Create new project, template config file and folders
     New { name: String },
     /// Setup a new project
-    Setup {},
+    Setup { target: SetupTargets },
     /// Compile sources and create docker images for it
     Build { target: String },
     /// Spin up local dev environment
@@ -35,6 +36,7 @@ enum Commands {
     /// Monitor your chain. Target must be one of: onchain, offchain
     Monitor { target: String },
 }
+
 
 #[async_trait]
 pub trait Runnable {
@@ -66,7 +68,7 @@ async fn main() {
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
         Commands::New { name } => NewCommand::new(name).run(&config).await,
-        Commands::Setup {} => SetupCommand::new().run(&config).await,
+        Commands::Setup { target } => SetupCommand::new(target).run(&config).await,
         Commands::Build { target } => BuildCommand { target }.run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,
         Commands::Inspect { target } => InspectCommand { target }.run(&config).await,
