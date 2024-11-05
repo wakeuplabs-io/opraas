@@ -12,6 +12,7 @@ pub struct  Infra {
     pub root: PathBuf,
     pub aws: PathBuf,
     pub helm: PathBuf,
+    pub docker: PathBuf
 }
 
 #[derive(Debug, Clone)]
@@ -33,6 +34,7 @@ impl TreeConfig {
                 root: root.join("infra"),
                 aws: root.join("infra").join("aws"),
                 helm: root.join("infra").join("helm"),
+                docker: root.join("infra").join("docker"),
             },
             src: Src {
                 root: root.join("src"),

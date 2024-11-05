@@ -30,9 +30,15 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
     }
 
     fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        if self.filesystem.exists(&cfg.tree.src.batcher) {
+        if !self.filesystem.exists(&cfg.tree.src.batcher) {
             return Err("Batcher src is not available".into());
         }
+
+        if !self.filesystem.exists(&cfg.tree.infra.docker) {
+            return Err("Batcher dockerfile is not available".into());
+        }
+
+        // build batcher
 
         Ok(())
     }
