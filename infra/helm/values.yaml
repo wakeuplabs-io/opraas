@@ -18,3 +18,50 @@ demo:
     name: demo-service
     port: 80
     targetPort: 80
+
+proxyd:
+  image:
+    repository: wakeuplabs/proxyd
+    tag: latest
+    pullPolicy: Never
+  service:
+    type: ClusterIP
+    port: 8080
+    targetPort: 8080
+  config:
+    rpc_url_infura: "0.0.0.0"
+    ws_url_infura: ""
+    infura_username: ""
+    infura_password: ""
+    rpc_url_alchemy: ""
+    ws_url_alchemy: ""
+    alchemy_username: ""
+    alchemy_password: ""
+
+prometheus:
+  service:
+    name:
+      prometheus
+redis:
+  image:
+    repository: redis
+    tag: latest
+  service:
+    name: redis
+    port: 6379
+    targetPort: 6379
+
+explorer:
+  enabled: true
+
+monitoring:
+  enabled: false
+
+kube-prometheus-stack:
+  grafana:
+    service:
+      port: 90
+  prometheus-node-exporter:
+    hostRootFsMount:
+      enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
+      mountPropagation: HostToContainer

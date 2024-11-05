@@ -1,7 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: proxyd-config
-data:
-  proxyd.toml: |
-    {{ .Values.proxyd.config.configFile | indent 4 }}

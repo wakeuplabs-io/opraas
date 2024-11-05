@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: proxyd
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.demo.deployment.appLabel }}
+  ports:
+    - port: {{ .Values.proxyd.service.port }}
+      targetPort: {{ .Values.proxyd.service.targetPort }}
