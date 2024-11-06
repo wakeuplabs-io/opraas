@@ -1,42 +1,48 @@
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct SourcesConfig {
-    #[serde(default = "defaults::op_repo_url")]
-    pub op_repo_url: String,
-    #[serde(default = "defaults::op_repo_tag")]
-    pub op_repo_tag: String,
-    #[serde(default = "defaults::op_repo_target")]
-    pub op_repo_target: String,
-
-    #[serde(default = "defaults::op_geth_repo_repo")]
-    pub op_geth_repo_url: String,
-    #[serde(default = "defaults::op_geth_repo_tag")]
-    pub op_geth_repo_tag: String,
-    #[serde(default = "defaults::op_geth_repo_target")]
-    pub op_geth_repo_target: String,
+    pub node: Source,
+    pub geth: Source,
+    pub contracts: Source,
+    pub batcher: Source,
+    pub proposer: Source,
+    pub explorer: Source,
 }
 
-mod defaults {
-    // optimism repo
-    pub fn op_repo_url() -> String {
-        "https://github.com/ethereum-optimism/optimism.git".to_string()
-    }
-    pub fn op_repo_tag() -> String {
-        "v1.9.3".to_string()
-    }
-    pub fn op_repo_target() -> String {
-        "optimism".to_string()
-    }
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Source {
+    pub release_url: String,
+    pub release_tag: String,
+}
 
-    // op-geth repo
-    pub fn op_geth_repo_repo() -> String {
-        "https://github.com/ethereum-optimism/op-geth.git".to_string()
-    }
-    pub fn op_geth_repo_tag() -> String {
-        "v1.101315.3".to_string()
-    }
-    pub fn op_geth_repo_target() -> String {
-        "op-geth".to_string()
+impl SourcesConfig {
+    pub fn null() -> Self {
+        Self {
+            node: Source {
+                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
+                release_tag: String::from("op-node/v1.9.4"),
+            },
+            contracts: Source {
+                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
+                release_tag: String::from("op-contracts/v1.6.0"),
+            },
+            batcher: Source {
+                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
+                release_tag: String::from("op-batcher/v1.9.4"),
+            },
+            proposer: Source {
+                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
+                release_tag: String::from("op-proposer/v1.9.4"),
+            },
+            geth: Source {
+                release_url: String::from("https://github.com/ethereum-optimism/op-geth"),
+                release_tag: String::from("v1.101315.3"),
+            },
+            explorer: Source {
+                release_url: String::from("https://github.com/blockscout/blockscout"),
+                release_tag: String::from("v6.9.0-beta"),
+            },
+        }
     }
 }

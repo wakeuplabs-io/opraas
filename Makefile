@@ -12,7 +12,7 @@ WINDOW_TARGET=x86_64-pc-windows-gnu
 LINUX_TARGET=x86_64-unknown-linux-musl
 
 run:
-	@cargo run -p opraas_cli -- $(RUN_ARGS)
+	@cargo run -q -p opraas_cli -- $(RUN_ARGS)
 
 format:
 	cargo fmt --all
