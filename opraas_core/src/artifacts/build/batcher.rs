@@ -1,6 +1,9 @@
-use crate::{filesystem, git};
+use std::process::Command;
+
+use crate::{filesystem, git, system};
 
 pub struct BatcherBuildArtifact {
+    system: Box<dyn system::TSystem>,
     filesystem: Box<dyn filesystem::Filesystem>,
     downloader: Box<dyn git::GitReleaseDownloader>,
 }
@@ -8,6 +11,7 @@ pub struct BatcherBuildArtifact {
 impl BatcherBuildArtifact {
     pub fn new() -> Self {
         Self {
+            system: Box::new(system::System::new()),
             downloader: Box::new(git::Git::new()),
             filesystem: Box::new(filesystem::Fs::new()),
         }
@@ -21,8 +25,8 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
         }
 
         self.downloader.download_release(
-            &cfg.core.sources.batcher.release_url,
-            &cfg.core.sources.batcher.release_tag,
+            &cfg.core.artifacts.batcher.release_url,
+            &cfg.core.artifacts.batcher.release_tag,
             &cfg.tree.src.batcher.as_path().to_str().unwrap(),
         )?;
 
@@ -34,11 +38,33 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
             return Err("Batcher src is not available".into());
         }
 
-        if !self.filesystem.exists(&cfg.tree.infra.docker) {
-            return Err("Batcher dockerfile is not available".into());
+        if !self.filesystem.exists(&cfg.tree.infra.docker.batcher) {
+            return Err(format!("Batcher dockerfile is not available at {:?}", &cfg.tree.infra.docker.batcher.display()).into());
         }
 
         // build batcher
+        // let mut command = Command::new("docker");
+        // command
+        //     .current_dir(&cfg.tree.src.batcher)
+        //     .arg("build")
+        //     .arg("-f")
+        //     .arg(&cfg.tree.infra.docker.batcher)
+        //     .arg("-t")
+        //     .arg("batcher/tag")
+        //     .arg(&cfg.tree.src.batcher);
+
+        // self.system.execute_command(&mut command)?;
+
+        Ok(())
+    }
+
+    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+        true
+    }
+
+    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+        // wait 1 min
+        std::thread::sleep(std::time::Duration::from_secs(60));
 
         Ok(())
     }
@@ -71,9 +97,10 @@ mod tests {
             .times(1) // Expect 1 call to `download_release`
             .returning(|_, _, _| Ok(())); // Return Ok to indicate successful download
 
-
+        let mock_system = system::MockTSystem::new();
 
         let batcher_artifact = BatcherBuildArtifact {
+            system: Box::new(mock_system),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };
@@ -102,7 +129,10 @@ mod tests {
         let mut mock_downloader = git::MockGitReleaseDownloader::new();
         mock_downloader.expect_download_release().times(0); // Expect 0 calls to `download_release`
 
+        let mock_system = system::MockTSystem::new();
+
         let batcher_artifact = BatcherBuildArtifact {
+            system: Box::new(mock_system),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };

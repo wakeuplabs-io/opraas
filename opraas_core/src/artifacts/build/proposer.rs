@@ -21,8 +21,8 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
         }
 
         self.downloader.download_release(
-            &cfg.core.sources.proposer.release_url,
-            &cfg.core.sources.proposer.release_tag,
+            &cfg.core.artifacts.proposer.release_url,
+            &cfg.core.artifacts.proposer.release_tag,
             &cfg.tree.src.proposer.as_path().to_str().unwrap(),
         )?;
 
@@ -32,9 +32,19 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
     fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
+
+    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+        true
+    }
+
+    fn push(
+        &self,
+        cfg: &crate::config::Config,
+        repository: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
 }
-
-
 
 #[cfg(test)]
 mod tests {
@@ -53,7 +63,7 @@ mod tests {
         let mut mock_filesystem = filesystem::MockFilesystem::new();
         mock_filesystem
             .expect_exists()
-            .with( predicate::eq(config.tree.src.proposer.clone()))
+            .with(predicate::eq(config.tree.src.proposer.clone()))
             .times(1) // Expect 1 call to `exists`
             .returning(|_| false); // Return false to indicate that the file does not exist
 
@@ -62,8 +72,6 @@ mod tests {
             .expect_download_release()
             .times(1) // Expect 1 call to `download_release`
             .returning(|_, _, _| Ok(())); // Return Ok to indicate successful download
-
-
 
         let batcher_artifact = ProposerBuildArtifact {
             downloader: Box::new(mock_downloader),
@@ -87,7 +95,7 @@ mod tests {
         let mut mock_filesystem = filesystem::MockFilesystem::new();
         mock_filesystem
             .expect_exists()
-            .with( predicate::eq(config.tree.src.proposer.clone()))
+            .with(predicate::eq(config.tree.src.proposer.clone()))
             .times(1) // Expect 1 call to `exists`
             .returning(|_| true); // Return true to indicate that the file exists
 

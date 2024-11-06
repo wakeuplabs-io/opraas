@@ -8,6 +8,7 @@ use clap::{Parser, Subcommand};
 use colored::*;
 use commands::*;
 use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
+use console::print_error;
 use deploy::DeployTarget;
 use dotenv::dotenv;
 use async_trait::async_trait;
@@ -61,7 +62,7 @@ async fn main() {
         required_version: Version::parse("24.0.0").unwrap(),
         required_comparator: Comparison::GreaterThanOrEqual,
     }]).unwrap_or_else(|e| {
-        eprintln!("{}", format!("Error: {}", e).bold().red());
+        print_error(&format!("\n\nError: {}\n\n", e));
         std::process::exit(1);
     });
 
@@ -79,7 +80,7 @@ async fn main() {
         Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
         Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,
     } {
-        eprintln!("{}", format!("Error: {}", e).bold().red());
+        print_error(&format!("\n\nError: {}\n\n", e));
         std::process::exit(1);
     }
 }

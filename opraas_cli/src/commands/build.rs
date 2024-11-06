@@ -1,15 +1,16 @@
-use crate::console::style_spinner;
+use crate::console::{print_info, print_success, style_spinner};
 use async_trait::async_trait;
+use clap::ValueEnum;
+use dialoguer::{theme::ColorfulTheme, Confirm, Input};
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::artifacts::build::{
     BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
     GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
 };
 use std::{sync::Arc, thread, time::Instant};
-use clap::ValueEnum;
 
 pub struct BuildCommand {
-    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>, 
+    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -28,11 +29,19 @@ impl BuildCommand {
         let mut artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)> = vec![];
 
         match target {
-            BuildTargets::Batcher => artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new()))),
+            BuildTargets::Batcher => {
+                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())))
+            }
             BuildTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
-            BuildTargets::Contracts => artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new()))),
-            BuildTargets::Explorer => artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new()))),
-            BuildTargets::Proposer => artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new()))),
+            BuildTargets::Contracts => {
+                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())))
+            }
+            BuildTargets::Explorer => {
+                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())))
+            }
+            BuildTargets::Proposer => {
+                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())))
+            }
             BuildTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
             BuildTargets::All => {
                 artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())));
@@ -41,10 +50,10 @@ impl BuildCommand {
                 artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())));
                 artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())));
                 artifacts.push(("Geth", Arc::new(GethBuildArtifact::new())));
-            },
+            }
         }
 
-        Self { artifacts } 
+        Self { artifacts }
     }
 }
 
@@ -54,9 +63,7 @@ impl crate::Runnable for BuildCommand {
         let started = Instant::now();
         let core_cfg = Arc::new(cfg.build_core()?);
 
-        println!("📦 Downloading and preparing artifacts...");
-
-        // Iterate over the artifacts and download
+        // Iterate over the artifacts and build
         let m = MultiProgress::new();
         let handles: Vec<_> = self
             .artifacts
@@ -69,23 +76,93 @@ impl crate::Runnable for BuildCommand {
                     format!("⏳ Preparing {}", name).as_str(),
                 );
 
-                thread::spawn(move || {
-                    if let Err(e) = artifact.build(&core_cfg) {
-                        eprintln!("Error setting up {}: {}", name, e);
+                thread::spawn(move || -> Result<(), String> {
+                    match artifact.build(&core_cfg) {
+                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Err(e) => {
+                            spinner.finish_with_message(format!("❌ Error setting up {}", name));
+                            return Err(e.to_string());
+                        },
                     }
-
-                    spinner.finish_with_message("Waiting...");
-                })
+                    Ok(())
+              })
             })
             .collect();
 
         // Wait for all threads to complete
         for handle in handles {
-            let _ = handle.join();
+            match handle.join() {
+                Ok(Ok(_)) => {},
+                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))), 
+                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))), // Panic
+            }
         }
-        m.clear().unwrap();
+        m.clear()?;
+        print_success(&format!("🎉 Built in {}", HumanDuration(started.elapsed())));
 
-        println!("🎉 Done in {}", HumanDuration(started.elapsed()));
+        // check if we need to push and exit if not
+        if !self.artifacts.iter().any(|&(_, ref artifact)| artifact.needs_push(&core_cfg)) {
+            return Ok(())
+        }
+
+        let push_images = Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt("Would you like to push the images? (Required for deployment)")
+            .interact()
+            .unwrap();
+        if !push_images {
+            print_info("🎉 Cool, you're done then! You can push later with docker tag and push");
+            return Ok(());
+        }
+
+        let repository: String = Input::with_theme(&ColorfulTheme::default())
+            .with_prompt("Enter your docker repository url: (example ...amazonaws.com/wakeuplabs)")
+            .interact_text()
+            .unwrap();
+
+        // Iterate over the artifacts and push
+        let m = MultiProgress::new();
+        let push_started = Instant::now();
+        let handles: Vec<_> = self
+            .artifacts
+            .iter()
+            .map(|&(name, ref artifact)| {
+                let core_cfg = Arc::clone(&core_cfg);
+                let repository_str = repository.clone();
+                let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
+                let spinner = style_spinner(
+                    m.add(ProgressBar::new_spinner()),
+                    format!("⏳ Pushing {}", name).as_str(),
+                );
+
+                thread::spawn(move || -> Result<(), String> {
+                    if !artifact.needs_push(&core_cfg) {
+                        spinner.finish_with_message("Skipping...");
+                        return Ok(());
+                    }
+
+                    match artifact.push(&core_cfg, &repository_str) {
+                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Err(e) => {
+                            spinner.finish_with_message(format!("❌ Error pushing {}", name));
+                            return Err(e.to_string());
+                        },
+                    }
+                    Ok(())
+              })
+            })
+            .collect();
+
+        // Wait for all threads to complete
+        for handle in handles {
+            match handle.join() {
+                Ok(Ok(_)) => {},
+                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))), 
+                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))), // Panic
+            }
+        }
+        m.clear()?;
+
+        print_success(&format!("🎉 Pushed in {}", HumanDuration(push_started.elapsed())));
 
         Ok(())
     }

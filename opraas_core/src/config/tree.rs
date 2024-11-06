@@ -12,7 +12,17 @@ pub struct  Infra {
     pub root: PathBuf,
     pub aws: PathBuf,
     pub helm: PathBuf,
-    pub docker: PathBuf
+    pub docker: Dockerfiles,
+}
+
+#[derive(Debug, Clone)]
+pub struct Dockerfiles {
+    pub root: PathBuf,
+    pub node: PathBuf,
+    pub geth: PathBuf,
+    pub batcher: PathBuf,
+    pub proposer: PathBuf,
+    pub explorer: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -34,7 +44,14 @@ impl TreeConfig {
                 root: root.join("infra"),
                 aws: root.join("infra").join("aws"),
                 helm: root.join("infra").join("helm"),
-                docker: root.join("infra").join("docker"),
+                docker: Dockerfiles {
+                    root: root.join("infra").join("docker"),
+                    node: root.join("infra").join("docker").join("node.dockerfile"),
+                    geth: root.join("infra").join("docker").join("geth.dockerfile"),
+                    batcher: root.join("infra").join("docker").join("batcher.dockerfile"),
+                    proposer: root.join("infra").join("docker").join("proposer.dockerfile"),
+                    explorer: root.join("infra").join("docker").join("explorer.dockerfile"),
+                },
             },
             src: Src {
                 root: root.join("src"),

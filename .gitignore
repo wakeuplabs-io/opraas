@@ -6,3 +6,4 @@
 /releases
 .env
 /node_modules
+/demo

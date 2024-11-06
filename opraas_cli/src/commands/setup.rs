@@ -1,4 +1,4 @@
-use crate::console::style_spinner;
+use crate::console::{print_info, print_success, style_spinner};
 use async_trait::async_trait;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::artifacts::build::{
@@ -54,8 +54,7 @@ impl crate::Runnable for SetupCommand {
         let started = Instant::now();
         let core_cfg = Arc::new(cfg.build_core()?);
 
-        println!("📦 Downloading and preparing artifacts...");
-
+        print_info("📦 Downloading and preparing artifacts...");
 
         // Iterate over the artifacts and download
         let m = MultiProgress::new();
@@ -71,22 +70,29 @@ impl crate::Runnable for SetupCommand {
                 );
 
                 thread::spawn(move || {
-                    if let Err(e) = artifact.setup(&core_cfg) {
-                        eprintln!("Error setting up {}: {}", name, e);
+                    match artifact.build(&core_cfg) {
+                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Err(e) => {
+                            spinner.finish_with_message(format!("❌ Error setting up {}", name));
+                            return Err(e.to_string());
+                        },
                     }
-
-                    spinner.finish_with_message("Waiting...");
+                    Ok(())
                 })
             })
             .collect();
 
         // Wait for all threads to complete
         for handle in handles {
-            let _ = handle.join();
+            match handle.join() {
+                Ok(Ok(_)) => {},
+                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))), 
+                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))), // Panic
+            }
         }
-        m.clear().unwrap();
+        m.clear()?;
 
-        println!("🎉 Done in {}", HumanDuration(started.elapsed()));
+        print_success(&format!("🎉 Done in {}", HumanDuration(started.elapsed())));
 
         Ok(())
     }

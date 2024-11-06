@@ -22,8 +22,8 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
         }
 
         self.downloader.download_release(
-            &cfg.core.sources.contracts.release_url,
-            &cfg.core.sources.contracts.release_tag,
+            &cfg.core.artifacts.contracts.release_url,
+            &cfg.core.artifacts.contracts.release_tag,
             &cfg.tree.src.contracts.as_path().to_str().unwrap(),
         )?;
 
@@ -34,10 +34,15 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
         Ok(())
     }
 
+    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+        false
+    }
+
+    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+
 }
-
-
-
 
 #[cfg(test)]
 mod tests {

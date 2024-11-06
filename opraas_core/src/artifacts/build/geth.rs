@@ -22,8 +22,8 @@ impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
         }
 
         self.downloader.download_release(
-            &cfg.core.sources.geth.release_url,
-            &cfg.core.sources.geth.release_tag,
+            &cfg.core.artifacts.geth.release_url,
+            &cfg.core.artifacts.geth.release_tag,
             &cfg.tree.src.geth.as_path().to_str().unwrap(),
         )?;
 
@@ -31,6 +31,14 @@ impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
     }
 
     fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+
+    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+        true
+    }
+
+    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 

@@ -22,8 +22,8 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
         }
         
         self.downloader.download_release(
-            &cfg.core.sources.explorer.release_url,
-            &cfg.core.sources.explorer.release_tag,
+            &cfg.core.artifacts.explorer.release_url,
+            &cfg.core.artifacts.explorer.release_tag,
             &cfg.tree.src.explorer.as_path().to_str().unwrap(),
         )?;
 
@@ -31,6 +31,14 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
     }
 
     fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+
+    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+        true
+    }
+
+    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 

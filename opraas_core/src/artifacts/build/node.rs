@@ -21,8 +21,8 @@ impl crate::artifacts::build::BuildArtifact for NodeBuildArtifact {
         }
 
         self.downloader.download_release(
-            &cfg.core.sources.node.release_url,
-            &cfg.core.sources.node.release_tag,
+            &cfg.core.artifacts.node.release_url,
+            &cfg.core.artifacts.node.release_tag,
             &cfg.tree.src.node.as_path().to_str().unwrap(),
         )?;
 
@@ -30,6 +30,14 @@ impl crate::artifacts::build::BuildArtifact for NodeBuildArtifact {
     }
 
     fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        Ok(())
+    }
+
+    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+        true
+    }
+    
+    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 }
