@@ -12,29 +12,23 @@ const { version, name, repository } = require("../package.json");
 
 const supportedPlatforms = [
     {
-        TYPE: "Windows_NT",
+        TYPE: "Windows",
         ARCHITECTURE: "x64",
-        RUST_TARGET: "x86_64-pc-windows-msvc",
+        RUST_TARGET: "x86_64-pc-windows-gnu",
         BINARY_NAME: "opraas_cli.exe"
     },
     {
         TYPE: "Linux",
         ARCHITECTURE: "x64",
-        RUST_TARGET: "x86_64-unknown-linux-musl",
+        RUST_TARGET: "x86_64-unknown-linux-gnu",
         BINARY_NAME: "opraas_cli"
     },
     {
-        TYPE: "Darwin",
+        TYPE: "Apple",
         ARCHITECTURE: "x64",
         RUST_TARGET: "x86_64-apple-darwin",
         BINARY_NAME: "opraas_cli"
     },
-    {
-        TYPE: "Darwin",
-        ARCHITECTURE: "arm64",
-        RUST_TARGET: "x86_64-apple-darwin",
-        BINARY_NAME: "opraas_cli"
-    }
 ];
 
 const getPlatformMetadata = () => {
@@ -61,7 +55,7 @@ const getBinary = () => {
     const platformMetadata = getPlatformMetadata();
     // the url for this binary is constructed from values in `package.json`
     // https://github.com/wakeuplabs-io/opraas/releases/download/v1.0.0/opraas-v1.0.0-x86_64-apple-darwin.tar.gz
-    const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platformMetadata.RUST_TARGET}.tar.gz`;
+    const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platformMetadata.RUST_TARGET}.${platformMetadata.BINARY_NAME.includes("exe") ? "zip" : "tar.gz"}`;
     return new Binary(platformMetadata.BINARY_NAME, url, version, {
         installDirectory: join(__dirname, "..", "bin"),
     });
