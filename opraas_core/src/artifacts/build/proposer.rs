@@ -1,6 +1,7 @@
-use crate::{filesystem, git};
+use crate::{docker, filesystem, git};
 
 pub struct ProposerBuildArtifact {
+    docker: Box<dyn docker::TDockerBuilder>,
     filesystem: Box<dyn filesystem::Filesystem>,
     downloader: Box<dyn git::GitReleaseDownloader>,
 }
@@ -8,6 +9,7 @@ pub struct ProposerBuildArtifact {
 impl ProposerBuildArtifact {
     pub fn new() -> Self {
         Self {
+            docker: Box::new(docker::DockerBuilder::new()),
             downloader: Box::new(git::Git::new()),
             filesystem: Box::new(filesystem::Fs::new()),
         }
@@ -42,6 +44,11 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
         cfg: &crate::config::Config,
         repository: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        self.docker.push(
+            &cfg.core.artifacts.proposer.image_tag,
+            &format!("{}/{}", repository, &cfg.core.artifacts.proposer.image_tag),
+        )?;
+
         Ok(())
     }
 }
@@ -74,6 +81,7 @@ mod tests {
             .returning(|_, _, _| Ok(())); // Return Ok to indicate successful download
 
         let batcher_artifact = ProposerBuildArtifact {
+            docker: Box::new(docker::MockTDockerBuilder::new()),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };
@@ -103,6 +111,7 @@ mod tests {
         mock_downloader.expect_download_release().times(0); // Expect 0 calls to `download_release`
 
         let batcher_artifact = ProposerBuildArtifact {
+            docker: Box::new(docker::MockTDockerBuilder::new()),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };

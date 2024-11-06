@@ -1,6 +1,7 @@
-use crate::{filesystem, git};
+use crate::{docker, filesystem, git};
 
 pub struct ContractsBuildArtifact {
+    docker: Box<dyn docker::TDockerBuilder>,
     filesystem: Box<dyn filesystem::Filesystem>,
     downloader: Box<dyn git::GitReleaseDownloader>,
 }
@@ -8,6 +9,7 @@ pub struct ContractsBuildArtifact {
 impl ContractsBuildArtifact {
     pub fn new() -> Self {
         Self {
+            docker: Box::new(docker::DockerBuilder::new()),
             downloader: Box::new(git::Git::new()),
             filesystem: Box::new(filesystem::Fs::new()),
         }
@@ -30,15 +32,15 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
         Ok(())
     }
 
-    fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 
-    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+    fn needs_push(&self, _cfg: &crate::config::Config) -> bool {
         false
     }
 
-    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn push(&self, _cfg: &crate::config::Config, _repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 
@@ -74,6 +76,7 @@ mod tests {
 
 
         let batcher_artifact = ContractsBuildArtifact {
+            docker: Box::new(docker::MockTDockerBuilder::new()),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };
@@ -103,6 +106,7 @@ mod tests {
         mock_downloader.expect_download_release().times(0); // Expect 0 calls to `download_release`
 
         let batcher_artifact = ContractsBuildArtifact {
+            docker: Box::new(docker::MockTDockerBuilder::new()),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };

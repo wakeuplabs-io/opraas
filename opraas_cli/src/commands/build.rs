@@ -136,7 +136,7 @@ impl crate::Runnable for BuildCommand {
 
                 thread::spawn(move || -> Result<(), String> {
                     if !artifact.needs_push(&core_cfg) {
-                        spinner.finish_with_message("Skipping...");
+                        spinner.finish_with_message("No push required, skipping...");
                         return Ok(());
                     }
 

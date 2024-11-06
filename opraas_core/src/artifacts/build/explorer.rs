@@ -1,6 +1,7 @@
-use crate::{filesystem, git};
+use crate::{docker, filesystem, git};
 
 pub struct ExplorerBuildArtifact {
+    docker: Box<dyn docker::TDockerBuilder>,
     filesystem: Box<dyn filesystem::Filesystem>,
     downloader: Box<dyn git::GitReleaseDownloader>,
 }
@@ -8,6 +9,7 @@ pub struct ExplorerBuildArtifact {
 impl ExplorerBuildArtifact {
     pub fn new() -> Self {
         Self {
+            docker: Box::new(docker::DockerBuilder::new()),
             downloader: Box::new(git::Git::new()),
             filesystem: Box::new(filesystem::Fs::new()),
         }
@@ -15,12 +17,11 @@ impl ExplorerBuildArtifact {
 }
 
 impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
-
     fn setup(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         if self.filesystem.exists(&cfg.tree.src.explorer) {
             return Ok(());
         }
-        
+
         self.downloader.download_release(
             &cfg.core.artifacts.explorer.release_url,
             &cfg.core.artifacts.explorer.release_tag,
@@ -34,16 +35,23 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
         Ok(())
     }
 
-    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
+    fn needs_push(&self, _cfg: &crate::config::Config) -> bool {
         true
     }
 
-    fn push(&self, cfg: &crate::config::Config, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn push(
+        &self,
+        cfg: &crate::config::Config,
+        repository: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.docker.push(
+            &cfg.core.artifacts.explorer.image_tag,
+            &format!("{}/{}", repository, &cfg.core.artifacts.explorer.image_tag),
+        )?;
+
         Ok(())
     }
-
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -62,7 +70,7 @@ mod tests {
         let mut mock_filesystem = filesystem::MockFilesystem::new();
         mock_filesystem
             .expect_exists()
-            .with( predicate::eq(config.tree.src.explorer.clone()))
+            .with(predicate::eq(config.tree.src.explorer.clone()))
             .times(1) // Expect 1 call to `exists`
             .returning(|_| false); // Return false to indicate that the file does not exist
 
@@ -72,9 +80,8 @@ mod tests {
             .times(1) // Expect 1 call to `download_release`
             .returning(|_, _, _| Ok(())); // Return Ok to indicate successful download
 
-
-
         let batcher_artifact = ExplorerBuildArtifact {
+            docker: Box::new(docker::MockTDockerBuilder::new()),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };
@@ -96,7 +103,7 @@ mod tests {
         let mut mock_filesystem = filesystem::MockFilesystem::new();
         mock_filesystem
             .expect_exists()
-            .with( predicate::eq(config.tree.src.explorer.clone()))
+            .with(predicate::eq(config.tree.src.explorer.clone()))
             .times(1) // Expect 1 call to `exists`
             .returning(|_| true); // Return true to indicate that the file exists
 
@@ -104,6 +111,7 @@ mod tests {
         mock_downloader.expect_download_release().times(0); // Expect 0 calls to `download_release`
 
         let batcher_artifact = ExplorerBuildArtifact {
+            docker: Box::new(docker::MockTDockerBuilder::new()),
             downloader: Box::new(mock_downloader),
             filesystem: Box::new(mock_filesystem),
         };
