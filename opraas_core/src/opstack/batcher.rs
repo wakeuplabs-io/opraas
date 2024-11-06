@@ -29,9 +29,6 @@ pub fn build<P: AsRef<Path>, Q: AsRef<Path>>(source: &P, destination: &Q) -> Res
     )
     .expect("Failed to copy opt batcher binary");
 
-    // set permissions for execution
-    utils::system::set_file_permissions(&opt_batcher_bin, 0o755)
-        .expect("Failed to set batcher execution permissions");
 
     Ok(())
 }
