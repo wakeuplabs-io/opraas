@@ -11,9 +11,6 @@ APPLE_TARGET=x86_64-apple-darwin
 WINDOW_TARGET=x86_64-pc-windows-gnu
 LINUX_TARGET=x86_64-unknown-linux-musl
 
-ROOT_DIR := $(shell git rev-parse --show-toplevel 2>/dev/null || echo $(CURDIR))
-
-.PHONY run
 run:
 	@cargo run -q -p opraas_cli -- $(RUN_ARGS)
 
