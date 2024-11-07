@@ -5,7 +5,6 @@ mod utils;
 
 use build::BuildTargets;
 use clap::{Parser, Subcommand};
-use colored::*;
 use commands::*;
 use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
 use console::print_error;
