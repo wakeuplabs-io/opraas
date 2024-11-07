@@ -16,8 +16,8 @@ impl ProposerBuildArtifact {
     }
 }
 
-impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
-    fn setup(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+impl crate::artifacts::initializable::Initializable for ProposerBuildArtifact {
+    fn initialize(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         if self.filesystem.exists(&cfg.tree.src.proposer) {
             return Ok(());
         }
@@ -30,7 +30,9 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
 
         Ok(())
     }
+}
 
+impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
     fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         if !self.filesystem.exists(&cfg.tree.src.proposer) {
             return Err("Explorer src is not available".into());
@@ -53,7 +55,12 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
         Ok(())
     }
 
-    fn release(&self, cfg: &crate::config::Config, name: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn release(
+        &self,
+        cfg: &crate::config::Config,
+        name: &str,
+        repository: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.proposer.image_tag,
             &format!("{}/{}", repository, &cfg.core.artifacts.proposer.image_tag),
@@ -67,6 +74,7 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
 mod tests {
     use super::*;
     use crate::artifacts::build::artifact::BuildArtifact;
+    use crate::artifacts::initializable::Initializable;
     use crate::config::Config;
     use mockall::predicate;
 
@@ -97,7 +105,7 @@ mod tests {
         };
 
         // act
-        let result = batcher_artifact.setup(&config);
+        let result = batcher_artifact.initialize(&config);
 
         // assert
         assert!(result.is_ok());
@@ -127,7 +135,7 @@ mod tests {
         };
 
         // act
-        let result = batcher_artifact.setup(&config);
+        let result = batcher_artifact.initialize(&config);
 
         // assert
         assert!(result.is_ok());

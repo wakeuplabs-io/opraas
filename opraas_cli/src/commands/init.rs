@@ -1,19 +1,19 @@
 use crate::console::{print_info, print_success, style_spinner};
 use async_trait::async_trait;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
-use opraas_core::artifacts::build::{
+use opraas_core::artifacts::{build::{
     BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
     GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
-};
+}, cloud::infra::InfraCloudArtifact, initializable::Initializable};
 use std::{sync::Arc, thread, time::Instant};
 use clap::ValueEnum;
 
-pub struct SetupCommand {
-    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>, 
+pub struct InitCommand {
+    artifacts: Vec<(&'static str, Arc<dyn Initializable + Send + Sync>)>, 
 }
 
 #[derive(Debug, Clone, ValueEnum)]
-pub enum SetupTargets {
+pub enum InitTargets {
     Batcher,
     Node,
     Contracts,
@@ -23,18 +23,21 @@ pub enum SetupTargets {
     All,
 }
 
-impl SetupCommand {
-    pub fn new(target: SetupTargets) -> Self {
-        let mut artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)> = vec![];
+impl InitCommand {
+    pub fn new(target: InitTargets) -> Self {
+        let mut artifacts: Vec<(&'static str, Arc<dyn Initializable + Send + Sync>)> = vec![];
+        
+        // infra is required for all as it contains dockerfiles for build processes
+        artifacts.push(("Infra", Arc::new(InfraCloudArtifact::new())));
 
         match target {
-            SetupTargets::Batcher => artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new()))),
-            SetupTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
-            SetupTargets::Contracts => artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new()))),
-            SetupTargets::Explorer => artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new()))),
-            SetupTargets::Proposer => artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new()))),
-            SetupTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
-            SetupTargets::All => {
+            InitTargets::Batcher => artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new()))),
+            InitTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
+            InitTargets::Contracts => artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new()))),
+            InitTargets::Explorer => artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new()))),
+            InitTargets::Proposer => artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new()))),
+            InitTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
+            InitTargets::All => {
                 artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())));
                 artifacts.push(("Node", Arc::new(NodeBuildArtifact::new())));
                 artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())));
@@ -49,7 +52,7 @@ impl SetupCommand {
 }
 
 #[async_trait]
-impl crate::Runnable for SetupCommand {
+impl crate::Runnable for InitCommand {
     async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
         let started = Instant::now();
         let core_cfg = Arc::new(cfg.build_core()?);
@@ -70,7 +73,7 @@ impl crate::Runnable for SetupCommand {
                 );
 
                 thread::spawn(move || {
-                    match artifact.setup(&core_cfg) {
+                    match artifact.initialize(&core_cfg) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
                             spinner.finish_with_message(format!("❌ Error setting up {}", name));

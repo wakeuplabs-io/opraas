@@ -15,7 +15,7 @@ use async_trait::async_trait;
 use inspect::InspectTarget;
 use monitor::MonitorTarget;
 use semver::Version;
-use setup::SetupTargets;
+use init::InitTargets;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -28,8 +28,8 @@ struct Args {
 enum Commands {
     /// Create new project, template config file and folders
     New { name: String },
-    /// Setup a new project
-    Setup { target: SetupTargets },
+    /// Initialize a new project
+    Init { target: InitTargets },
     /// Compile sources and create docker images for it
     Build { target: BuildTargets },
     /// Spin up local dev environment
@@ -73,7 +73,7 @@ async fn main() {
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
         Commands::New { name } => NewCommand::new(name).run(&config).await,
-        Commands::Setup { target } => SetupCommand::new(target).run(&config).await,
+        Commands::Init { target } => InitCommand::new(target).run(&config).await,
         Commands::Build { target } => BuildCommand::new(target).run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,
         Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,

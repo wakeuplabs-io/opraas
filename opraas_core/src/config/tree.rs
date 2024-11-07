@@ -23,6 +23,7 @@ pub struct Dockerfiles {
     pub batcher: PathBuf,
     pub proposer: PathBuf,
     pub explorer: PathBuf,
+    pub contracts: PathBuf,
 }
 
 #[derive(Debug, Clone)]
@@ -51,6 +52,7 @@ impl TreeConfig {
                     batcher: root.join("infra").join("docker").join("batcher.dockerfile"),
                     proposer: root.join("infra").join("docker").join("proposer.dockerfile"),
                     explorer: root.join("infra").join("docker").join("explorer.dockerfile"),
+                    contracts: root.join("infra").join("docker").join("contracts.dockerfile"),
                 },
             },
             src: Src {

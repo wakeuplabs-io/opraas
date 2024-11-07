@@ -72,7 +72,7 @@ impl crate::Runnable for BuildCommand {
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Preparing {}", name).as_str(),
+                    format!("⏳ Building {}", name).as_str(),
                 );
 
                 thread::spawn(move || -> Result<(), String> {
