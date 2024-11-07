@@ -25,12 +25,12 @@ jobs:
           shell: bash
           run: |
             outdir="infra-${{ env.VERSION }}"
-            echo "DIRNAME=$dirname"
+            echo "DIRNAME=$outdir"
 
             zip -r "$outdir.zip" "infra"
             echo "ZIP=$outdir.zip" >> $GITHUB_ENV
                 
-            tar -czf "$outdir.tar.gz" "assets"
+            tar -czf "$outdir.tar.gz" "infra"
             echo "TAR=$outdir.tar.gz" >> $GITHUB_ENV
 
         - name: Release
