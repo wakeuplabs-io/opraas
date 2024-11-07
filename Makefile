@@ -7,7 +7,6 @@ ifeq (run,$(firstword $(MAKECMDGOALS)))
   $(eval $(RUN_ARGS):;@:)
 endif
 
-RELEASE_VERSION=0.0.1
 APPLE_TARGET=x86_64-apple-darwin
 WINDOW_TARGET=x86_64-pc-windows-gnu
 LINUX_TARGET=x86_64-unknown-linux-musl
@@ -24,23 +23,36 @@ format:
 lint:
 	cargo clippy --fix
 
-release-windows:
+build-windows:
 	cargo build --target=${WINDOW_TARGET} --release
-	mkdir -p releases/${RELEASE_VERSION}/${WINDOW_TARGET}/dist
-	cp target/${WINDOW_TARGET}/release/opraas_cli releases/${RELEASE_VERSION}/${WINDOW_TARGET}/dist/opraas_cli
-	tar -czvf releases/${RELEASE_VERSION}/${WINDOW_TARGET}/opraas-v${RELEASE_VERSION}-${WINDOW_TARGET}.tar.gz release/${WINDOW_TARGET}/dist
 
-release-linux:
+build-linux:
 	cargo build --target=${LINUX_TARGET} --release
-	mkdir -p releases/${RELEASE_VERSION}/${LINUX_TARGET}/dist
-	cp target/${LINUX_TARGET}/release/opraas_cli releases/${RELEASE_VERSION}/${LINUX_TARGET}/dist/opraas_cli
-	tar -czvf releases/${RELEASE_VERSION}/${LINUX_TARGET}/opraas-v${RELEASE_VERSION}-${LINUX_TARGET}.tar.gz release/${LINUX_TARGET}/dist
 
-release-apple:
+build-apple:
 	cargo build --target=${APPLE_TARGET} --release
-	mkdir -p releases/${RELEASE_VERSION}/${APPLE_TARGET}/dist
-	cp target/${APPLE_TARGET}/release/opraas_cli releases/${RELEASE_VERSION}/${APPLE_TARGET}/dist/opraas_cli
-	tar -czvf releases/${RELEASE_VERSION}/${APPLE_TARGET}/opraas-v${RELEASE_VERSION}-${APPLE_TARGET}.tar.gz release/${APPLE_TARGET}/dist
+
+check-commit:
+	@if ! git diff-index --quiet HEAD --; then \
+		echo "ERROR: There are uncommitted changes. Please commit them before proceeding."; \
+		exit 1; \
+	fi;
+
+bump-cli-rust-version: check-commit
+	@echo "Bumping Rust version to $(VERSION)"
+	# Update the version in Cargo.toml
+	@sed -i.bak 's/^version = ".*"/version = "$(VERSION)"/' ./opraas_cli/Cargo.toml
+
+bump-cli-npm-version: check-commit
+	@echo "Bumping npm version to $(VERSION)"
+	# Update the version in package.json
+	@cd npm && npm version $(VERSION) --no-git-tag-version
+
+bump-versions: bump-cli-rust-version bump-cli-npm-version
+
+release-cli: bump-versions
+	@echo "Creating Git tag $(VERSION)"
+	@git tag -a $(VERSION) -m "Release version $(VERSION)"
+	@echo "Ready, review changes and push tag with git push origin $(VERSION)"
 
 
-.PHONY: run
