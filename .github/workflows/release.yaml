@@ -24,7 +24,7 @@ jobs:
         - name: Create ZIP and TAR files
           shell: bash
           run: |
-            outdir="infra-${{ env.VERSION }}"
+            outdir="infra"
             echo "DIRNAME=$outdir"
 
             zip -r "$outdir.zip" "infra"
