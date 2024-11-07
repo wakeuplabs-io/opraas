@@ -70,7 +70,7 @@ impl crate::Runnable for SetupCommand {
                 );
 
                 thread::spawn(move || {
-                    match artifact.build(&core_cfg) {
+                    match artifact.setup(&core_cfg) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
                             spinner.finish_with_message(format!("❌ Error setting up {}", name));
