@@ -22,13 +22,12 @@ WORKDIR /opt/optimism
 
 COPY ./versions.json ./versions.json
 COPY ./packages ./packages
-COPY .git/ ./.git
+RUN git init
 COPY .gitmodules ./.gitmodules
 
 RUN git submodule update --init --recursive \
     && cd packages/contracts-bedrock \
-    && just forge-build \
-    && echo $(git rev-parse HEAD) > .gitcommit
+    && just build 
 
 FROM --platform=linux/amd64 debian:bookworm-20240812-slim as contracts-bedrock
 
