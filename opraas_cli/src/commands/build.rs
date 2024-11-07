@@ -1,7 +1,6 @@
 use crate::console::{print_info, print_success, style_spinner};
 use async_trait::async_trait;
 use clap::ValueEnum;
-use dialoguer::{theme::ColorfulTheme, Confirm, Input};
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::artifacts::build::{
     BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
@@ -94,75 +93,13 @@ impl crate::Runnable for BuildCommand {
             match handle.join() {
                 Ok(Ok(_)) => {},
                 Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))), 
-                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))), // Panic
+                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))),
             }
         }
         m.clear()?;
         print_success(&format!("🎉 Built in {}", HumanDuration(started.elapsed())));
+        print_info("Test your build with `opraas dev` and whenever you're ready release `opraas release <name>` and deploy it with `opraas deploy <name>`");
 
-        // check if we need to push and exit if not
-        if !self.artifacts.iter().any(|&(_, ref artifact)| artifact.needs_push(&core_cfg)) {
-            return Ok(())
-        }
-
-        let push_images = Confirm::with_theme(&ColorfulTheme::default())
-            .with_prompt("Would you like to push the images? (Required for deployment)")
-            .interact()
-            .unwrap();
-        if !push_images {
-            print_info("🎉 Cool, you're done then! You can push later with docker tag and push");
-            return Ok(());
-        }
-
-        let repository: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("Enter your docker repository url: (example ...amazonaws.com/wakeuplabs)")
-            .interact_text()
-            .unwrap();
-
-        // Iterate over the artifacts and push
-        let m = MultiProgress::new();
-        let push_started = Instant::now();
-        let handles: Vec<_> = self
-            .artifacts
-            .iter()
-            .map(|&(name, ref artifact)| {
-                let core_cfg = Arc::clone(&core_cfg);
-                let repository_str = repository.clone();
-                let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
-                let spinner = style_spinner(
-                    m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Pushing {}", name).as_str(),
-                );
-
-                thread::spawn(move || -> Result<(), String> {
-                    if !artifact.needs_push(&core_cfg) {
-                        spinner.finish_with_message("No push required, skipping...");
-                        return Ok(());
-                    }
-
-                    match artifact.push(&core_cfg, &repository_str) {
-                        Ok(_) => spinner.finish_with_message("Waiting..."),
-                        Err(e) => {
-                            spinner.finish_with_message(format!("❌ Error pushing {}", name));
-                            return Err(e.to_string());
-                        },
-                    }
-                    Ok(())
-              })
-            })
-            .collect();
-
-        // Wait for all threads to complete
-        for handle in handles {
-            match handle.join() {
-                Ok(Ok(_)) => {},
-                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))), 
-                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))), // Panic
-            }
-        }
-        m.clear()?;
-
-        print_success(&format!("🎉 Pushed in {}", HumanDuration(push_started.elapsed())));
 
         Ok(())
     }

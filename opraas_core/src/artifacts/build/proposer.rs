@@ -31,19 +31,29 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
         Ok(())
     }
 
-    fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        if !self.filesystem.exists(&cfg.tree.src.proposer) {
+            return Err("Explorer src is not available".into());
+        }
+
+        if !self.filesystem.exists(&cfg.tree.infra.docker.proposer) {
+            return Err(format!(
+                "Explorer dockerfile is not available at {} Make sure CloudArtifact.setup() has been called",
+                &cfg.tree.infra.docker.proposer.display()
+            )
+            .into());
+        }
+
+        self.docker.build(
+            &cfg.tree.src.proposer.as_path().to_str().unwrap(),
+            &cfg.tree.infra.docker.proposer.as_path().to_str().unwrap(),
+            &cfg.core.artifacts.proposer.image_tag,
+        )?;
+
         Ok(())
     }
 
-    fn needs_push(&self, cfg: &crate::config::Config) -> bool {
-        true
-    }
-
-    fn push(
-        &self,
-        cfg: &crate::config::Config,
-        repository: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn release(&self, cfg: &crate::config::Config, name: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.proposer.image_tag,
             &format!("{}/{}", repository, &cfg.core.artifacts.proposer.image_tag),

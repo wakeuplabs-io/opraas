@@ -31,20 +31,29 @@ impl crate::artifacts::build::BuildArtifact for NodeBuildArtifact {
         Ok(())
     }
 
-    fn build(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        if !self.filesystem.exists(&cfg.tree.src.node) {
+            return Err("Node src is not available".into());
+        }
+
+        if !self.filesystem.exists(&cfg.tree.infra.docker.node) {
+            return Err(format!(
+                "Node dockerfile is not available at {} Make sure CloudArtifact.setup() has been called",
+                &cfg.tree.infra.docker.node.display()
+            )
+            .into());
+        }
+
+        self.docker.build(
+            &cfg.tree.src.node.as_path().to_str().unwrap(),
+            &cfg.tree.infra.docker.node.as_path().to_str().unwrap(),
+            &cfg.core.artifacts.node.image_tag,
+        )?;
+
         Ok(())
     }
 
-    fn needs_push(&self, _cfg: &crate::config::Config) -> bool {
-        true
-    }
-
-   
-    fn push(
-        &self,
-        cfg: &crate::config::Config,
-        repository: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn release(&self, cfg: &crate::config::Config, name: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.node.image_tag,
             &format!("{}/{}", repository, &cfg.core.artifacts.node.image_tag),

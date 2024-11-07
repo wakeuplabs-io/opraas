@@ -36,11 +36,7 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
         Ok(())
     }
 
-    fn needs_push(&self, _cfg: &crate::config::Config) -> bool {
-        false
-    }
-
-    fn push(&self, _cfg: &crate::config::Config, _repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn release(&self, _cfg: &crate::config::Config, name: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         Ok(())
     }
 

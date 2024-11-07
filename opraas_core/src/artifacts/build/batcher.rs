@@ -38,7 +38,7 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
 
         if !self.filesystem.exists(&cfg.tree.infra.docker.batcher) {
             return Err(format!(
-                "Batcher dockerfile is not available at {}",
+                "Batcher dockerfile is not available at {}. Make sure CloudArtifact.setup() has been called",
                 &cfg.tree.infra.docker.batcher.display()
             )
             .into());
@@ -53,15 +53,7 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
         Ok(())
     }
 
-    fn needs_push(&self, _cfg: &crate::config::Config) -> bool {
-        true
-    }
-
-    fn push(
-        &self,
-        cfg: &crate::config::Config,
-        repository: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn release(&self, cfg: &crate::config::Config, name: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.batcher.image_tag,
             &format!("{}/{}", repository, &cfg.core.artifacts.batcher.image_tag),
@@ -156,16 +148,13 @@ mod build_tests {
         };
 
         let mut mock_filesystem = filesystem::MockFilesystem::new();
-        mock_filesystem
-            .expect_exists()
-            .times(2) 
-            .returning(|_| true); 
+        mock_filesystem.expect_exists().times(2).returning(|_| true);
 
         let mut mock_docker = docker::MockTDockerBuilder::new();
         mock_docker
             .expect_build()
-            .times(1) 
-            .returning(|_, _, _| Ok(())); 
+            .times(1)
+            .returning(|_, _, _| Ok(()));
 
         let batcher_artifact = BatcherBuildArtifact {
             docker: Box::new(mock_docker),
