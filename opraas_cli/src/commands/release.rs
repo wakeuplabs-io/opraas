@@ -1,10 +1,9 @@
 use crate::{
-    console::{print_info, print_success, print_warning, style_spinner},
+    console::{print_error, print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer},
     git::TGit,
 };
 use async_trait::async_trait;
 use clap::ValueEnum;
-use dialoguer::{theme::ColorfulTheme, Confirm, Input};
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::artifacts::build::{
     BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
@@ -14,6 +13,7 @@ use std::{sync::Arc, thread, time::Instant};
 
 pub struct ReleaseCommand {
     git: Box<dyn TGit + Send + Sync>,
+    dialoguer: Box<dyn TDialoguer + Send + Sync>,
     artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>,
 }
 
@@ -60,6 +60,7 @@ impl ReleaseCommand {
         Self {
             artifacts,
             git: Box::new(crate::git::Git::new()),
+            dialoguer: Box::new(Dialoguer::new()),
         }
     }
 }
@@ -72,29 +73,26 @@ impl crate::Runnable for ReleaseCommand {
 
         // avoid releasing without committed changes
         if !self.git.has_uncommitted_changes(cwd.to_str().unwrap()) {
-            print_warning("You have uncommitted changes. Please commit first.");
+            print_error("You have uncommitted changes. Please commit first.");
             return Ok(());
         }
 
         // request release name and repository
         print_info("We'll tag your local builds and push them to your repository.");
         print_warning("Make sure you're docker user has push access to the repository");
-       
-        let release_name: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("Input release name (e.g. v0.1.0)")
-            .interact_text()
-            .unwrap();
-        let release_repository: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("Input Docker repository url (e.g. docker.io/wakeuplabs) ")
-            .interact_text()
-            .unwrap();
+        
+        let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
+        let release_repository: String = self
+            .dialoguer
+            .prompt("Input Docker repository url (e.g. docker.io/wakeuplabs) ");
 
-        let tag_git = Confirm::with_theme(&ColorfulTheme::default())
-            .with_prompt("Would you also like to tag your local git repository?")
-            .interact()
-            .unwrap();
-        if tag_git {
-            self.git.tag_release(&cwd.to_str().unwrap(), &release_name)?;
+        // Offer option to tag release in git
+        if self
+            .dialoguer
+            .confirm("Would you also like to tag your local git repository?")
+        {
+            self.git
+                .tag_release(&cwd.to_str().unwrap(), &release_name)?;
         }
 
         // Iterate over the artifacts and build
