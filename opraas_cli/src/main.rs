@@ -5,16 +5,16 @@ mod utils;
 
 use build::BuildTargets;
 use clap::{Parser, Subcommand};
-use colored::*;
 use commands::*;
 use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
+use console::print_error;
 use deploy::DeployTarget;
 use dotenv::dotenv;
 use async_trait::async_trait;
 use inspect::InspectTarget;
 use monitor::MonitorTarget;
 use semver::Version;
-use setup::SetupTargets;
+use init::InitTargets;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -27,8 +27,8 @@ struct Args {
 enum Commands {
     /// Create new project, template config file and folders
     New { name: String },
-    /// Setup a new project
-    Setup { target: SetupTargets },
+    /// Initialize a new project
+    Init { target: InitTargets },
     /// Compile sources and create docker images for it
     Build { target: BuildTargets },
     /// Spin up local dev environment
@@ -61,7 +61,7 @@ async fn main() {
         required_version: Version::parse("24.0.0").unwrap(),
         required_comparator: Comparison::GreaterThanOrEqual,
     }]).unwrap_or_else(|e| {
-        eprintln!("{}", format!("Error: {}", e).bold().red());
+        print_error(&format!("\n\nError: {}\n\n", e));
         std::process::exit(1);
     });
 
@@ -72,14 +72,14 @@ async fn main() {
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
         Commands::New { name } => NewCommand::new(name).run(&config).await,
-        Commands::Setup { target } => SetupCommand::new(target).run(&config).await,
+        Commands::Init { target } => InitCommand::new(target).run(&config).await,
         Commands::Build { target } => BuildCommand::new(target).run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,
         Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
         Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
         Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,
     } {
-        eprintln!("{}", format!("Error: {}", e).bold().red());
+        print_error(&format!("\n\nError: {}\n\n", e));
         std::process::exit(1);
     }
 }

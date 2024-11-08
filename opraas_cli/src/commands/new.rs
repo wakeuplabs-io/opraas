@@ -1,5 +1,7 @@
 use async_trait::async_trait;
 
+use crate::console::{print_info, print_success};
+
 pub struct NewCommand {
     pub name: String,
 }
@@ -22,26 +24,16 @@ impl crate::Runnable for NewCommand {
 
         // create dir
         std::fs::create_dir(&proy_dir)?;
-
-        // create README.md
-        let readme_path = proy_dir.join("README.md");
-        std::fs::write(&readme_path, README)?;
-
-        // create gitignore
-        let gitignore_path = proy_dir.join(".gitignore");
-        std::fs::write(&gitignore_path, GITIGNORE)?;
+        std::fs::write(&proy_dir.join("README.md"), README)?;
+        std::fs::write(&proy_dir.join(".gitignore"), GITIGNORE)?;
+        std::fs::write(&proy_dir.join(".env"), ENV_FILE)?;
 
         // create default config
-        let config_path = proy_dir.join("config.toml");
         let null_cfg = opraas_core::config::CoreConfig::new_from_null();
-        null_cfg.to_toml(&config_path)?;
+        null_cfg.to_toml(&proy_dir.join("config.toml"))?;
 
-        // create .env
-        let env_path = proy_dir.join(".env");
-        std::fs::write(&env_path, ENV_FILE)?;
-
-        println!("✅ Project created at ./{}", self.name);
-        println!("🚀 Check the config file and run `opraas setup` to setup the project");
+        print_success(&format!("✅ Project created at ./{}", self.name));
+        print_info("🚀 Check the config file and run `opraas setup` to setup the project");
 
         Ok(())
     }

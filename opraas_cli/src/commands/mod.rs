@@ -1,13 +1,13 @@
 pub mod build;
 pub mod deploy;
-pub mod setup;
+pub mod init;
 pub mod dev;
 pub mod monitor;
 pub mod inspect;
 pub mod new;
 
 pub use new::NewCommand;
-pub use setup::SetupCommand;
+pub use init::InitCommand;
 pub use build::BuildCommand;
 pub use deploy::DeployCommand;
 pub use dev::DevCommand;

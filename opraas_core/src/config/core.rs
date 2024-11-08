@@ -1,9 +1,9 @@
-use crate::config::{AccountsConfig, NetworkConfig, SourcesConfig};
+use crate::config::{AccountsConfig, NetworkConfig, ArtifactsConfig};
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct CoreConfig {
-    pub sources: SourcesConfig,
+    pub artifacts: ArtifactsConfig,
     pub accounts: AccountsConfig,
     pub network: NetworkConfig,
 }
@@ -25,7 +25,7 @@ impl CoreConfig {
 
     pub fn new_from_null() -> Self {
         Self {
-            sources: SourcesConfig::null(),
+            artifacts: ArtifactsConfig::null(),
             accounts: AccountsConfig::null(),
             network: NetworkConfig::null(),
         }
