@@ -63,7 +63,8 @@ impl crate::artifacts::build::BuildArtifact for NodeBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.node.image_tag,
-            &format!("{}/{}:{name}", repository, &cfg.core.artifacts.node.image_tag),
+            format!("{}:{}", &cfg.core.artifacts.node.image_tag, name).as_str(),
+            repository,
         )?;
 
         Ok(())

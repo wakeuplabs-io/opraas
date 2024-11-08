@@ -135,10 +135,8 @@ impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.batcher.image_tag,
-            &format!(
-                "{}/{}:{}",
-                repository, &cfg.core.artifacts.batcher.image_tag, name
-            ),
+            format!("{}:{}", &cfg.core.artifacts.batcher.image_tag, name).as_str(),
+            repository,
         )?;
 
         Ok(())
@@ -191,7 +189,7 @@ mod batcher_build_artifact_tests {
         mock_docker
             .expect_push()
             .times(1)
-            .returning(|_, _| Ok(()));
+            .returning(|_, _, _| Ok(()));
 
         let batcher_artifact = BatcherBuildArtifact {
             docker: Box::new(mock_docker),

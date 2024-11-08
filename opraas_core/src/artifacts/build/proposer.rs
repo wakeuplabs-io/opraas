@@ -63,9 +63,10 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.proposer.image_tag,
-            &format!("{}/{}:{name}", repository, &cfg.core.artifacts.proposer.image_tag),
+            format!("{}:{}", &cfg.core.artifacts.proposer.image_tag, name).as_str(),
+            repository,
         )?;
-
+        
         Ok(())
     }
 }

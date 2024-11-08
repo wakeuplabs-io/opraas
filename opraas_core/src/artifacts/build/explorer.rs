@@ -63,9 +63,9 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.explorer.image_tag,
-            &format!("{}/{}:{}", repository, &cfg.core.artifacts.explorer.image_tag, name),
+            format!("{}:{}", &cfg.core.artifacts.explorer.image_tag, name).as_str(),
+            repository,
         )?;
-
         Ok(())
     }
 }
@@ -73,7 +73,6 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::artifacts::build::artifact::BuildArtifact;
     use crate::artifacts::initializable::Initializable;
     use crate::config::Config;
     use mockall::predicate;

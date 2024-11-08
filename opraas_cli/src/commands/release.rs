@@ -72,7 +72,7 @@ impl crate::Runnable for ReleaseCommand {
         let cwd = std::env::current_dir()?;
 
         // avoid releasing without committed changes
-        if !self.git.has_uncommitted_changes(cwd.to_str().unwrap()) {
+        if self.git.has_uncommitted_changes(cwd.to_str().unwrap()) {
             print_error("You have uncommitted changes. Please commit first.");
             return Ok(());
         }

@@ -63,7 +63,8 @@ impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.geth.image_tag,
-            &format!("{}/{}:{name}", repository, &cfg.core.artifacts.geth.image_tag),
+            format!("{}:{}", &cfg.core.artifacts.geth.image_tag, name).as_str(),
+            repository,
         )?;
 
         Ok(())

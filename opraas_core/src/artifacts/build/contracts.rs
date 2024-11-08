@@ -63,7 +63,8 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.contracts.image_tag,
-            &format!("{}/{}:{}", repository, &cfg.core.artifacts.contracts.image_tag, name),
+            format!("{}:{}", &cfg.core.artifacts.contracts.image_tag, name).as_str(),
+            repository,
         )?;
 
         Ok(())
