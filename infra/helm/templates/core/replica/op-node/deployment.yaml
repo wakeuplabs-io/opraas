@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.node.name }}-replica-deployment
+  labels:
+    app: {{ .Values.node.name }}-replica
+spec:
+  replicas: {{ .Values.geth.deployment.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Values.node.name }}-replica
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.node.name }}-replica
+    spec:
+      containers:
+        - name: {{ .Values.node.name }}-replica
+          image: {{ .Values.node.image.repository }}:{{ .Values.node.image.tag }}
+          ports:
+            - name: http
+              containerPort: 8547
+            - name: p2p
+              containerPort: 9221
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.node.name }}-replica-env
+          volumeMounts:
+            - name: bin-data
+              mountPath: /app/data/bin
+            - name: configurations
+              mountPath: /app/data/configurations
+          readinessProbe:
+            httpGet:
+              path: /health
+              port: rpc
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: rpc
+            initialDelaySeconds: 15
+            periodSeconds: 20
+      volumes:
+        - name: bin-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.node.name }}-replica-pvc-bin
+        - name: configurations
+          persistentVolumeClaim:
+            claimName: {{ .Values.node.name }}-replica-pvc-configurations

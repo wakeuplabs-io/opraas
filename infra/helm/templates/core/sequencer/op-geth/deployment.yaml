@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.geth.name }}-sequencer-deployment
+  labels:
+    app: {{ .Values.geth.name }}-sequencer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.geth.name }}-sequencer
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.geth.name }}-sequencer
+    spec:
+      containers:
+        - name: {{ .Values.geth.name }}-sequencer
+          image: {{ .Values.geth.image.repository }}:{{ .Values.geth.image.tag }}
+          ports:
+            - containerPort: 8545
+            - containerPort: 8546
+            - containerPort: 7300
+          volumeMounts:
+            - name: bin-data
+              mountPath: /app/data/bin
+            - name: datadir
+              mountPath: /app/data/datadir
+            - name: configurations
+              mountPath: /app/data/configurations
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.geth.name }}-sequencer-env
+      volumes:
+        - name: bin-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.geth.name }}-sequencer-pvc-bin
+        - name: datadir
+          persistentVolumeClaim:
+            claimName: {{ .Values.geth.name }}-sequencer-pvc-datadir
+        - name: configurations
+          persistentVolumeClaim:
+            claimName: {{ .Values.geth.name }}-sequencer-pvc-configurations

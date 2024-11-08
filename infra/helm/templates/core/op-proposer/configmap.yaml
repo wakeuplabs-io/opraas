@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.proposer.name }}-env
+  labels:
+    app: {{ .Values.proposer.name }}
+data:
+  EXAMPLE_ENV_VAR: "example_value"

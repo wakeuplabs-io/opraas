@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Values.proposer.name }}-deployment
+  labels:
+    app: {{ .Values.proposer.name }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ .Values.proposer.name }}
+  template:
+    metadata:
+      labels:
+        app: {{ .Values.proposer.name }}
+    spec:
+      containers:
+        - name: {{ .Values.proposer.name }}
+          image: {{ .Values.proposer.image.repository }}:{{ .Values.proposer.image.tag }}
+          ports:
+            - containerPort: 8560
+            - containerPort: 7300
+          volumeMounts:
+            - name: bin-data
+              mountPath: /app/data/bin
+            - name: deployments
+              mountPath: /app/data/deployments
+          envFrom:
+            - configMapRef:
+                name: {{ .Values.proposer.name }}-env
+      volumes:
+        - name: bin-data
+          persistentVolumeClaim:
+            claimName: {{ .Values.proposer.name }}-pvc-bin
+        - name: deployments
+          persistentVolumeClaim:
+            claimName: {{ .Values.proposer.name }}-pvc-deployments

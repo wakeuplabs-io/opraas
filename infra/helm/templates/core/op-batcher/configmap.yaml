@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Values.batcher.name }}-env
+  labels:
+    app: {{ .Values.batcher.name }}
+data:
+  EXAMPLE_ENV_VAR: "example_value"
