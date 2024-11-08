@@ -1,7 +1,9 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: proxyd-config
+  name: {{ .Values.proxyd.name }}-env
+  labels:
+    app: {{ .Values.proxyd.name }}
 data:
   proxyd.toml: |
     # proxyd.toml
@@ -22,12 +24,12 @@ data:
     log_level = "info"
 
     [redis]
-    url = "redis://{{ .Values.redis.service.name }}:{{ .Values.redis.service.port }}"
+    url = "redis://{{ .Values.redis.name }}:6379"
 
     [metrics]
     enabled = true
-    host = "0.0.0.0"
-    port = 9761 # 9761
+    host = "0.0.0.0" # kube-prometheus-stack:9090 # Check if we can make this name dynamic
+    port = 9090 # 9090 or 9761
 
     [backend]
     response_timeout_seconds = 5
@@ -39,38 +41,48 @@ data:
     max_error_rate_threshold = 0.3
 
     [backends]
-    [backends.infura]
-    rpc_url = "{{ .Values.proxyd.config.rpc_url_infura }}"
-    ws_url = "{{ .Values.proxyd.config.ws_url_infura }}"
-    username = "{{ .Values.proxyd.config.infura_username }}"
-    password = "{{ .Values.proxyd.config.infura_password }}"
-    max_rps = 3
-    max_ws_conns = 1
-    ca_file = ""
-    client_cert_file = ""
-    client_key_file = ""
-    consensus_receipts_target = "eth_getBlockReceipts"
+    [backends.sequencer]
+    rpc_url = "http://{{ .Values.geth.name }}-sequencer:8545"
+    ws_url = "http://{{ .Values.geth.name }}-sequencer:8546"
+    max_rps = 10
+    max_ws_conns = 5
+
+    [backends.replicas]
+    rpc_url = "http://{{ .Values.geth.name }}-sequencer:8545"
+    ws_url = "http://{{ .Values.geth.name }}-sequencer:8546"
+    max_rps = 10
+    max_ws_conns = 5
 
     [backends.alchemy]
     rpc_url = "{{ .Values.proxyd.config.rpc_url_alchemy }}"
     ws_url = "{{ .Values.proxyd.config.ws_url_alchemy }}"
-    username = "{{ .Values.proxyd.config.alchemy_username }}"
-    password = "{{ .Values.proxyd.config.alchemy_password }}"
+    username = "{{ .Values.proxyd.config.alchemy_username }}" # check how to manage as secret
+    password = "{{ .Values.proxyd.config.alchemy_password }}" # check how to manage as secret
     max_rps = 3
     max_ws_conns = 1
     consensus_receipts_target = "alchemy_getTransactionReceipts"
 
     [backend_groups]
     [backend_groups.main]
-    backends = ["infura"]
-
-    [backend_groups.alchemy]
-    backends = ["alchemy"]
+    backends = ["replicas", "alchemy"]
+    # In case backends can't be targeted by rpc_method_mapping and require a group for it:
+    # [backend_groups.sequencer]
+    # backends = ["sequencer"]
+    # [backend_groups.alchemy]
+    # backends = ["alchemy"]
 
     [authentication]
     secret = "test"
 
     [rpc_method_mappings]
-    eth_call = "main"
-    eth_chainId = "main"
-    eth_blockNumber = "alchemy"
+    eth_sendTransaction = "sequencer"         # Send directly to sequencer
+    eth_sendRawTransaction = "sequencer"      # Transaction submission
+    eth_syncing = "sequencer"                 # Sync status
+    net_peerCount = "sequencer"               # Node status info
+    eth_blockNumber = "alchemy"               # Use Alchemy for fallback
+    eth_getLogs = "alchemy"                   # Offload log requests to Alchemy
+    eth_call = "main"                         # Route to main group
+    eth_chainId = "main"                      # Route to main group
+    eth_getBalance = "main"                   # Balance queries across all
+    eth_getTransactionByHash = "main"         # Transaction retrieval
+    eth_getBlockByNumber = "main"             # Block retrieval
