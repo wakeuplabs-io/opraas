@@ -1,7 +1,10 @@
-use crate::console::{print_info, print_success, print_warning, style_spinner};
+use crate::{
+    console::{print_info, print_success, print_warning, style_spinner},
+    git::TGit,
+};
 use async_trait::async_trait;
 use clap::ValueEnum;
-use dialoguer::{theme::ColorfulTheme, Input};
+use dialoguer::{theme::ColorfulTheme, Confirm, Input};
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::artifacts::build::{
     BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
@@ -10,6 +13,7 @@ use opraas_core::artifacts::build::{
 use std::{sync::Arc, thread, time::Instant};
 
 pub struct ReleaseCommand {
+    git: Box<dyn TGit + Send + Sync>,
     artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>,
 }
 
@@ -53,30 +57,48 @@ impl ReleaseCommand {
             }
         }
 
-        Self { artifacts }
+        Self {
+            artifacts,
+            git: Box::new(crate::git::Git::new()),
+        }
     }
 }
 
 #[async_trait]
 impl crate::Runnable for ReleaseCommand {
     async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        let started = Instant::now();
         let core_cfg = Arc::new(cfg.build_core()?);
+        let cwd = std::env::current_dir()?;
+
+        // avoid releasing without committed changes
+        if !self.git.has_uncommitted_changes(cwd.to_str().unwrap()) {
+            print_warning("You have uncommitted changes. Please commit first.");
+            return Ok(());
+        }
 
         // request release name and repository
         print_info("We'll tag your local builds and push them to your repository.");
         print_warning("Make sure you're docker user has push access to the repository");
-
+       
         let release_name: String = Input::with_theme(&ColorfulTheme::default())
             .with_prompt("Input release name (e.g. v0.1.0)")
             .interact_text()
             .unwrap();
         let release_repository: String = Input::with_theme(&ColorfulTheme::default())
-            .with_prompt("Input Docker repository url (e.g. docker.io/wakeup-labs) ")
+            .with_prompt("Input Docker repository url (e.g. docker.io/wakeuplabs) ")
             .interact_text()
             .unwrap();
 
+        let tag_git = Confirm::with_theme(&ColorfulTheme::default())
+            .with_prompt("Would you also like to tag your local git repository?")
+            .interact()
+            .unwrap();
+        if tag_git {
+            self.git.tag_release(&cwd.to_str().unwrap(), &release_name)?;
+        }
+
         // Iterate over the artifacts and build
+        let started = Instant::now();
         let m = MultiProgress::new();
         let handles: Vec<_> = self
             .artifacts

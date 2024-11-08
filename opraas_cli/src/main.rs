@@ -2,6 +2,7 @@ mod commands;
 mod config;
 mod console;
 mod utils;
+pub use utils::*;
 
 use build::BuildTargets;
 use clap::{Parser, Subcommand};
