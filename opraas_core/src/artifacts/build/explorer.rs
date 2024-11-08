@@ -63,7 +63,7 @@ impl crate::artifacts::build::BuildArtifact for ExplorerBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.explorer.image_tag,
-            &format!("{}/{}", repository, &cfg.core.artifacts.explorer.image_tag),
+            &format!("{}/{}:{}", repository, &cfg.core.artifacts.explorer.image_tag, name),
         )?;
 
         Ok(())

@@ -63,7 +63,7 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.proposer.image_tag,
-            &format!("{}/{}", repository, &cfg.core.artifacts.proposer.image_tag),
+            &format!("{}/{}:{name}", repository, &cfg.core.artifacts.proposer.image_tag),
         )?;
 
         Ok(())
@@ -73,7 +73,6 @@ impl crate::artifacts::build::BuildArtifact for ProposerBuildArtifact {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::artifacts::build::artifact::BuildArtifact;
     use crate::artifacts::initializable::Initializable;
     use crate::config::Config;
     use mockall::predicate;

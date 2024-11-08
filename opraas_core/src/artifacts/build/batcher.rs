@@ -32,48 +32,9 @@ impl crate::artifacts::initializable::Initializable for BatcherBuildArtifact {
     }
 }
 
-impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
-    fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        if !self.filesystem.exists(&cfg.tree.src.batcher) {
-            return Err("Batcher src is not available".into());
-        }
-
-        if !self.filesystem.exists(&cfg.tree.infra.docker.batcher) {
-            return Err(format!(
-                "Batcher dockerfile is not available at {}. Make sure CloudArtifact.setup() has been called",
-                &cfg.tree.infra.docker.batcher.display()
-            )
-            .into());
-        }
-
-        self.docker.build(
-            &cfg.tree.src.batcher.as_path().to_str().unwrap(),
-            &cfg.tree.infra.docker.batcher.as_path().to_str().unwrap(),
-            &cfg.core.artifacts.batcher.image_tag,
-        )?;
-
-        Ok(())
-    }
-
-    fn release(
-        &self,
-        cfg: &crate::config::Config,
-        name: &str,
-        repository: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        self.docker.push(
-            &cfg.core.artifacts.batcher.image_tag,
-            &format!("{}/{}", repository, &cfg.core.artifacts.batcher.image_tag),
-        )?;
-
-        Ok(())
-    }
-}
-
 #[cfg(test)]
-mod setup_tests {
+mod initialize_tests {
     use super::*;
-    use crate::artifacts::build::artifact::BuildArtifact;
     use crate::artifacts::initializable::Initializable;
     use crate::config::Config;
     use mockall::predicate;
@@ -142,8 +103,50 @@ mod setup_tests {
     }
 }
 
+
+impl crate::artifacts::build::BuildArtifact for BatcherBuildArtifact {
+    fn build(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        if !self.filesystem.exists(&cfg.tree.src.batcher) {
+            return Err("Batcher src is not available".into());
+        }
+
+        if !self.filesystem.exists(&cfg.tree.infra.docker.batcher) {
+            return Err(format!(
+                "Batcher dockerfile is not available at {}. Make sure CloudArtifact.setup() has been called",
+                &cfg.tree.infra.docker.batcher.display()
+            )
+            .into());
+        }
+
+        self.docker.build(
+            &cfg.tree.src.batcher.as_path().to_str().unwrap(),
+            &cfg.tree.infra.docker.batcher.as_path().to_str().unwrap(),
+            &cfg.core.artifacts.batcher.image_tag,
+        )?;
+
+        Ok(())
+    }
+
+    fn release(
+        &self,
+        cfg: &crate::config::Config,
+        name: &str,
+        repository: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        self.docker.push(
+            &cfg.core.artifacts.batcher.image_tag,
+            &format!(
+                "{}/{}:{}",
+                repository, &cfg.core.artifacts.batcher.image_tag, name
+            ),
+        )?;
+
+        Ok(())
+    }
+}
+
 #[cfg(test)]
-mod build_tests {
+mod batcher_build_artifact_tests {
     use super::*;
     use crate::artifacts::build::artifact::BuildArtifact;
     use crate::config::Config;
@@ -172,6 +175,32 @@ mod build_tests {
 
         // act
         let result = batcher_artifact.build(&config);
+
+        // assert
+        assert!(result.is_ok());
+    }
+
+    #[test]
+    fn test_release_releases_batcher() {
+        let config = Config {
+            tree: crate::config::TreeConfig::new_from_root(std::env::current_dir().unwrap()),
+            core: crate::config::CoreConfig::new_from_null(),
+        };
+
+        let mut mock_docker = docker::MockTDockerBuilder::new();
+        mock_docker
+            .expect_push()
+            .times(1)
+            .returning(|_, _| Ok(()));
+
+        let batcher_artifact = BatcherBuildArtifact {
+            docker: Box::new(mock_docker),
+            filesystem: Box::new(filesystem::Fs::new()),
+            downloader: Box::new(git::MockGitReleaseDownloader::new()),
+        };
+
+        // act
+        let result = batcher_artifact.release(&config, "test", "test");
 
         // assert
         assert!(result.is_ok());

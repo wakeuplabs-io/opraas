@@ -57,10 +57,15 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
 
     fn release(
         &self,
-        _cfg: &crate::config::Config,
+        cfg: &crate::config::Config,
         name: &str,
         repository: &str,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        self.docker.push(
+            &cfg.core.artifacts.contracts.image_tag,
+            &format!("{}/{}:{}", repository, &cfg.core.artifacts.contracts.image_tag, name),
+        )?;
+
         Ok(())
     }
 }
@@ -68,7 +73,6 @@ impl crate::artifacts::build::BuildArtifact for ContractsBuildArtifact {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::artifacts::build::artifact::BuildArtifact;
     use crate::artifacts::initializable::Initializable;
     use crate::config::Config;
     use mockall::predicate;
