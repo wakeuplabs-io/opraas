@@ -1,8 +1,10 @@
+mod testnet;
 mod commands;
 mod config;
 mod console;
 mod utils;
 pub use utils::*;
+
 
 use build::BuildTargets;
 use clap::{Parser, Subcommand};
@@ -78,7 +80,7 @@ async fn main() {
         Commands::New { name } => NewCommand::new(name).run(&config).await,
         Commands::Init { target } => InitCommand::new(target).run(&config).await,
         Commands::Build { target } => BuildCommand::new(target).run(&config).await,
-        Commands::Dev {} => DevCommand.run(&config).await,
+        Commands::Dev {} => DevCommand::new().run(&config).await,
         Commands::Release { target }  => ReleaseCommand::new(target).run(&config).await,
         Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
         Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,

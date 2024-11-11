@@ -1,6 +1,4 @@
-use std::path::PathBuf;
-
-use assert_cmd::Command;
+use std::{path::PathBuf, process::Command};
 use async_trait::async_trait;
 
 use crate::console::{print_info, print_success};
