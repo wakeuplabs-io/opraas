@@ -1,5 +1,5 @@
-use crate::config::Config;
 use std::path::PathBuf;
+use crate::config::artifacts::ArtifactConfig;
 
 pub struct Artifact<'a> {
     pub source: PathBuf,
@@ -9,31 +9,14 @@ pub struct Artifact<'a> {
 }
 
 impl<'a> Artifact<'a> {
-    pub fn new(source: PathBuf) -> Self {
+    pub fn new(source: &PathBuf, config: &'a ArtifactConfig) -> Self {
         Self {
-            source,
-            release_url: "",
-            release_tag: "",
-            image_tag: "",
+            source: source.to_path_buf(),
+            release_url: &config.release_url,
+            release_tag: &config.release_tag,
+            image_tag: &config.image_tag,
         }
     }
-}
-
-pub trait TArtifactInitializerService {
-    fn initialize(
-        &self,
-        cfg: &Config,
-        artifact: &Artifact,
-    ) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-pub trait TArtifactBuilderService {
-    fn build(&self, cfg: &Config, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
-    fn release(&self, cfg: &Config, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-pub trait TArtifactDeployerService {
-    fn deploy(&self, cfg: &Config, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 pub trait TArtifactSourceRepository {

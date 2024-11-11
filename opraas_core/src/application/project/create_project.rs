@@ -1,11 +1,15 @@
 use crate::{domain, infra};
 
-pub struct ProjectService {
+pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
     version_control: Box<dyn infra::version_control::TVersionControl>
 }
 
-impl ProjectService {
+pub trait TCreateProjectService {
+    fn create(&self, root: &std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+impl CreateProjectService {
     pub fn new() -> Self {
         Self {
             repository: Box::new(infra::repositories::project::InMemoryProjectRepository::new()),
@@ -14,11 +18,11 @@ impl ProjectService {
     }
 }
 
-impl domain::project::TProjectService for ProjectService {
+impl TCreateProjectService for CreateProjectService {
     fn create(
         &self,
         root: &std::path::PathBuf,
-    ) -> Result<domain::project::Project, Box<dyn std::error::Error>> {
+    ) -> Result<(), Box<dyn std::error::Error>> {
         if root.exists() {
             return Err("Directory already exists".into());
         }

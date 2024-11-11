@@ -1,8 +1,14 @@
 use crate::{domain, git};
 
-pub struct GitArtifactSource;
+pub struct GitArtifactSourceRepository;
 
-impl domain::artifact::TArtifactSourceRepository for GitArtifactSource {
+impl GitArtifactSourceRepository {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository {
     fn pull(
         &self,
         release_url: &str,

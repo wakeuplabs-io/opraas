@@ -1,15 +1,13 @@
 use crate::console::{print_info, print_success, style_spinner};
-use async_trait::async_trait;
-use indicatif::{HumanDuration, MultiProgress, ProgressBar};
-use opraas_core::artifacts::{build::{
-    BatcherBuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
-    GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
-}, cloud::infra::InfraCloudArtifact, initializable::Initializable};
-use std::{sync::Arc, thread, time::Instant};
 use clap::ValueEnum;
+use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use opraas_core::application::initialize_artifact::{ArtifactInitializer, TArtifactInitializerService};
+use opraas_core::config::{Config, CoreConfig};
+use opraas_core::domain::{artifact::Artifact, project::Project};
+use std::{sync::Arc, thread, time::Instant};
 
-pub struct InitCommand {
-    artifacts: Vec<(&'static str, Arc<dyn Initializable + Send + Sync>)>, 
+pub struct InitCommand<'a> {
+    artifacts: Vec<(&'static str, Arc<Artifact<'a>>)>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -23,39 +21,50 @@ pub enum InitTargets {
     All,
 }
 
-impl InitCommand {
-    pub fn new(target: InitTargets) -> Self {
-        let mut artifacts: Vec<(&'static str, Arc<dyn Initializable + Send + Sync>)> = vec![];
-        
-        // infra is required for all as it contains dockerfiles for build processes
-        artifacts.push(("Infra", Arc::new(InfraCloudArtifact::new())));
+impl<'a> InitCommand<'a> {
+    pub fn new(target: InitTargets, project: &Project, cfg: &'a CoreConfig) -> Self {
+        let mut artifacts: Vec<(&'static str, Arc<Artifact<'a>>)> = vec![
+            (
+                "Batcher",
+                Arc::new(Artifact::new(&project.src.batcher, &cfg.artifacts.batcher)),
+            ),
+            (
+                "Node",
+                Arc::new(Artifact::new(&project.src.node, &cfg.artifacts.node)),
+            ),
+            (
+                "Contracts",
+                Arc::new(Artifact::new(&project.src.contracts, &cfg.artifacts.contracts)),
+            ),
+            (
+                "Explorer",
+                Arc::new(Artifact::new(&project.src.explorer, &cfg.artifacts.explorer)),
+            ),
+            (
+                "Proposer",
+                Arc::new(Artifact::new(&project.src.proposer, &cfg.artifacts.proposer)),
+            ),
+            (
+                "Geth",
+                Arc::new(Artifact::new(&project.src.geth, &cfg.artifacts.geth)),
+            ),
+        ];
 
-        match target {
-            InitTargets::Batcher => artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new()))),
-            InitTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
-            InitTargets::Contracts => artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new()))),
-            InitTargets::Explorer => artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new()))),
-            InitTargets::Proposer => artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new()))),
-            InitTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
-            InitTargets::All => {
-                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())));
-                artifacts.push(("Node", Arc::new(NodeBuildArtifact::new())));
-                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())));
-                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())));
-                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())));
-                artifacts.push(("Geth", Arc::new(GethBuildArtifact::new())));
-            },
-        }
+        artifacts.retain(|(name, _)| match target {
+            InitTargets::Batcher => *name == "Batcher",
+            InitTargets::Node => *name == "Node",
+            InitTargets::Contracts => *name == "Contracts",
+            InitTargets::Explorer => *name == "Explorer",
+            InitTargets::Proposer => *name == "Proposer",
+            InitTargets::Geth => *name == "Geth",
+            _ => false,
+        });
 
-        Self { artifacts } 
+        Self { artifacts }
     }
-}
 
-#[async_trait]
-impl crate::Runnable for InitCommand {
-    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(&'static self) -> Result<(), Box<dyn std::error::Error>> {
         let started = Instant::now();
-        let core_cfg = Arc::new(cfg.build_core()?);
 
         print_info("📦 Downloading and preparing artifacts...");
 
@@ -65,7 +74,6 @@ impl crate::Runnable for InitCommand {
             .artifacts
             .iter()
             .map(|&(name, ref artifact)| {
-                let core_cfg = Arc::clone(&core_cfg);
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
@@ -73,12 +81,12 @@ impl crate::Runnable for InitCommand {
                 );
 
                 thread::spawn(move || {
-                    match artifact.initialize(&core_cfg) {
+                    match ArtifactInitializer::new().initialize(&artifact) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
                             spinner.finish_with_message(format!("❌ Error setting up {}", name));
                             return Err(e.to_string());
-                        },
+                        }
                     }
                     Ok(())
                 })
@@ -88,9 +96,16 @@ impl crate::Runnable for InitCommand {
         // Wait for all threads to complete
         for handle in handles {
             match handle.join() {
-                Ok(Ok(_)) => {},
-                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))), 
-                Err(_) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, "Thread panicked"))), // Panic
+                Ok(Ok(_)) => {}
+                Ok(Err(e)) => {
+                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)))
+                }
+                Err(_) => {
+                    return Err(Box::new(std::io::Error::new(
+                        std::io::ErrorKind::Other,
+                        "Thread panicked",
+                    )))
+                }
             }
         }
         m.clear()?;

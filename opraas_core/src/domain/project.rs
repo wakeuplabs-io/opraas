@@ -1,5 +1,7 @@
 use std::path::PathBuf;
 
+use crate::config::{CoreConfig};
+
 #[derive(Debug, Clone)]
 pub struct Project {
     pub root: PathBuf,
@@ -35,10 +37,6 @@ pub struct Src {
     pub batcher: PathBuf,
     pub proposer: PathBuf,
     pub explorer: PathBuf,
-}
-
-pub trait TProjectService {
-    fn create(&self, path: &PathBuf) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 pub trait TProjectRepository {
