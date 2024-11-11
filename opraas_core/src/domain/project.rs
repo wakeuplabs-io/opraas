@@ -37,12 +37,11 @@ pub struct Src {
     pub explorer: PathBuf,
 }
 
-pub trait ProjectService {
-    fn write(&self, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
-    fn exists(&self, filepath: &PathBuf) -> bool;
+pub trait TProjectService {
+    fn create(&self, path: &PathBuf) -> Result<(), Box<dyn std::error::Error>>;
 }
 
-pub trait ProjectRepository {
+pub trait TProjectRepository {
     fn write(&self, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, filepath: &PathBuf) -> bool;
 }

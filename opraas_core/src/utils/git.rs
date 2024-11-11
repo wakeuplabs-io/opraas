@@ -1,57 +1,26 @@
-use mockall::automock;
 use std::fs;
 use std::io::Cursor;
 use std::path::Path;
 
-pub struct Git;
+pub fn download_release(
+    release_url: &str,
+    release_tag: &str,
+    destination: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    download_and_extract(&format!("{}/archive/refs/tags/{}.zip", release_url, release_tag), destination)?;
 
-impl Git {
-    pub fn new() -> Self {
-        Self {}
-    }
+    Ok(())
 }
 
-#[automock]
-pub trait GitReleaseDownloader: Send + Sync {
-    fn download_release(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>>;
+pub fn download_release_zipped_asset(
+    release_url: &str,
+    release_tag: &str,
+    zip_name: &str,
+    destination: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    download_and_extract(&format!("{}/releases/download/{}/{}.zip", release_url, release_tag, zip_name), destination)?;
 
-    fn download_release_zipped_asset(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        asset_name: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-impl GitReleaseDownloader for Git {
-    fn download_release(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        download_and_extract(&format!("{}/archive/refs/tags/{}.zip", release_url, release_tag), destination)?;
-
-        Ok(())
-    }
-
-    fn download_release_zipped_asset(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        zip_name: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        download_and_extract(&format!("{}/releases/download/{}/{}.zip", release_url, release_tag, zip_name), destination)?;
-
-        Ok(())
-    }
+    Ok(())
 }
 
 fn download_and_extract(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {

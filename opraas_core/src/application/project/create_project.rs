@@ -1,56 +1,43 @@
-use async_trait::async_trait;
-use std::{path::PathBuf, process::Command};
+use crate::{domain, infra};
 
-// TODO: git repository
-// TODO: filesystem repository
-
-pub struct NewCommand {
-    name: String,
-    project: Box<dyn crate::utils::system::TSystem>,
-    version_control: Box<dyn crate::utils::system::TSystem>,
+pub struct ProjectService {
+    repository: Box<dyn domain::project::TProjectRepository>,
+    version_control: Box<dyn infra::version_control::TVersionControl>
 }
 
-impl NewCommand {
-    pub fn new(name: String) -> Self {
+impl ProjectService {
+    pub fn new() -> Self {
         Self {
-            name,
-            system: Box::new(crate::utils::system::System::new()),
+            repository: Box::new(infra::repositories::project::InMemoryProjectRepository::new()),
+            version_control: Box::new(infra::version_control::GitVersionControl::new()),
         }
     }
+}
 
-    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let proy_dir = PathBuf::from(&self.name);
-
-        if proy_dir.exists() {
+impl domain::project::TProjectService for ProjectService {
+    fn create(
+        &self,
+        root: &std::path::PathBuf,
+    ) -> Result<domain::project::Project, Box<dyn std::error::Error>> {
+        if root.exists() {
             return Err("Directory already exists".into());
         }
 
         // create dir
-        std::fs::create_dir(&proy_dir)?;
-        std::fs::write(&proy_dir.join("README.md"), README)?;
-        std::fs::write(&proy_dir.join(".gitignore"), GITIGNORE)?;
-        std::fs::write(&proy_dir.join(".env"), ENV_FILE)?;
+        self.repository.write(&root.join("README.md"), README)?;
+        self.repository.write(&root.join(".gitignore"), GITIGNORE)?;
+        self.repository.write(&root.join(".env"), ENV_FILE)?;
+        self.repository.write(&root.join(".env.sample"), ENV_FILE)?;
 
         // create default config
-        let null_cfg = opraas_core::config::CoreConfig::new_from_null();
-        null_cfg.to_toml(&proy_dir.join("config.toml"))?;
+        // let null_cfg = opraas_core::config::CoreConfig::new_from_null();
+        // null_cfg.to_toml(&proy_dir.join("config.toml"))?;
 
         // initialize git and create first commit
-        self.system
-            .execute_command(Command::new("git").arg("init").current_dir(&proy_dir))?;
-        self.system.execute_command(
-            Command::new("git")
-                .arg("add")
-                .arg(".")
-                .current_dir(&proy_dir),
-        )?;
-        self.system.execute_command(
-            Command::new("git")
-                .arg("commit")
-                .arg("-m")
-                .arg("Initial commit")
-                .current_dir(&proy_dir),
-        )?;
+        self.version_control.init(&root.to_str().unwrap())?;
+        self.version_control.stage(&root.to_str().unwrap())?;
+        self.version_control
+            .commit(&root.to_str().unwrap(), "Initial commit")?;
 
         Ok(())
     }

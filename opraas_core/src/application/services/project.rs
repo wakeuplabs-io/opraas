@@ -1,5 +1,0 @@
-
-
-struct ProjectService {
-    repository: crate::
-}
