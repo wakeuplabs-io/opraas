@@ -1,4 +1,4 @@
-use crate::{domain, infra};
+use crate::{config::CoreConfig, domain, infra};
 
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
@@ -27,15 +27,14 @@ impl TCreateProjectService for CreateProjectService {
             return Err("Directory already exists".into());
         }
 
-        // create dir
         self.repository.write(&root.join("README.md"), README)?;
         self.repository.write(&root.join(".gitignore"), GITIGNORE)?;
         self.repository.write(&root.join(".env"), ENV_FILE)?;
         self.repository.write(&root.join(".env.sample"), ENV_FILE)?;
-
-        // create default config
-        // let null_cfg = opraas_core::config::CoreConfig::new_from_null();
-        // null_cfg.to_toml(&proy_dir.join("config.toml"))?;
+        self.repository.write(
+            &root.join("config.toml"),
+            &toml::to_string(&CoreConfig::default()).unwrap(),
+        )?;
 
         // initialize git and create first commit
         self.version_control.init(&root.to_str().unwrap())?;
