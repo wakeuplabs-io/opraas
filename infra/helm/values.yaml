@@ -23,44 +23,6 @@ demo:
     port: 80
     targetPort: 80
 
-proxyd:
-  name: proxyd
-  image:
-    repository: wakeuplabs/proxyd
-    tag: latest
-  service:
-    port: 8080
-    targetPort: 8080
-  config:
-    rpc_url_alchemy: ""
-    ws_url_alchemy: ""
-    alchemy_username: ""
-    alchemy_password: ""
-
-redis:
-  name: proxyd-redis
-  image:
-    repository: redis
-    tag: latest
-
-explorer:
-  enabled: false
-
-monitoring:
-  enabled: true
-
-kube-prometheus-stack:
-  grafana:
-    service:
-      port: 90
-  prometheus:
-    serviceAccount:
-      name: "" # prometheus
-  prometheus-node-exporter:
-    hostRootFsMount:
-      enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
-      mountPropagation: HostToContainer
-
 geth:
   name: op-geth
   deployment:
@@ -86,3 +48,73 @@ proposer:
   image:
     repository: wakeuplabs/op-proposer
     tag: latest
+
+proxyd:
+  name: proxyd
+  image:
+    repository: wakeuplabs/proxyd
+    tag: latest
+  service:
+    port: 8080
+    targetPort: 8080
+  config:
+    rpc_url_alchemy: "https://opt-sepolia.g.alchemy.com/v2/5600JheK0TTROlJ6O0wrc0gF3W9wIqm8"
+    ws_url_alchemy: "wss://opt-sepolia.g.alchemy.com/v2/5600JheK0TTROlJ6O0wrc0gF3W9wIqm8"
+
+redis:
+  name: proxyd-redis
+  image:
+    repository: redis
+    tag: latest
+
+explorer:
+  enabled: true
+
+monitoring:
+  enabled: true
+
+kube-prometheus-stack:
+  grafana:
+    ingress:
+      enabled: true
+      path: /grafana
+      hosts:
+        - "localhost"
+  prometheus:
+    serviceAccount:
+      name: "" # prometheus
+  prometheus-node-exporter:
+    hostRootFsMount:
+      enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
+      mountPropagation: HostToContainer
+
+blockscout-stack:
+  blockscout:
+    extraEnv:
+      - name: ECTO_USE_SSL
+        value: "false"
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: blockscout-secret
+            key: DATABASE_URL
+  frontend:
+    ingress:
+      enabled: true
+      paths: 
+        - path: /explorer
+      hostname: localhost
+    extraEnv:
+      - name: NEXT_PUBLIC_APP_HOST
+        value: localhost
+      - name: NEXT_PUBLIC_API_HOST
+        value: localhost
+
+blockscout:
+  postgres:
+    dbName: blockscout
+    user: userShouldBeSet
+    password: passwordShouldBeSet
+    image:
+      repository: postgres
+      tag: latest

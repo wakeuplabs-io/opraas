@@ -17,6 +17,7 @@ spec:
       containers:
         - name: {{ .Values.geth.name }}-replica
           image: {{ .Values.geth.image.repository }}:{{ .Values.geth.image.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
             - containerPort: 8545
             - containerPort: 8546

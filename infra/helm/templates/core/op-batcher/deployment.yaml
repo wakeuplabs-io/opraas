@@ -17,6 +17,7 @@ spec:
       containers:
         - name: {{ .Values.batcher.name }}
           image: {{ .Values.batcher.image.repository }}:{{ .Values.batcher.image.tag }} 
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
             - containerPort: 8548
             - containerPort: 7300

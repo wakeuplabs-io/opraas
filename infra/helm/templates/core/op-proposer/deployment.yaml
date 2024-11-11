@@ -17,6 +17,7 @@ spec:
       containers:
         - name: {{ .Values.proposer.name }}
           image: {{ .Values.proposer.image.repository }}:{{ .Values.proposer.image.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
             - containerPort: 8560
             - containerPort: 7300
