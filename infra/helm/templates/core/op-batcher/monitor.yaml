@@ -1,0 +1,10 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.batcher.name }}-monitor
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.batcher.name }}
+  endpoints:
+  - port: metrics

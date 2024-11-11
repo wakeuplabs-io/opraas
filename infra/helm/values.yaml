@@ -44,15 +44,18 @@ redis:
     tag: latest
 
 explorer:
-  enabled: true
+  enabled: false
 
 monitoring:
-  enabled: false
+  enabled: true
 
 kube-prometheus-stack:
   grafana:
     service:
       port: 90
+  prometheus:
+    serviceAccount:
+      name: "" # prometheus
   prometheus-node-exporter:
     hostRootFsMount:
       enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount

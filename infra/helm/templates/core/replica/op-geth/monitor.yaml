@@ -1,0 +1,10 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: {{ .Values.geth.name }}-replica-monitor
+spec:
+  selector:
+    matchLabels:
+      app: {{ .Values.geth.name }}-replica
+  endpoints:
+  - port: metrics
