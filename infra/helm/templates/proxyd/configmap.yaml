@@ -24,7 +24,7 @@ data:
     log_level = "info"
 
     [redis]
-    url = "redis://{{ .Values.redis.name }}:6379"
+    url = "redis://{{ .Values.redis.name }}-service:6379"
 
     [metrics]
     enabled = true
@@ -56,20 +56,17 @@ data:
     [backends.alchemy]
     rpc_url = "{{ .Values.proxyd.config.rpc_url_alchemy }}"
     ws_url = "{{ .Values.proxyd.config.ws_url_alchemy }}"
-    username = "{{ .Values.proxyd.config.alchemy_username }}" # check how to manage as secret
-    password = "{{ .Values.proxyd.config.alchemy_password }}" # check how to manage as secret
     max_rps = 3
     max_ws_conns = 1
     consensus_receipts_target = "alchemy_getTransactionReceipts"
 
     [backend_groups]
+    [backend_groups.sequencer]
+    backends = ["sequencer"]
     [backend_groups.main]
     backends = ["replicas", "alchemy"]
-    # In case backends can't be targeted by rpc_method_mapping and require a group for it:
-    # [backend_groups.sequencer]
-    # backends = ["sequencer"]
-    # [backend_groups.alchemy]
-    # backends = ["alchemy"]
+    [backend_groups.alchemy]
+    backends = ["alchemy"]
 
     [authentication]
     secret = "test"

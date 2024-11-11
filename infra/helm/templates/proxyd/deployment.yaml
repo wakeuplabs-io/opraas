@@ -17,6 +17,7 @@ spec:
       containers:
         - name: {{ .Values.proxyd.name }}
           image: {{ .Values.proxyd.image.repository }}:{{ .Values.proxyd.image.tag }}
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
             - containerPort: {{ .Values.proxyd.service.port }}
           volumeMounts:
@@ -27,4 +28,4 @@ spec:
       volumes:
       - name: config
         configMap:
-          name: {{ .Values.proxyd.name }}-config
+          name: {{ .Values.proxyd.name }}-env
