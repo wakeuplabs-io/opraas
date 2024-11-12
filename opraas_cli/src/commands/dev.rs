@@ -77,15 +77,3 @@ impl crate::Runnable for DevCommand {
         Ok(())
     }
 }
-
-impl DevCommand {
-    // Define your async cleanup method to handle resource cleanup on Ctrl+C
-    async fn cleanup(&self) -> Result<(), Box<dyn Error + Send + Sync>> {
-        print_info("Stopping testnet L1 node...");
-        // Insert any cleanup logic here, like stopping services or nodes
-        // For example:
-        self.testnet_node.stop();
-
-        Ok(())
-    }
-}

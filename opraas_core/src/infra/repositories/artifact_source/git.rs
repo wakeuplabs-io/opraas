@@ -12,16 +12,27 @@ impl GitArtifactSourceRepository {
 }
 
 impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository {
-    fn pull(
-        &self,
-        artifact: &Artifact,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        let (release_url, release_tag) = artifact.source_info();
+    fn pull(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>> {
+        let (source_repo, source_tag) = artifact.source_info();
 
-        // TODO: refactor download release to take better paths
-        git::download_release(release_url, release_tag, artifact.context().as_path().to_str().unwrap())?;
+        git::download_release(
+            source_repo,
+            source_tag,
+            artifact.context().as_path().to_str().unwrap(),
+        )?;
 
         // download dockerfile for infra
+        match artifact {
+            Artifact::Batcher(..) => {
+                git::download_release_asset(
+                    "wakeuplabs-io/op-ruaas",
+                    "v0.0.2",
+                    "infra/docker/Node.dockerfile",
+                    artifact.dockerfile().as_path().to_str().unwrap(),
+                )?;
+            }
+            _ => panic!("not implemented"),
+        };
 
         Ok(())
     }

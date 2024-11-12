@@ -13,48 +13,40 @@ pub struct ArtifactsConfig {
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ArtifactConfig {
-    pub release_url: String,
-    pub release_tag: String,
-    pub image_tag: String,
+    pub source_repo: String,
+    pub source_tag: String,
 }
 
 impl ArtifactsConfig {
     pub fn null() -> Self {
         Self {
             infra: ArtifactConfig {
-                release_url: String::from("https://github.com/wakeuplabs-io/opraas"),
-                release_tag: String::from("v0.0.2"),
-                image_tag: String::from("-"),
+                source_repo: String::from("wakeuplabs-io/opraas"),
+                source_tag: String::from("v0.0.2"),
             },
             node: ArtifactConfig {
-                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
-                release_tag: String::from("op-node/v1.9.4"),
-                image_tag: String::from("op-node"),
+                source_repo: String::from("ethereum-optimism/optimism"),
+                source_tag: String::from("op-node/v1.9.4"),
             },
             contracts: ArtifactConfig {
-                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
-                release_tag: String::from("op-contracts/v1.6.0"),
-                image_tag: String::from("op-contracts"),
+                source_repo: String::from("ethereum-optimism/optimism"),
+                source_tag: String::from("op-contracts/v1.6.0"),
             },
             batcher: ArtifactConfig {
-                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
-                release_tag: String::from("op-batcher/v1.9.4"),
-                image_tag: String::from("op-batcher"),
+                source_repo: String::from("ethereum-optimism/optimism"),
+                source_tag: String::from("op-batcher/v1.9.4"),
             },
             proposer: ArtifactConfig {
-                release_url: String::from("https://github.com/ethereum-optimism/optimism"),
-                release_tag: String::from("op-proposer/v1.9.4"),
-                image_tag: String::from("op-proposer"),
+                source_repo: String::from("ethereum-optimism/optimism"),
+                source_tag: String::from("op-proposer/v1.9.4"),
             },
             geth: ArtifactConfig {
-                release_url: String::from("https://github.com/ethereum-optimism/op-geth"),
-                release_tag: String::from("v1.101315.3"),
-                image_tag: String::from("op-geth"),
+                source_repo: String::from("ethereum-optimism/op-geth"),
+                source_tag: String::from("v1.101315.3"),
             },
             explorer: ArtifactConfig {
-                release_url: String::from("https://github.com/blockscout/blockscout"),
-                release_tag: String::from("v6.9.0-beta"),
-                image_tag: String::from("explorer"),
+                source_repo: String::from("blockscout/blockscout"),
+                source_tag: String::from("v6.9.0-beta"),
             },
         }
     }

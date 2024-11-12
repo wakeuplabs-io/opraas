@@ -19,6 +19,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Batcher,
                 &project.src.batcher,
+                &project.infra.docker.batcher,
                 &config.artifacts.batcher,
             );
             artifacts.push(("batcher", Arc::new(artifact)));
@@ -27,6 +28,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Node,
                 &project.src.node,
+                &project.infra.docker.node,
                 &config.artifacts.node,
             );
             artifacts.push(("node", Arc::new(artifact)));
@@ -35,6 +37,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Contracts,
                 &project.src.contracts,
+                &project.infra.docker.contracts,
                 &config.artifacts.contracts,
             );
             artifacts.push(("contracts", Arc::new(artifact)));
@@ -43,6 +46,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Explorer,
                 &project.src.explorer,
+                &project.infra.docker.explorer,
                 &config.artifacts.explorer,
             );
             artifacts.push(("explorer", Arc::new(artifact)));
@@ -51,6 +55,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Proposer,
                 &project.src.proposer,
+                &project.infra.docker.proposer,
                 &config.artifacts.proposer,
             );
             artifacts.push(("proposer", Arc::new(artifact)));
@@ -59,28 +64,32 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Geth,
                 &project.src.geth,
+                &project.infra.docker.geth,
                 &config.artifacts.geth,
             );
             artifacts.push(("geth", Arc::new(artifact)));
         }
         ArtifactFactoryTarget::All => {
             let artifact = Artifact::new(
-                ArtifactKind::Node,
-                &project.src.node,
-                &config.artifacts.node,
+                ArtifactKind::Batcher,
+                &project.src.batcher,
+                &project.infra.docker.batcher,
+                &config.artifacts.batcher,
             );
             artifacts.push(("batcher", Arc::new(artifact)));
 
             let artifact = Artifact::new(
                 ArtifactKind::Node,
-                &project.src.node,
-                &config.artifacts.node,
+                &project.src.contracts,
+                &project.infra.docker.contracts,
+                &config.artifacts.contracts,
             );
             artifacts.push(("node", Arc::new(artifact)));
 
             let artifact = Artifact::new(
                 ArtifactKind::Contracts,
                 &project.src.contracts,
+                &project.infra.docker.contracts,
                 &config.artifacts.contracts,
             );
             artifacts.push(("contracts", Arc::new(artifact)));
@@ -88,6 +97,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Explorer,
                 &project.src.explorer,
+                &project.infra.docker.explorer,
                 &config.artifacts.explorer,
             );
             artifacts.push(("explorer", Arc::new(artifact)));
@@ -95,6 +105,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Proposer,
                 &project.src.proposer,
+                &project.infra.docker.proposer,
                 &config.artifacts.proposer,
             );
             artifacts.push(("proposer", Arc::new(artifact)));
@@ -102,6 +113,7 @@ pub fn create_artifacts(target: ArtifactFactoryTarget, project: &Project, config
             let artifact = Artifact::new(
                 ArtifactKind::Geth,
                 &project.src.geth,
+                &project.infra.docker.geth,
                 &config.artifacts.geth,
             );
             artifacts.push(("geth", Arc::new(artifact)));

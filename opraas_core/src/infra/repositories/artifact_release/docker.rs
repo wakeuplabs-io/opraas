@@ -10,14 +10,16 @@ impl DockerArtifactReleaser {
 
 impl domain::TArtifactReleaseRepository for DockerArtifactReleaser {
     fn exists(&self, artifact: &domain::Artifact) -> bool {
-        todo!()
+        true
     }
 
     fn pull(&self, artifact: &domain::Artifact) -> Result<(), Box<dyn std::error::Error>> {
-        todo!()
+        println!("Pulling artifact: {}", artifact.context().display());
+        Ok(())
     }
 
     fn push(&self, artifact: &domain::Artifact) -> Result<(), Box<dyn std::error::Error>> {
-        todo!()
+        println!("Pushing artifact: {}", artifact.context().display());
+        Ok(())
     }
 }
