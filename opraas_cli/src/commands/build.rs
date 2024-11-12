@@ -1,16 +1,10 @@
-use crate::console::{print_info, print_success, style_spinner};
+use crate::{artifacts_factory::{self, ArtifactFactoryTarget}, console::{print_info, print_success, style_spinner}};
 use async_trait::async_trait;
 use clap::ValueEnum;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
-use opraas_core::artifacts::build::{
-    BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
-    GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
-};
+use opraas_core::{application::build_artifact::{ArtifactBuilderService, TArtifactBuilderService}, config::CoreConfig, domain::{Artifact, Project}};
 use std::{sync::Arc, thread, time::Instant};
 
-pub struct BuildCommand {
-    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>,
-}
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum BuildTargets {
@@ -23,44 +17,37 @@ pub enum BuildTargets {
     All,
 }
 
-impl BuildCommand {
-    pub fn new(target: BuildTargets) -> Self {
-        let mut artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)> = vec![];
 
-        match target {
-            BuildTargets::Batcher => {
-                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())))
-            }
-            BuildTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
-            BuildTargets::Contracts => {
-                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())))
-            }
-            BuildTargets::Explorer => {
-                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())))
-            }
-            BuildTargets::Proposer => {
-                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())))
-            }
-            BuildTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
-            BuildTargets::All => {
-                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())));
-                artifacts.push(("Node", Arc::new(NodeBuildArtifact::new())));
-                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())));
-                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())));
-                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())));
-                artifacts.push(("Geth", Arc::new(GethBuildArtifact::new())));
-            }
+impl From<BuildTargets> for ArtifactFactoryTarget {
+    fn from(value: BuildTargets) -> Self {
+        match value {
+            BuildTargets::Batcher => ArtifactFactoryTarget::Batcher,
+            BuildTargets::Node => ArtifactFactoryTarget::Node,
+            BuildTargets::Contracts => ArtifactFactoryTarget::Contracts,
+            BuildTargets::Explorer => ArtifactFactoryTarget::Explorer,
+            BuildTargets::Proposer => ArtifactFactoryTarget::Proposer,
+            BuildTargets::Geth => ArtifactFactoryTarget::Geth,
+            BuildTargets::All => ArtifactFactoryTarget::All,
         }
-
-        Self { artifacts }
     }
 }
 
-#[async_trait]
-impl crate::Runnable for BuildCommand {
-    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+pub struct BuildCommand {
+    artifacts: Vec<(&'static str, Arc<Artifact>)>,
+}
+
+impl BuildCommand {
+    pub fn new(target: BuildTargets) -> Self {
+        let config = CoreConfig::new_from_toml(&std::env::current_dir().unwrap().join("config.toml")).unwrap();
+        let project = Project::new_from_root(std::env::current_dir().unwrap());
+
+        let artifacts: Vec<(&'static str, Arc<Artifact>)> = artifacts_factory::create_artifacts(target.into(), &project, &config);
+
+        Self { artifacts } 
+    }
+
+    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let started = Instant::now();
-        let core_cfg = Arc::new(cfg.build_core()?);
 
         // Iterate over the artifacts and build
         let m = MultiProgress::new();
@@ -68,7 +55,6 @@ impl crate::Runnable for BuildCommand {
             .artifacts
             .iter()
             .map(|&(name, ref artifact)| {
-                let core_cfg = Arc::clone(&core_cfg);
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
@@ -76,7 +62,7 @@ impl crate::Runnable for BuildCommand {
                 );
 
                 thread::spawn(move || -> Result<(), String> {
-                    match artifact.build(&core_cfg) {
+                    match ArtifactBuilderService::new().build(&artifact) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
                             spinner.finish_with_message(format!("❌ Error setting up {}", name));

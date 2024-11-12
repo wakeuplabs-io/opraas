@@ -2,13 +2,13 @@ mod commands;
 mod config;
 mod console;
 mod utils;
+use build::BuildTargets;
 use init::InitTargets;
 pub use utils::*;
 
-
 use clap::{Parser, Subcommand};
 use commands::*;
-use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
+use config::{Comparison, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
 use console::print_error;
 use dotenv::dotenv;
 use semver::Version;
@@ -26,8 +26,8 @@ enum Commands {
     New { name: String },
     /// Initialize a new project
     Init { target: InitTargets },
-    // /// Compile sources and create docker images for it
-    // Build { target: BuildTargets },
+    /// Compile sources and create docker images for it
+    Build { target: BuildTargets },
     // /// Tags and pushes already built docker images to the registry for usage in the deployment
     // Release { target: ReleaseTargets },
     /// Spin up local dev environment
@@ -64,8 +64,8 @@ async fn main() {
     if let Err(e) =  match args.cmd {
         Commands::New { name } => NewCommand::new(name).run(),
         Commands::Init { target } => InitCommand::new(target).run(),
+        Commands::Build { target } => BuildCommand::new(target).run(),
         _ => Ok(()),
-        // Commands::Build { target } => BuildCommand::new(target).run(&config).await,
         // Commands::Dev {} => DevCommand::new().run(&config).await,
         // Commands::Release { target }  => ReleaseCommand::new(target).run(&config).await,
         // Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
