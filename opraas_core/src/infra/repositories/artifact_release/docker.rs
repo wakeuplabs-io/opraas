@@ -1,6 +1,8 @@
-use crate::domain;
+use std::process::Command;
 
-pub struct  DockerArtifactReleaser;
+use crate::{domain, system::execute_command};
+
+pub struct DockerArtifactReleaser;
 
 impl DockerArtifactReleaser {
     pub fn new() -> Self {
@@ -10,16 +12,48 @@ impl DockerArtifactReleaser {
 
 impl domain::TArtifactReleaseRepository for DockerArtifactReleaser {
     fn exists(&self, artifact: &domain::Artifact) -> bool {
-        true
+        !execute_command(
+            Command::new("docker")
+                .arg("images")
+                .arg("-q")
+                .arg(artifact.name()),
+        )
+        .unwrap()
+        .is_empty()
     }
 
-    fn pull(&self, artifact: &domain::Artifact) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Pulling artifact: {}", artifact.context().display());
+    fn pull(
+        &self,
+        artifact: &domain::Artifact,
+        release: &domain::Release,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        execute_command(
+            Command::new("docker")
+                .arg("pull")
+                .arg(release.build_artifact_uri(artifact.name().to_string())),
+        )?;
+
         Ok(())
     }
 
-    fn push(&self, artifact: &domain::Artifact) -> Result<(), Box<dyn std::error::Error>> {
-        println!("Pushing artifact: {}", artifact.context().display());
+    fn create(
+        &self,
+        artifact: &domain::Artifact,
+        release: &domain::Release,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        execute_command(
+            Command::new("docker")
+                .arg("tag")
+                .arg(artifact.name())
+                .arg(release.build_artifact_uri(artifact.name().to_string())),
+        )?;
+
+        execute_command(
+            Command::new("docker")
+                .arg("push")
+                .arg(release.build_artifact_uri(artifact.name().to_string())),
+        )?;
+
         Ok(())
     }
 }

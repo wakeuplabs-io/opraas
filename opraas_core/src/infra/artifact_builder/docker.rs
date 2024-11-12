@@ -21,7 +21,7 @@ impl TArtifactBuilder for DockerArtifactBuilder {
             Command::new("docker")
                 .arg("build")
                 .arg("-t")
-                .arg("demo")
+                .arg(artifact.name())
                 .arg("-f")
                 .arg(artifact.dockerfile())
                 .arg(".")

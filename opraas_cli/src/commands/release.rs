@@ -11,7 +11,7 @@ use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
-    domain::{Artifact, Project},
+    domain::{Artifact, Project, Release},
 };
 use std::{sync::Arc, thread, time::Instant};
 
@@ -74,7 +74,7 @@ impl ReleaseCommand {
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let release_repository: String = self
             .dialoguer
-            .prompt("Input Docker repository url (e.g. docker.io/wakeuplabs) ");
+            .prompt("Input Docker repository url (e.g. dockerhub.io/wakeuplabs) ");
 
         // Offer option to tag release in git
         if self
@@ -94,6 +94,8 @@ impl ReleaseCommand {
             .map(|&(name, ref artifact)| {
                 let release_name = release_name.clone();
                 let release_repository = release_repository.clone();
+                let release = Release::new(release_name, release_repository);
+
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
@@ -103,8 +105,7 @@ impl ReleaseCommand {
                 thread::spawn(move || -> Result<(), String> {
                     match ArtifactReleaserService::new().release(
                         &artifact,
-                        &release_name,
-                        &release_repository,
+                        &release
                     ) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
@@ -133,6 +134,7 @@ impl ReleaseCommand {
             }
         }
         m.clear()?;
+
         print_success(&format!(
             "🎉 Released in {}",
             HumanDuration(started.elapsed())

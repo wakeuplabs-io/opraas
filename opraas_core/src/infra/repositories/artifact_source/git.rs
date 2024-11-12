@@ -23,6 +23,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
 
         // download dockerfile for infra
         match artifact {
+            // TODO: add more
             Artifact::Batcher(..) => {
                 git::download_release_asset(
                     "wakeuplabs-io/op-ruaas",

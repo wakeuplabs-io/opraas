@@ -3,6 +3,7 @@ use std::path::PathBuf;
 
 #[derive(Debug)]
 pub struct ArtifactData {
+    pub name: String,
     pub context: PathBuf,
     pub dockerfile: PathBuf,
     pub source_url: String,
@@ -33,17 +34,12 @@ pub trait TArtifactSourceRepository {
     fn exists(&self, artifact: &Artifact) -> bool;
 }
 
-pub trait TArtifactReleaseRepository {
-    fn exists(&self, artifact: &Artifact) -> bool;
-    fn pull(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
-    fn push(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
-}
-
 // implementations ==========================================
 
 impl ArtifactData {
-    pub fn new(context: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
+    pub fn new(name: &str, context: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
         Self {
+            name: name.to_string(),
             context: context.to_path_buf(),
             dockerfile: dockerfile.to_path_buf(),
             source_url: config.source_repo.clone(),
@@ -55,12 +51,23 @@ impl ArtifactData {
 impl Artifact {
     pub fn new(kind: ArtifactKind, source: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
         match kind {
-            ArtifactKind::Batcher => Artifact::Batcher(ArtifactData::new(source, dockerfile, config)),
-            ArtifactKind::Node => Artifact::Node(ArtifactData::new(source, dockerfile, config)),
-            ArtifactKind::Contracts => Artifact::Contracts(ArtifactData::new(source, dockerfile, config)),
-            ArtifactKind::Explorer => Artifact::Explorer(ArtifactData::new(source, dockerfile, config)),
-            ArtifactKind::Proposer => Artifact::Proposer(ArtifactData::new(source, dockerfile, config)),
-            ArtifactKind::Geth => Artifact::Geth(ArtifactData::new(source,dockerfile, config)),
+            ArtifactKind::Batcher => Artifact::Batcher(ArtifactData::new("op-batcher", source, dockerfile, config)),
+            ArtifactKind::Node => Artifact::Node(ArtifactData::new("op-node", source, dockerfile, config)),
+            ArtifactKind::Contracts => Artifact::Contracts(ArtifactData::new("op-contracts",source, dockerfile, config)),
+            ArtifactKind::Explorer => Artifact::Explorer(ArtifactData::new("op-explorer",source, dockerfile, config)),
+            ArtifactKind::Proposer => Artifact::Proposer(ArtifactData::new("op-proposer",source, dockerfile, config)),
+            ArtifactKind::Geth => Artifact::Geth(ArtifactData::new("op-geth",source,dockerfile, config)),
+        }
+    }
+
+    pub fn name(&self) -> &str {
+        match self {
+            Artifact::Batcher(data)
+            | Artifact::Node(data)
+            | Artifact::Explorer(data)
+            | Artifact::Proposer(data)
+            | Artifact::Geth(data)
+            | Artifact::Contracts(data) => &data.name,
         }
     }
 
