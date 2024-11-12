@@ -1,4 +1,3 @@
-mod testnet;
 mod commands;
 mod config;
 mod console;

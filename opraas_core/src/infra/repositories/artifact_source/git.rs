@@ -1,4 +1,7 @@
-use crate::{domain, git};
+use crate::{
+    domain::{self, artifact::Artifact},
+    git,
+};
 
 pub struct GitArtifactSourceRepository;
 
@@ -11,12 +14,19 @@ impl GitArtifactSourceRepository {
 impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository {
     fn pull(
         &self,
-        release_url: &str,
-        release_tag: &str,
-        destination: &str,
+        artifact: &Artifact,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        git::download_release(release_url, release_tag, destination)?;
+        let (release_url, release_tag) = artifact.source_info();
+
+        // TODO: refactor download release to take better paths
+        git::download_release(release_url, release_tag, artifact.context().as_path().to_str().unwrap())?;
+
+        // download dockerfile for infra
 
         Ok(())
+    }
+
+    fn exists(&self, artifact: &Artifact) -> bool {
+        artifact.context().exists()
     }
 }

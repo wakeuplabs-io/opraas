@@ -1,14 +1,8 @@
 use crate::domain;
+use crate::domain::artifact::Artifact;
 use crate::infra::repositories::{
     artifact_source::GitArtifactSourceRepository, project::InMemoryProjectRepository,
 };
-
-pub trait TArtifactInitializerService {
-    fn initialize(
-        &self,
-        artifact: &domain::artifact::Artifact,
-    ) -> Result<(), Box<dyn std::error::Error>>;
-}
 
 pub struct ArtifactInitializer {
     project_repository: Box<dyn domain::project::TProjectRepository>,
@@ -24,20 +18,17 @@ impl ArtifactInitializer {
     }
 }
 
+pub trait TArtifactInitializerService {
+    fn initialize(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
+}
+
 impl TArtifactInitializerService for ArtifactInitializer {
-    fn initialize(
-        &self,
-        artifact: &domain::artifact::Artifact,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        if self.project_repository.exists(&artifact.source) {
+    fn initialize(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>> {
+        if self.project_repository.exists(artifact.context()) {
             return Ok(());
         }
 
-        self.source_repository.pull(
-            &artifact.release_url,
-            &artifact.release_tag,
-            artifact.source.as_path().to_str().unwrap(),
-        )?;
+        self.source_repository.pull(artifact)?;
 
         Ok(())
     }

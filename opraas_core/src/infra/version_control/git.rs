@@ -1,4 +1,4 @@
-use std::{os::unix::process::CommandExt, process::Command};
+use std::process::Command;
 
 use crate::system::execute_command;
 
