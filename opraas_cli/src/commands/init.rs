@@ -1,8 +1,9 @@
 use crate::artifacts_factory::{self, ArtifactFactoryTarget};
+use crate::config::get_config_path;
 use crate::console::{print_info, print_success, style_spinner};
 use clap::ValueEnum;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
-use opraas_core::application::initialize_artifact::{ArtifactInitializer, TArtifactInitializerService};
+use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{artifact::Artifact, project::Project};
 use std::{sync::Arc, thread, time::Instant};
@@ -38,12 +39,12 @@ pub struct InitCommand {
 
 impl InitCommand {
     pub fn new(target: InitTargets) -> Self {
-        let config = CoreConfig::new_from_toml(&std::env::current_dir().unwrap().join("config.toml")).unwrap();
+        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
         let project = Project::new_from_root(std::env::current_dir().unwrap());
 
-        let artifacts: Vec<(&'static str, Arc<Artifact>)> = artifacts_factory::create_artifacts(target.into(), &project, &config);
-
-        Self { artifacts } 
+        Self {
+            artifacts: artifacts_factory::create_artifacts(target.into(), &project, &config),
+        }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
@@ -57,7 +58,7 @@ impl InitCommand {
             .artifacts
             .iter()
             .map(|&(name, ref artifact)| {
-                let artifact =  Arc::new(artifact.clone());
+                let artifact = Arc::new(artifact.clone());
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
                     format!("⏳ Preparing {}", name).as_str(),

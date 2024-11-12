@@ -3,24 +3,22 @@ use opraas_core::application::{CreateProjectService, TCreateProjectService};
 use std::path::PathBuf;
 
 pub struct NewCommand {
-    pub name: String,
     create_project_service: Box<dyn TCreateProjectService>,
 }
 
 impl NewCommand {
-    pub fn new(name: String) -> Self {
+    pub fn new() -> Self {
         Self {
-            name,
             create_project_service: Box::new(CreateProjectService::new()),
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let root = PathBuf::from(&self.name);
+    pub fn run(&self, name: String) -> Result<(), Box<dyn std::error::Error>> {
+        let root = PathBuf::from(&name);
 
         self.create_project_service.create(&root)?;
 
-        print_success(&format!("✅ Project created at ./{}", self.name));
+        print_success(&format!("✅ Project created at ./{}", name));
         print_info("🚀 Check the config file and run `opraas setup` to setup the project");
 
         Ok(())

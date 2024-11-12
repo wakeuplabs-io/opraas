@@ -1,7 +1,5 @@
 use std::path::PathBuf;
 
-use crate::config::{CoreConfig};
-
 #[derive(Debug, Clone)]
 pub struct Project {
     pub root: PathBuf,

@@ -1,21 +1,19 @@
 use crate::{
-    console::{print_error, print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer},
+    artifacts_factory::{self, ArtifactFactoryTarget},
+    config::get_config_path,
+    console::{
+        print_error, print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer,
+    },
     git::TGit,
 };
-use async_trait::async_trait;
 use clap::ValueEnum;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
-use opraas_core::artifacts::build::{
-    BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
-    GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
+use opraas_core::{
+    application::{ArtifactReleaserService, TArtifactReleaserService},
+    config::CoreConfig,
+    domain::{Artifact, Project},
 };
 use std::{sync::Arc, thread, time::Instant};
-
-pub struct ReleaseCommand {
-    git: Box<dyn TGit + Send + Sync>,
-    dialoguer: Box<dyn TDialoguer + Send + Sync>,
-    artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)>,
-}
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum ReleaseTargets {
@@ -28,47 +26,39 @@ pub enum ReleaseTargets {
     All,
 }
 
-impl ReleaseCommand {
-    pub fn new(target: ReleaseTargets) -> Self {
-        let mut artifacts: Vec<(&'static str, Arc<dyn BuildArtifact + Send + Sync>)> = vec![];
-
-        match target {
-            ReleaseTargets::Batcher => {
-                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())))
-            }
-            ReleaseTargets::Node => artifacts.push(("Node", Arc::new(NodeBuildArtifact::new()))),
-            ReleaseTargets::Contracts => {
-                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())))
-            }
-            ReleaseTargets::Explorer => {
-                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())))
-            }
-            ReleaseTargets::Proposer => {
-                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())))
-            }
-            ReleaseTargets::Geth => artifacts.push(("Geth", Arc::new(GethBuildArtifact::new()))),
-            ReleaseTargets::All => {
-                artifacts.push(("Batcher", Arc::new(BatcherBuildArtifact::new())));
-                artifacts.push(("Node", Arc::new(NodeBuildArtifact::new())));
-                artifacts.push(("Contracts", Arc::new(ContractsBuildArtifact::new())));
-                artifacts.push(("Explorer", Arc::new(ExplorerBuildArtifact::new())));
-                artifacts.push(("Proposer", Arc::new(ProposerBuildArtifact::new())));
-                artifacts.push(("Geth", Arc::new(GethBuildArtifact::new())));
-            }
-        }
-
-        Self {
-            artifacts,
-            git: Box::new(crate::git::Git::new()),
-            dialoguer: Box::new(Dialoguer::new()),
+impl From<ReleaseTargets> for ArtifactFactoryTarget {
+    fn from(value: ReleaseTargets) -> Self {
+        match value {
+            ReleaseTargets::Batcher => ArtifactFactoryTarget::Batcher,
+            ReleaseTargets::Node => ArtifactFactoryTarget::Node,
+            ReleaseTargets::Contracts => ArtifactFactoryTarget::Contracts,
+            ReleaseTargets::Explorer => ArtifactFactoryTarget::Explorer,
+            ReleaseTargets::Proposer => ArtifactFactoryTarget::Proposer,
+            ReleaseTargets::Geth => ArtifactFactoryTarget::Geth,
+            ReleaseTargets::All => ArtifactFactoryTarget::All,
         }
     }
 }
 
-#[async_trait]
-impl crate::Runnable for ReleaseCommand {
-    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        let core_cfg = Arc::new(cfg.build_core()?);
+pub struct ReleaseCommand {
+    git: Box<dyn TGit + Send + Sync>,
+    dialoguer: Box<dyn TDialoguer + Send + Sync>,
+    artifacts: Vec<(&'static str, Arc<Artifact>)>,
+}
+
+impl ReleaseCommand {
+    pub fn new(target: ReleaseTargets) -> Self {
+        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
+        let project = Project::new_from_root(std::env::current_dir().unwrap());
+
+        Self {
+            git: Box::new(crate::git::Git::new()),
+            dialoguer: Box::new(Dialoguer::new()),
+            artifacts: artifacts_factory::create_artifacts(target.into(), &project, &config),
+        }
+    }
+
+    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let cwd = std::env::current_dir()?;
 
         // avoid releasing without committed changes
@@ -80,7 +70,7 @@ impl crate::Runnable for ReleaseCommand {
         // request release name and repository
         print_info("We'll tag your local builds and push them to your repository.");
         print_warning("Make sure you're docker user has push access to the repository");
-        
+
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let release_repository: String = self
             .dialoguer
@@ -102,7 +92,6 @@ impl crate::Runnable for ReleaseCommand {
             .artifacts
             .iter()
             .map(|&(name, ref artifact)| {
-                let core_cfg = Arc::clone(&core_cfg);
                 let release_name = release_name.clone();
                 let release_repository = release_repository.clone();
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
@@ -112,7 +101,11 @@ impl crate::Runnable for ReleaseCommand {
                 );
 
                 thread::spawn(move || -> Result<(), String> {
-                    match artifact.release(&core_cfg, &release_name, &release_repository) {
+                    match ArtifactReleaserService::new().release(
+                        &artifact,
+                        &release_name,
+                        &release_repository,
+                    ) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
                             spinner.finish_with_message(format!("❌ Error setting up {}", name));

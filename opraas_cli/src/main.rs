@@ -4,6 +4,7 @@ mod console;
 mod utils;
 use build::BuildTargets;
 use init::InitTargets;
+use release::ReleaseTargets;
 pub use utils::*;
 
 use clap::{Parser, Subcommand};
@@ -28,8 +29,8 @@ enum Commands {
     Init { target: InitTargets },
     /// Compile sources and create docker images for it
     Build { target: BuildTargets },
-    // /// Tags and pushes already built docker images to the registry for usage in the deployment
-    // Release { target: ReleaseTargets },
+    /// Tags and pushes already built docker images to the registry for usage in the deployment
+    Release { target: ReleaseTargets },
     /// Spin up local dev environment
     Dev {},
     // /// Deploy your blockchain. Target must be one of: contracts, infra, all
@@ -62,12 +63,12 @@ async fn main() {
     // run commands
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
-        Commands::New { name } => NewCommand::new(name).run(),
+        Commands::New { name } => NewCommand::new().run(name),
         Commands::Init { target } => InitCommand::new(target).run(),
         Commands::Build { target } => BuildCommand::new(target).run(),
+        Commands::Release { target }  => ReleaseCommand::new(target).run(),
         _ => Ok(()),
         // Commands::Dev {} => DevCommand::new().run(&config).await,
-        // Commands::Release { target }  => ReleaseCommand::new(target).run(&config).await,
         // Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
         // Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
         // Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,
