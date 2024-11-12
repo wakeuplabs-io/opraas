@@ -3,6 +3,7 @@ mod commands;
 mod config;
 mod console;
 mod utils;
+use init::InitTargets;
 pub use utils::*;
 
 
@@ -12,7 +13,6 @@ use config::{Comparison, Config, Requirement, SystemRequirementsChecker, TSystem
 use console::print_error;
 use dotenv::dotenv;
 use semver::Version;
-use init::InitTargets;
 
 #[derive(Parser)]
 #[command(author, version, about, long_about = None)]
@@ -60,14 +60,11 @@ async fn main() {
         std::process::exit(1);
     });
 
-    // load config
-    let config = Config::new_from_root(&std::env::current_dir().unwrap().as_path());
-
     // run commands
     let args = Args::parse();
     if let Err(e) =  match args.cmd {
-        Commands::New { name } => NewCommand::new(name).run(&config),
-        // Commands::Init { target } => InitCommand::new(target).run(&config).await,
+        Commands::New { name } => NewCommand::new(name).run(),
+        Commands::Init { target } => InitCommand::new(target).run(),
         _ => Ok(()),
         // Commands::Build { target } => BuildCommand::new(target).run(&config).await,
         // Commands::Dev {} => DevCommand::new().run(&config).await,

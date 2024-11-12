@@ -2,13 +2,10 @@ use crate::console::{print_info, print_success, style_spinner};
 use clap::ValueEnum;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::application::initialize_artifact::{ArtifactInitializer, TArtifactInitializerService};
-use opraas_core::config::{Config, CoreConfig};
+use opraas_core::config::CoreConfig;
+use opraas_core::domain::artifact::{ArtifactFactory, ArtifactKind};
 use opraas_core::domain::{artifact::Artifact, project::Project};
 use std::{sync::Arc, thread, time::Instant};
-
-pub struct InitCommand<'a> {
-    artifacts: Vec<(&'static str, Arc<Artifact<'a>>)>,
-}
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum InitTargets {
@@ -21,49 +18,35 @@ pub enum InitTargets {
     All,
 }
 
-impl<'a> InitCommand<'a> {
-    pub fn new(target: InitTargets, project: &Project, cfg: &'a CoreConfig) -> Self {
-        let mut artifacts: Vec<(&'static str, Arc<Artifact<'a>>)> = vec![
-            (
-                "Batcher",
-                Arc::new(Artifact::new(&project.src.batcher, &cfg.artifacts.batcher)),
-            ),
-            (
-                "Node",
-                Arc::new(Artifact::new(&project.src.node, &cfg.artifacts.node)),
-            ),
-            (
-                "Contracts",
-                Arc::new(Artifact::new(&project.src.contracts, &cfg.artifacts.contracts)),
-            ),
-            (
-                "Explorer",
-                Arc::new(Artifact::new(&project.src.explorer, &cfg.artifacts.explorer)),
-            ),
-            (
-                "Proposer",
-                Arc::new(Artifact::new(&project.src.proposer, &cfg.artifacts.proposer)),
-            ),
-            (
-                "Geth",
-                Arc::new(Artifact::new(&project.src.geth, &cfg.artifacts.geth)),
-            ),
-        ];
+impl From<InitTargets> for ArtifactKind {
+    fn from(target: InitTargets) -> Self {
+        match target {
+            InitTargets::Batcher => ArtifactKind::Batcher,
+            InitTargets::Node => ArtifactKind::Node,
+            InitTargets::Contracts => ArtifactKind::Contracts,
+            InitTargets::Explorer => ArtifactKind::Explorer,
+            InitTargets::Proposer => ArtifactKind::Proposer,
+            InitTargets::Geth => ArtifactKind::Geth,
+            InitTargets::All => ArtifactKind::All,
+        }
+    }
+}
 
-        artifacts.retain(|(name, _)| match target {
-            InitTargets::Batcher => *name == "Batcher",
-            InitTargets::Node => *name == "Node",
-            InitTargets::Contracts => *name == "Contracts",
-            InitTargets::Explorer => *name == "Explorer",
-            InitTargets::Proposer => *name == "Proposer",
-            InitTargets::Geth => *name == "Geth",
-            _ => false,
-        });
+pub struct InitCommand {
+    artifacts: Vec<(&'static str, Arc<Artifact>)>,
+}
 
-        Self { artifacts }
+impl InitCommand {
+    pub fn new(target: InitTargets) -> Self {
+        let config = CoreConfig::new_from_toml(&std::env::current_dir().unwrap().join("config.toml")).unwrap();
+        let project = Project::new_from_root(std::env::current_dir().unwrap());
+
+        let artifacts = ArtifactFactory::create_artifacts(target.into(), &project, &config);
+
+        Self { artifacts } 
     }
 
-    pub fn run(&'static self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let started = Instant::now();
 
         print_info("📦 Downloading and preparing artifacts...");
@@ -74,7 +57,7 @@ impl<'a> InitCommand<'a> {
             .artifacts
             .iter()
             .map(|&(name, ref artifact)| {
-                let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
+                let artifact =  Arc::new(artifact.clone());
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
                     format!("⏳ Preparing {}", name).as_str(),
