@@ -16,7 +16,7 @@ pub trait TDockerBuilder: Send + Sync {
         dockerfile: &str,
         tag: &str,
     ) -> Result<(), Box<dyn std::error::Error>>;
-    fn push(&self, tag: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn push(&self, src_tag: &str, dest_tag: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 impl DockerBuilder {
@@ -48,16 +48,16 @@ impl TDockerBuilder for DockerBuilder {
         Ok(())
     }
 
-    fn push(&self, tag: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn push(&self, src_tag: &str, dest_tag: &str, repository: &str) -> Result<(), Box<dyn std::error::Error>> {
         let mut command = Command::new("docker");
         command
             .arg("tag")
-            .arg(tag)
-            .arg(format!("{}/{}", repository, tag));
+            .arg(src_tag)
+            .arg(format!("{}/{}", repository, dest_tag));
         self.system.execute_command(&mut command)?;
 
         let mut command = Command::new("docker");
-        command.arg("push").arg(format!("{}/{}", repository, tag));
+        command.arg("push").arg(format!("{}/{}", repository, dest_tag));
         self.system.execute_command(&mut command)?;
 
         Ok(())

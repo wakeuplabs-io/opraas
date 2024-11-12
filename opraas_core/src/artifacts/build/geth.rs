@@ -63,7 +63,8 @@ impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
     ) -> Result<(), Box<dyn std::error::Error>> {
         self.docker.push(
             &cfg.core.artifacts.geth.image_tag,
-            &format!("{}/{}", repository, &cfg.core.artifacts.geth.image_tag),
+            format!("{}:{}", &cfg.core.artifacts.geth.image_tag, name).as_str(),
+            repository,
         )?;
 
         Ok(())
@@ -73,7 +74,6 @@ impl crate::artifacts::build::BuildArtifact for GethBuildArtifact {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::artifacts::build::artifact::BuildArtifact;
     use crate::artifacts::initializable::Initializable;
     use crate::config::Config;
     use mockall::predicate;

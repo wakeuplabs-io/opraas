@@ -2,6 +2,7 @@ mod commands;
 mod config;
 mod console;
 mod utils;
+pub use utils::*;
 
 use build::BuildTargets;
 use clap::{Parser, Subcommand};
@@ -13,6 +14,7 @@ use dotenv::dotenv;
 use async_trait::async_trait;
 use inspect::InspectTarget;
 use monitor::MonitorTarget;
+use release::ReleaseTargets;
 use semver::Version;
 use init::InitTargets;
 
@@ -31,6 +33,8 @@ enum Commands {
     Init { target: InitTargets },
     /// Compile sources and create docker images for it
     Build { target: BuildTargets },
+    /// Tags and pushes already built docker images to the registry for usage in the deployment
+    Release { target: ReleaseTargets },
     /// Spin up local dev environment
     Dev {},
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
@@ -75,6 +79,7 @@ async fn main() {
         Commands::Init { target } => InitCommand::new(target).run(&config).await,
         Commands::Build { target } => BuildCommand::new(target).run(&config).await,
         Commands::Dev {} => DevCommand.run(&config).await,
+        Commands::Release { target }  => ReleaseCommand::new(target).run(&config).await,
         Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
         Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
         Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,

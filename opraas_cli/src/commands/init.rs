@@ -2,7 +2,7 @@ use crate::console::{print_info, print_success, style_spinner};
 use async_trait::async_trait;
 use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::artifacts::{build::{
-    BatcherBuildArtifact, BuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
+    BatcherBuildArtifact, ContractsBuildArtifact, ExplorerBuildArtifact,
     GethBuildArtifact, NodeBuildArtifact, ProposerBuildArtifact,
 }, cloud::infra::InfraCloudArtifact, initializable::Initializable};
 use std::{sync::Arc, thread, time::Instant};

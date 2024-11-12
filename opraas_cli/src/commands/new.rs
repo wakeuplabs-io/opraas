@@ -1,26 +1,33 @@
+use std::path::PathBuf;
+
+use assert_cmd::Command;
 use async_trait::async_trait;
 
 use crate::console::{print_info, print_success};
 
 pub struct NewCommand {
     pub name: String,
+    system: Box<dyn crate::utils::system::TSystem>,
 }
 
 impl NewCommand {
     pub fn new(name: String) -> Self {
-        Self { name }
+        Self { 
+            name,
+            system: Box::new(crate::utils::system::System::new()), 
+        }
     }
 }
 
 #[async_trait]
 impl crate::Runnable for NewCommand {
     async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        let cwd = std::env::current_dir()?;
-        let proy_dir = cwd.join(&self.name);
+        let proy_dir = PathBuf::from(&self.name);
 
         if proy_dir.exists() {
             return Err("Directory already exists".into());
         }
+
 
         // create dir
         std::fs::create_dir(&proy_dir)?;
@@ -31,6 +38,22 @@ impl crate::Runnable for NewCommand {
         // create default config
         let null_cfg = opraas_core::config::CoreConfig::new_from_null();
         null_cfg.to_toml(&proy_dir.join("config.toml"))?;
+
+        // initialize git and create first commit
+        self.system.execute_command(Command::new("git").arg("init").current_dir(&proy_dir))?;
+        self.system.execute_command(
+            Command::new("git")
+                .arg("add")
+                .arg(".")
+                .current_dir(&proy_dir),   
+        )?;
+        self.system.execute_command(
+            Command::new("git")
+                .arg("commit")
+                .arg("-m")
+                .arg("Initial commit")
+                .current_dir(&proy_dir),
+        )?;
 
         print_success(&format!("✅ Project created at ./{}", self.name));
         print_info("🚀 Check the config file and run `opraas setup` to setup the project");
