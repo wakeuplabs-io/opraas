@@ -1,25 +1,43 @@
-use crate::config::Config;
-use opraas_core::opstack;
-use std::env;
+use async_trait::async_trait;
+use clap::ValueEnum;
+use log::info;
 
-pub async fn deploy(cfg: &Config, target: &str, name: &str) {
-    println!("Deploying {}...", target);
-
-    let cwd = env::current_dir().expect("Failed to get current working directory");
-    let target_folder = cwd.join("deployments").join(name);
-    let source_folder = cwd.join(&cfg.sources.op_repo_target);
-
-    match target {
-        "contracts" => {
-            opstack::contracts::deploy(&source_folder, &target_folder, &cfg.network, &cfg.accounts)
-                .await
-                .unwrap()
-        }
-        _ => panic!("Unknown target: {}", target),
-    }
-
-    println!(
-        "Successfully deployed. Find assets at: {}",
-        target_folder.to_str().unwrap()
-    );
+pub struct  DeployCommand {
+    pub name: String,
+    pub target: DeployTarget,
 }
+
+#[derive(Debug, Clone, ValueEnum)]
+pub enum DeployTarget {
+    Contracts,
+    Infra,
+    All
+}
+
+impl DeployCommand {
+    pub fn new(target: DeployTarget, name: String) -> Self {
+        Self { target, name }
+    }
+}
+
+#[async_trait]
+impl crate::Runnable for DeployCommand {
+    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+        cfg.core.as_ref().ok_or_else(|| "Core config not found. Run setup first")?;
+
+        match self.target {
+            DeployTarget::Contracts => {
+                info!("Deploying contracts");
+            },
+            DeployTarget::Infra => {
+                info!("Deploying infra");
+            },
+            DeployTarget::All => {
+                info!("Deploying all");
+            }
+        }
+
+        Ok(())
+    }
+}
+
