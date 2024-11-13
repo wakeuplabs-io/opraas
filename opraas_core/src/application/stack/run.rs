@@ -1,14 +1,14 @@
 use crate::domain::Deployment;
 
-pub struct InfraRunnerService {
+pub struct StackRunnerService {
     infra_runner
 }
 
-pub trait TInfraRunnerService {
+pub trait TStackRunnerService {
     fn run(contracts_deployment: Deployment);
 }
 
-impl TInfraRunnerService for InfraRunnerService {
+impl TStackRunnerService for StackRunnerService {
     fn run(contracts_deployment: Deployment) {
         // ensure infra helm is available
 

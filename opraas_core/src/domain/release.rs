@@ -2,14 +2,23 @@ use super::{Artifact};
 
 
 pub struct  Release {
-    name: String,
+    artifact_name: String,
+    artifact_tag: String,
     repository: String,
 }
 
+pub trait TReleaseRepository {
+    fn create_for_artifact(&self, artifact: &Artifact, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
+    fn pull(&self, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+// implementations =============================================
+
 impl Release {
-    pub fn new(name: String, repository: String) -> Self {
+    pub fn new(artifact_name: String, artifact_tag: String, repository: String) -> Self {
         Self {
-            name,
+            artifact_name,
+            artifact_tag,
             repository,
         }
     }
@@ -19,8 +28,3 @@ impl Release {
     }
 }
 
-pub trait TArtifactReleaseRepository {
-    fn exists(&self, artifact: &Artifact) -> bool;
-    fn create(&self, artifact: &Artifact, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
-    fn pull(&self, artifact: &Artifact, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
-}

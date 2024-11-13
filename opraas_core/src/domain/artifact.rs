@@ -34,6 +34,11 @@ pub trait TArtifactSourceRepository {
     fn exists(&self, artifact: &Artifact) -> bool;
 }
 
+pub trait TArtifactRepository {
+    fn exists(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
+    fn crete(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
+}
+
 // implementations ==========================================
 
 impl ArtifactData {

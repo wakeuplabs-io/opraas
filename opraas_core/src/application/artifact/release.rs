@@ -11,7 +11,7 @@ pub trait TArtifactReleaserService {
 impl ArtifactReleaserService {
     pub fn new() -> Self {
         Self {
-            artifact_release_repository: Box::new(infra::repositories::artifact_release::DockerArtifactReleaser::new()),
+            artifact_release_repository: Box::new(infra::repositories::artifact::DockerArtifactReleaser::new()),
         }
     }
 }
