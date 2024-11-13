@@ -1,27 +1,22 @@
 use std::path::PathBuf;
+
 use crate::config::{AccountsConfig, NetworkConfig};
 use super::Release;
 
 
 pub struct Deployment {
-    name: String,
-    network_config: NetworkConfig,
-    accounts_config: AccountsConfig,
-    rollup_config: String,
-    artifacts_config: String,
-    genesis_config: String,
-    releases: Vec<Release>,
+    pub name: String,
+    pub network_config: NetworkConfig,
+    pub accounts_config: AccountsConfig,
+    pub rollup_config: PathBuf, 
+    pub genesis_config: PathBuf,
+    pub artifacts_dir: PathBuf,
+    pub releases: Vec<Release>,
 }
 
 pub trait TDeploymentRepository {
-    fn save(&self, root: &PathBuf) -> Result<(), Box<dyn std::error::Error>>;
-    fn find(&self, root: &PathBuf, name: String) -> Option<Deployment>;
+    fn save(&self, deployment: &Deployment) -> Result<(), Box<dyn std::error::Error>>;
+    fn find(&self, name: String) -> Result<Option<Deployment>, Box<dyn std::error::Error>>;
 }
 
-// implementations ======================================================
 
-impl Deployment {
-    // pub fn new(name: String) -> Self {
-    //     Self { name }
-    // }
-}

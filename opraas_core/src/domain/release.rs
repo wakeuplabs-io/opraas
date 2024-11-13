@@ -1,5 +1,7 @@
+use serde::{Deserialize, Serialize};
 use super::Artifact;
 
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Release {
     pub artifact_name: String,
     pub artifact_tag: String,

@@ -1,3 +1,5 @@
+use std::path::PathBuf;
+
 use crate::{
     config::CoreConfig,
     domain::{self, Artifact, Deployment, Project},
@@ -11,9 +13,9 @@ pub struct StackContractsDeployerService {
 }
 
 impl StackContractsDeployerService {
-    pub fn new() -> Self {
+    pub fn new(root: &PathBuf) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new()),
+            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
             release_repository: Box::new(DockerReleaseRepository::new()),
             release_runner: Box::new(DockerArtifactRunner::new()),
         }
