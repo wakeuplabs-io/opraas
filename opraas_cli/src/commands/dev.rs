@@ -1,76 +1,67 @@
-use async_trait::async_trait;
-use log::info;
-use std::error::Error;
-use std::sync::Arc;
+use crate::console::print_info;
+use crate::console::print_success;
+use std::time::Duration;
+use opraas_core::application::contracts;
+use opraas_core::infra::testnet_node::anvil;
+use opraas_core::infra::testnet_node::testnet_node::TTestnetNode;
 use tokio::signal;
 use tokio::task;
 
-use crate::{
-    console::print_info,
-    testnet::{Anvil, TTestnetNode},
-};
-
-pub struct DevCommand {
-    testnet_node: Box<dyn TTestnetNode>,
-}
+pub struct DevCommand {}
 
 impl DevCommand {
     pub fn new() -> Self {
-        Self {
-            testnet_node: Box::new(Anvil::new()),
-        }
+        Self {}
     }
-}
 
-#[async_trait]
-impl crate::Runnable for DevCommand {
-    async fn run(&self, cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        let core_cfg = cfg.build_core()?;
+    pub async fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
+        // enter docker repo
+        // enter release name you want to run
 
-        info!("Starting dev environment...");
-
-        // Clone necessary fields from self to avoid borrowing issues
-        // let testnet_node = Arc::new(self.testnet_node.as_ref());
+        // deployment from release
 
         // Spawn a task to run the main work
         let main_task = task::spawn({
-            let testnet_node = Arc::new(self.testnet_node.as_ref());
             async move {
-                // Start chain fork
                 print_info("Starting testnet L1 node...");
-                testnet_node.start(1, &core_cfg.core.network.l1_rpc_url);
+                std::thread::sleep(Duration::new(10, 0)); // 10 seconds and 0 nanoseconds
 
-                // Update config with fork settings
-                // Deploy contracts using docker image into fork
+                // start local network
+                let fork_port = 8545;
+                let fork_url = format!("http://127.1.1:{}", fork_port);
+                anvil::AnvilTestnetNode::start(1, "", 8545).unwrap();
+                print_success(&format!("L1 fork available at {}...", fork_url));
+
+                // TODO: deploy contracts to local network
+                print_info("Deploying contracts to local network...");
+                // contracts::StackContractsDeployerService::new()
+
                 // Deploy infra to local Kubernetes
 
-                Ok::<_, Box<dyn Error + Send + Sync>>(())
+                // Ok(())
             }
         });
 
         // Spawn a signal handler task for cleanup
         let cleanup_task = task::spawn({
-            let testnet_node = Arc::new(self.testnet_node.as_ref());
             async move {
                 signal::ctrl_c()
                     .await
-                    .expect("Failed to install Ctrl+C handler");
-                info!("Interrupt received. Cleaning up...");
-                testnet_node.stop();
-                info!("Cleanup completed.");
-                Ok::<_, Box<dyn Error + Send + Sync>>(())
+                    .expect("Failed to install Ctrl+C handler");                
             }
         });
 
         // Wait for either the main task to finish or an interrupt signal to be received
         tokio::select! {
-            result = main_task => {
-                // If the main task completes first, handle any errors it returns
-                result?;
-            }
+            _ = main_task => {},
             _ = cleanup_task => {
-                // If the cleanup task completes (after handling Ctrl+C), exit gracefully
-                info!("Exiting after cleanup.");
+                print_info("Exiting...");
+
+                // cleanup tasks
+                anvil::AnvilTestnetNode::stop().unwrap();
+
+                print_success("Successfully exited");
+                print_info("If you're ready for deployment run `release` and `deploy` commands");
             }
         }
 

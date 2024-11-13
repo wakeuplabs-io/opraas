@@ -5,6 +5,9 @@ use crate::{
 
 pub struct GitArtifactSourceRepository;
 
+const OP_RUAAS_REPO: &str = "wakeuplabs-io/op-ruaas";
+const OP_RUAAS_VERSION: &str = "v0.0.2";
+
 impl GitArtifactSourceRepository {
     pub fn new() -> Self {
         Self
@@ -26,8 +29,8 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
             // TODO: add more
             Artifact::Batcher(..) => {
                 git::download_release_asset(
-                    "wakeuplabs-io/op-ruaas",
-                    "v0.0.2",
+                    OP_RUAAS_REPO,
+                    OP_RUAAS_VERSION,
                     "infra/docker/Node.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;

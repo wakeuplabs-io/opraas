@@ -65,4 +65,5 @@ COPY --from=base /opt/optimism/versions.json /opt/optimism/versions.json
 
 WORKDIR /opt/optimism/packages/contracts-bedrock
 
+# TODO: 
 CMD ["echo", "Override this command to use this image."]
