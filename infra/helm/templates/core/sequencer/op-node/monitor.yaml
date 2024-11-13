@@ -1,3 +1,4 @@
+{{- if .Values.monitoring.enabled }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -8,3 +9,4 @@ spec:
       app: {{ .Values.node.name }}-sequencer
   endpoints:
   - port: metrics
+{{- end }}
