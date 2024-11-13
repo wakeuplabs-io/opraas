@@ -14,8 +14,8 @@ pub struct Deployment {
 }
 
 pub trait TDeploymentRepository {
-    fn save(&self, root: &PathBuf);
-    fn find(&self, root: &PathBuf, name: String) -> Deployment;
+    fn save(&self, root: &PathBuf) -> Result<(), Box<dyn std::error::Error>>;
+    fn find(&self, root: &PathBuf, name: String) -> Option<Deployment>;
 }
 
 // implementations ======================================================

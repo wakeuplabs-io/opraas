@@ -1,5 +1,4 @@
-use super::{Artifact};
-
+use super::Artifact;
 
 pub struct  Release {
     artifact_name: String,
@@ -23,8 +22,8 @@ impl Release {
         }
     }
 
-    pub fn build_artifact_uri(&self, artifact_name: String) -> String {
-        format!("{}/{}:{}", self.repository, artifact_name, self.name)
+    pub fn build_artifact_uri(&self) -> String { // TODO: rename
+        format!("{}/{}:{}", self.repository, self.artifact_name, self.artifact_tag)
     }
 }
 

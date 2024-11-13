@@ -1,17 +1,19 @@
 use crate::{
     domain::{self, artifact::Artifact},
-    infra::{self, artifact_builder::TArtifactBuilder},
+    infra,
 };
 
 pub struct ArtifactBuilderService {
-    artifact_builder: Box<dyn TArtifactBuilder>,
+    artifact_repository: Box<dyn domain::artifact::TArtifactRepository>,
     artifact_source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>,
 }
 
 impl ArtifactBuilderService {
     pub fn new() -> Self {
         Self {
-            artifact_builder: Box::new(infra::artifact_builder::DockerArtifactBuilder::new()),
+            artifact_repository: Box::new(
+                infra::repositories::artifact::DockerArtifactRepository::new(),
+            ),
             artifact_source_repository: Box::new(
                 infra::repositories::artifact_source::GitArtifactSourceRepository::new(),
             ),
@@ -29,7 +31,7 @@ impl TArtifactBuilderService for ArtifactBuilderService {
             self.artifact_source_repository.pull(artifact)?;
         }
 
-        self.artifact_builder.build_artifact(artifact)?;
+        self.artifact_repository.create(artifact)?;
 
         Ok(())
     }

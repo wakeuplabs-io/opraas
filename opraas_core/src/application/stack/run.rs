@@ -1,7 +1,7 @@
 use crate::domain::Deployment;
 
 pub struct StackRunnerService {
-    infra_runner
+    // stack_runner: 
 }
 
 pub trait TStackRunnerService {

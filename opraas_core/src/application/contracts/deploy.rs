@@ -1,24 +1,27 @@
 use crate::{
     config::CoreConfig,
     domain::{self, Artifact, Deployment, Project},
-    infra::{self, artifact_runner::DockerArtifactRunner},
+    infra::{self, release_runner::DockerArtifactRunner, repositories::{deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository}},
 };
 
 pub struct StackContractsDeployerService {
-    contracts_deployments_repository: Box<dyn domain::deployment::TDeploymentRepository>,
-    artifacts_runner: Box<dyn infra::artifact_runner::TArtifactRunner>,
+    deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
+    release_repository: Box<dyn domain::release::TReleaseRepository>,
+    release_runner: Box<dyn infra::release_runner::TReleaseRunner>,
 }
 
 impl StackContractsDeployerService {
     pub fn new() -> Self {
         Self {
-            artifacts_runner: Box::new(DockerArtifactRunner::new()),
+            deployment_repository: Box::new(InMemoryDeploymentRepository::new()),
+            release_repository: Box::new(DockerReleaseRepository::new()),
+            release_runner: Box::new(DockerArtifactRunner::new()),
         }
     }
 }
 
 pub trait TStackContractsDeployerService {
-    fn create_contracts_deployment(
+    fn execute(
         &self,
         name: &str,
         project: &Project,
@@ -27,7 +30,7 @@ pub trait TStackContractsDeployerService {
 }
 
 impl TStackContractsDeployerService for StackContractsDeployerService {
-    fn create_contracts_deployment(
+    fn execute(
         &self,
         name: &str,
         project: &Project,
@@ -41,33 +44,35 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             &config.artifacts.contracts,
         );
 
-        let deployment = Deployment::new(name.to_string());
+        Err("TODO:".into())
 
-        // TODO: get tmp folder
-        // TODO: write config data to it
+        // let deployment = Deployment::new(name.to_string());
 
-        // using contracts artifacts, run to create a deployment
-        self.artifacts_runner.run_artifact(
-            &contracts_artifact,
-            "/deployments/.cache",
-            vec![
-                "-e",
-                "ARTIFACTS=out/artifacts.json",
-                "-e",
-                "CONFIG=in/deploy-config.json",
-            ],
-        )?;
+        // // TODO: get tmp folder
+        // // TODO: write config data to it
 
-        // write outputs using project repository. Like config and so on
-        self.contracts_deployments_repository
-            .create_contracts_artifacts(); // "artifacts.json"
-        self.contracts_deployments_repository
-            .create_network_config();
-        self.contracts_deployments_repository.create_rollup_config();
-        self.contracts_deployments_repository.create_genesis();
+        // // using contracts artifacts, run to create a deployment
+        // self.artifacts_runner.run_artifact(
+        //     &contracts_artifact,
+        //     "/deployments/.cache",
+        //     vec![
+        //         "-e",
+        //         "ARTIFACTS=out/artifacts.json",
+        //         "-e",
+        //         "CONFIG=in/deploy-config.json",
+        //     ],
+        // )?;
+
+        // // write outputs using project repository. Like config and so on
+        // self.contracts_deployments_repository
+        //     .create_contracts_artifacts(); // "artifacts.json"
+        // self.contracts_deployments_repository
+        //     .create_network_config();
+        // self.contracts_deployments_repository.create_rollup_config();
+        // self.contracts_deployments_repository.create_genesis();
 
         // delete temp folder
 
-        Ok(deployment)
+        // Ok(deployment)
     }
 }

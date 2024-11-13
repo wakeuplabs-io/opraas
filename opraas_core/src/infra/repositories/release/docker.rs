@@ -1,18 +1,15 @@
 use std::process::Command;
+use crate::{domain, system};
 
-use crate::{domain, system::execute_command};
+pub struct DockerReleaseRepository;
 
-pub struct DockerArtifactReleaser;
-
-impl DockerArtifactReleaser {
+impl DockerReleaseRepository {
     pub fn new() -> Self {
         Self
     }
-}
 
-impl domain::TArtifactReleaseRepository for DockerArtifactReleaser {
     fn exists(&self, artifact: &domain::Artifact) -> bool {
-        !execute_command(
+        !system::execute_command(
             Command::new("docker")
                 .arg("images")
                 .arg("-q")
@@ -21,37 +18,38 @@ impl domain::TArtifactReleaseRepository for DockerArtifactReleaser {
         .unwrap()
         .is_empty()
     }
+}
 
+impl domain::TReleaseRepository for DockerReleaseRepository {
     fn pull(
         &self,
-        artifact: &domain::Artifact,
         release: &domain::Release,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        execute_command(
+        system::execute_command(
             Command::new("docker")
                 .arg("pull")
-                .arg(release.build_artifact_uri(artifact.name().to_string())),
+                .arg(release.build_artifact_uri()),
         )?;
 
         Ok(())
     }
 
-    fn create(
+    fn create_for_artifact(
         &self,
         artifact: &domain::Artifact,
         release: &domain::Release,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        execute_command(
+        system::execute_command(
             Command::new("docker")
                 .arg("tag")
                 .arg(artifact.name())
-                .arg(release.build_artifact_uri(artifact.name().to_string())),
+                .arg(release.build_artifact_uri()),
         )?;
 
-        execute_command(
+        system::execute_command(
             Command::new("docker")
                 .arg("push")
-                .arg(release.build_artifact_uri(artifact.name().to_string())),
+                .arg(release.build_artifact_uri()),
         )?;
 
         Ok(())

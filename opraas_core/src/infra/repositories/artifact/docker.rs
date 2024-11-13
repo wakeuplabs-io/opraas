@@ -1,20 +1,35 @@
 use std::process::Command;
 
-use crate::{domain, system::execute_command};
+use crate::{domain, system};
 
-pub struct DockerReleaseRepository;
+pub struct DockerArtifactRepository;
 
 // implementations ==========================================
 
-impl DockerReleaseRepository {
+impl DockerArtifactRepository {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl domain::TReleaseRepository for DockerReleaseRepository {
+impl domain::TArtifactRepository for DockerArtifactRepository {
+    fn create(&self, artifact: &domain::Artifact) -> Result<(), Box<dyn std::error::Error>> {
+        system::execute_command(
+            Command::new("docker")
+                .arg("build")
+                .arg("-t")
+                .arg(artifact.name())
+                .arg("-f")
+                .arg(artifact.dockerfile())
+                .arg(".")
+                .current_dir(artifact.context()),
+        )?;
+
+        Ok(())
+    }
+
     fn exists(&self, artifact: &domain::Artifact) -> bool {
-        !execute_command(
+        !system::execute_command(
             Command::new("docker")
                 .arg("images")
                 .arg("-q")
@@ -22,40 +37,5 @@ impl domain::TReleaseRepository for DockerReleaseRepository {
         )
         .unwrap()
         .is_empty()
-    }
-
-    fn pull(
-        &self,
-        artifact: &domain::Artifact,
-        release: &domain::Release,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        execute_command(
-            Command::new("docker")
-                .arg("pull")
-                .arg(release.build_artifact_uri(artifact.name().to_string())),
-        )?;
-
-        Ok(())
-    }
-
-    fn create(
-        &self,
-        artifact: &domain::Artifact,
-        release: &domain::Release,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        execute_command(
-            Command::new("docker")
-                .arg("tag")
-                .arg(artifact.name())
-                .arg(release.build_artifact_uri(artifact.name().to_string())),
-        )?;
-
-        execute_command(
-            Command::new("docker")
-                .arg("push")
-                .arg(release.build_artifact_uri(artifact.name().to_string())),
-        )?;
-
-        Ok(())
     }
 }

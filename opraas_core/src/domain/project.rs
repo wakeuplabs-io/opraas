@@ -42,6 +42,8 @@ pub trait TProjectRepository {
     fn exists(&self, filepath: &PathBuf) -> bool;
 }
 
+// implementations =================================================================
+
 impl Project {
     pub fn new_from_root(root: PathBuf) -> Self {
         Self {

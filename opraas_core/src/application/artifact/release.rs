@@ -1,7 +1,7 @@
 use crate::{domain::{self, artifact::Artifact, Release}, infra};
 
 pub struct ArtifactReleaserService {
-    artifact_release_repository: Box<dyn domain::release::TArtifactReleaseRepository>,
+    release_repository: Box<dyn domain::release::TReleaseRepository>,
 }
 
 pub trait TArtifactReleaserService {
@@ -11,18 +11,14 @@ pub trait TArtifactReleaserService {
 impl ArtifactReleaserService {
     pub fn new() -> Self {
         Self {
-            artifact_release_repository: Box::new(infra::repositories::artifact::DockerArtifactReleaser::new()),
+            release_repository: Box::new(infra::repositories::release::DockerReleaseRepository::new()),
         }
     }
 }
 
 impl TArtifactReleaserService for ArtifactReleaserService {
     fn release(&self, artifact: &Artifact, release: &Release) -> Result<(), Box<dyn std::error::Error>> {
-        if !self.artifact_release_repository.exists(artifact) {
-            return Err(format!("Image {} for artifact not found", artifact.name()).into())
-        }
-
-        self.artifact_release_repository.create(artifact, release)?;
+        self.release_repository.create_for_artifact(artifact, release)?;
         
         Ok(())
     }

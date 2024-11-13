@@ -1,5 +1,5 @@
-pub mod artifact_runner;
+pub mod release_runner;
 pub mod docker;
 
-pub use artifact_runner::*;
+pub use release_runner::*;
 pub use docker::*;
