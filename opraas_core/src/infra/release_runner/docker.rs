@@ -25,7 +25,7 @@ impl TReleaseRunner for DockerArtifactRunner {
                 .arg("--rm")
                 .arg("-v")
                 .arg(format!("{}:{}", volume, "/data"))
-                .arg(release.build_artifact_uri())
+                .arg(release.uri())
                 .args(args),
         )?;
 

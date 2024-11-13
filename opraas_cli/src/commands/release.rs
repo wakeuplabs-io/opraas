@@ -72,9 +72,9 @@ impl ReleaseCommand {
         print_warning("Make sure you're docker user has push access to the repository");
 
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
-        let release_repository: String = self
+        let registry_url: String = self
             .dialoguer
-            .prompt("Input Docker repository url (e.g. dockerhub.io/wakeuplabs) ");
+            .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
 
         // Offer option to tag release in git
         if self
@@ -93,10 +93,9 @@ impl ReleaseCommand {
             .iter()
             .map(|&(name, ref artifact)| {
                 let release_name = release_name.clone();
-                let release_repository = release_repository.clone();
-                let release = Release::new(release_name, release_repository);
+                let registry_url = registry_url.clone();
+                let artifact = Arc::clone(artifact); 
 
-                let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
                     format!("⏳ Releasing {}", name).as_str(),
@@ -105,7 +104,8 @@ impl ReleaseCommand {
                 thread::spawn(move || -> Result<(), String> {
                     match ArtifactReleaserService::new().release(
                         &artifact,
-                        &release
+                        &release_name,
+                        &registry_url
                     ) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
