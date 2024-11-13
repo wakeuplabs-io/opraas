@@ -1,6 +1,6 @@
 use super::TReleaseRunner;
 use crate::{domain::Release, system::execute_command};
-use std::process::Command;
+use std::{path::Path, process::Command};
 
 pub struct DockerArtifactRunner;
 
@@ -16,7 +16,7 @@ impl TReleaseRunner for DockerArtifactRunner {
     fn run(
         &self,
         release: &Release,
-        volume: &str,
+        volume: &Path,
         args: Vec<&str>,
     ) -> Result<(), Box<dyn std::error::Error>> {
         execute_command(
@@ -24,7 +24,7 @@ impl TReleaseRunner for DockerArtifactRunner {
                 .arg("run")
                 .arg("--rm")
                 .arg("-v")
-                .arg(format!("{}:{}", volume, "/data"))
+                .arg(format!("{}:{}", volume.display(), "/data"))
                 .arg(release.uri())
                 .args(args),
         )?;

@@ -5,11 +5,11 @@ pub struct StackRunnerService {
 }
 
 pub trait TStackRunnerService {
-    fn run(contracts_deployment: Deployment);
+    fn run(deployment: Deployment);
 }
 
 impl TStackRunnerService for StackRunnerService {
-    fn run(contracts_deployment: Deployment) {
+    fn run(deployment: Deployment) {
         // ensure infra helm is available
 
         // copy values.yaml to deployment

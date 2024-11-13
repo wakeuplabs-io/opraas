@@ -1,9 +1,16 @@
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
+use tempfile::TempDir;
 
 use crate::{
     config::CoreConfig,
-    domain::{self, Artifact, Deployment, Project},
-    infra::{self, release_runner::DockerArtifactRunner, repositories::{deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository}},
+    domain::{self, Deployment, Release},
+    infra::{
+        self,
+        release_runner::DockerArtifactRunner,
+        repositories::{
+            deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository,
+        },
+    },
 };
 
 pub struct StackContractsDeployerService {
@@ -11,6 +18,22 @@ pub struct StackContractsDeployerService {
     release_repository: Box<dyn domain::release::TReleaseRepository>,
     release_runner: Box<dyn infra::release_runner::TReleaseRunner>,
 }
+
+pub trait TStackContractsDeployerService {
+    fn execute(
+        &self,
+        name: &str,
+        contracts_release: &Release,
+        config: &CoreConfig,
+    ) -> Result<Deployment, Box<dyn std::error::Error>>;
+}
+
+const IN_NETWORK: &str = "in/network-config.json";
+const OUT_ROLLUP: &str = "out/rollup.json";
+const OUT_GENESIS: &str = "out/genesis.json";
+const OUT_ARTIFACTS: &str = "out/artifacts.json";
+
+// implementations ===================================================
 
 impl StackContractsDeployerService {
     pub fn new(root: &PathBuf) -> Self {
@@ -22,59 +45,63 @@ impl StackContractsDeployerService {
     }
 }
 
-pub trait TStackContractsDeployerService {
-    fn execute(
-        &self,
-        name: &str,
-        project: &Project,
-        config: &CoreConfig,
-    ) -> Result<Deployment, Box<dyn std::error::Error>>;
-}
-
 impl TStackContractsDeployerService for StackContractsDeployerService {
     fn execute(
         &self,
         name: &str,
-        project: &Project,
+        contracts_release: &Release,
         config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>> {
-        // Deployment contains artifacts images, name
-        let contracts_artifact = Artifact::new(
-            domain::ArtifactKind::Contracts,
-            &project.src.contracts,
-            &project.infra.docker.contracts,
-            &config.artifacts.contracts,
-        );
+        // ensure release is available locally for run
+        self.release_repository.pull(&contracts_release)?;
 
-        Err("TODO:".into())
+        // we'll create a shared volume to share data with the contracts deployer
+        let volume_dir: TempDir = TempDir::new()?; // automatically removed when dropped from scope
+        std::fs::create_dir_all(volume_dir.path().join("out"))?;
+        std::fs::create_dir_all(volume_dir.path().join("in"))?;
 
-        // let deployment = Deployment::new(name.to_string());
+        let rollup_config = volume_dir.path().join(OUT_ROLLUP);
+        let genesis_config = volume_dir.path().join(OUT_GENESIS);
+        let artifacts_dir = volume_dir.path().join(OUT_ARTIFACTS);
+        
+        // write network config to shared volume
+        let network_config_writer = File::create( volume_dir.path().join(IN_NETWORK))?;
+        serde_json::to_writer(network_config_writer, &config.network)?;
 
-        // // TODO: get tmp folder
-        // // TODO: write config data to it
+        // deployment initially points to local files
+        let deployment = Deployment {
+            name: name.to_string(),
+            network_config: config.network.clone(),
+            accounts_config: config.accounts.clone(),
+            rollup_config,
+            genesis_config,
+            artifacts_dir,
+            releases: vec![],
+        };
 
-        // // using contracts artifacts, run to create a deployment
-        // self.artifacts_runner.run_artifact(
-        //     &contracts_artifact,
-        //     "/deployments/.cache",
-        //     vec![
-        //         "-e",
-        //         "ARTIFACTS=out/artifacts.json",
-        //         "-e",
-        //         "CONFIG=in/deploy-config.json",
-        //     ],
-        // )?;
+        // using contracts artifacts, run to create a deployment
+        self.release_runner.run(
+            &contracts_release,
+            volume_dir.path(),
+            vec![
+                "-e",
+                &format!("IN_NETWORK={}", IN_NETWORK),
+                "-e",
+                &format!("OUT_ARTIFACTS={}", OUT_ARTIFACTS),
+                "-e",
+                &format!("OUT_GENESIS={}", OUT_GENESIS),
+                "-e",
+                &format!("OUT_ROLLUP={}", OUT_ROLLUP),
+                "-e",
+                &format!("DEPLOYER_ADDRESS={}", &deployment.accounts_config.deployer_address),
+                "-e",
+                &format!("DEPLOYER_PRIVATE_KEY={}", &deployment.accounts_config.deployer_private_key),
+            ],
+        )?;
 
-        // // write outputs using project repository. Like config and so on
-        // self.contracts_deployments_repository
-        //     .create_contracts_artifacts(); // "artifacts.json"
-        // self.contracts_deployments_repository
-        //     .create_network_config();
-        // self.contracts_deployments_repository.create_rollup_config();
-        // self.contracts_deployments_repository.create_genesis();
+        // save outputs from deployment as well as inputs used for it
+        self.deployment_repository.save(&deployment)?;
 
-        // delete temp folder
-
-        // Ok(deployment)
+        Ok(deployment)
     }
 }
