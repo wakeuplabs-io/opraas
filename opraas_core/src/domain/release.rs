@@ -1,19 +1,25 @@
+use std::sync::Arc;
+use crate::config::CoreConfig;
 use serde::{Deserialize, Serialize};
-use super::Artifact;
+use super::{Artifact, ArtifactFactory, ArtifactKind, Project};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
     pub artifact_name: String,
     pub artifact_tag: String,
     pub registry_url: String,
 }
 
+pub struct ReleaseFactory {
+    artifacts_factory: ArtifactFactory,
+}
+
 pub trait TReleaseRepository {
     fn create_for_artifact(
         &self,
         artifact: &Artifact,
-        release_name: &str, 
-        registry_url: &str
+        release_name: &str,
+        registry_url: &str,
     ) -> Result<Release, Box<dyn std::error::Error>>;
     fn pull(&self, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
 }
@@ -44,5 +50,35 @@ impl Release {
             "{}/{}:{}",
             self.registry_url, self.artifact_name, self.artifact_tag
         )
+    }
+}
+
+impl ReleaseFactory {
+    pub fn new(project: &Project, config: &CoreConfig) -> Self {
+        Self {
+            artifacts_factory: ArtifactFactory::new(project, config),
+        }
+    }
+
+    pub fn get(&self, kind: ArtifactKind, release_name: &str, registry_url: &str) -> Arc<Release> {
+        Arc::new(Release::from_artifact(
+            &self.artifacts_factory.get(kind),
+            release_name,
+            registry_url,
+        ))
+    }
+
+    pub fn get_all(&self, release_name: &str, registry_url: &str) -> Vec<Arc<Release>> {
+        self.artifacts_factory
+            .get_all()
+            .iter()
+            .map(|artifact| {
+                Arc::new(Release::from_artifact(
+                    &artifact,
+                    release_name,
+                    registry_url,
+                ))
+            })
+            .collect()
     }
 }

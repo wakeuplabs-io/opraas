@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use crate::config::{AccountsConfig, NetworkConfig};
 use super::Release;
 
-
+#[derive(Debug, Clone)]
 pub struct Deployment {
     pub name: String,
     pub network_config: NetworkConfig,

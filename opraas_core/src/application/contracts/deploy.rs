@@ -3,7 +3,7 @@ use tempfile::TempDir;
 
 use crate::{
     config::CoreConfig,
-    domain::{self, Deployment, Release},
+    domain::{self, Deployment, Project, Release},
     infra::{
         self,
         release_runner::DockerArtifactRunner,
@@ -20,7 +20,7 @@ pub struct StackContractsDeployerService {
 }
 
 pub trait TStackContractsDeployerService {
-    fn execute(
+    fn deploy(
         &self,
         name: &str,
         contracts_release: &Release,
@@ -36,9 +36,9 @@ const OUT_ARTIFACTS: &str = "out/artifacts.json";
 // implementations ===================================================
 
 impl StackContractsDeployerService {
-    pub fn new(root: &PathBuf) -> Self {
+    pub fn new(project: &Project) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
+            deployment_repository: Box::new(InMemoryDeploymentRepository::new(&project.root)),
             release_repository: Box::new(DockerReleaseRepository::new()),
             release_runner: Box::new(DockerArtifactRunner::new()),
         }
@@ -46,9 +46,9 @@ impl StackContractsDeployerService {
 }
 
 impl TStackContractsDeployerService for StackContractsDeployerService {
-    fn execute(
+    fn deploy(
         &self,
-        name: &str,
+        deployment_name: &str,
         contracts_release: &Release,
         config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>> {
@@ -70,7 +70,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // deployment initially points to local files
         let deployment = Deployment {
-            name: name.to_string(),
+            name: deployment_name.to_string(),
             network_config: config.network.clone(),
             accounts_config: config.accounts.clone(),
             rollup_config,
