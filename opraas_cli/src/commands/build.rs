@@ -10,6 +10,10 @@ use opraas_core::{
 };
 use std::{sync::Arc, thread, time::Instant};
 
+pub struct BuildCommand {
+    artifacts: Vec<Arc<Artifact>>,
+}
+
 #[derive(Debug, Clone, clap::ValueEnum)]
 pub enum BuildTargets {
     Batcher,
@@ -21,9 +25,7 @@ pub enum BuildTargets {
     All,
 }
 
-pub struct BuildCommand {
-    artifacts: Vec<Arc<Artifact>>,
-}
+// implementations ================================================
 
 impl BuildCommand {
     pub fn new(target: BuildTargets) -> Self {
@@ -40,7 +42,6 @@ impl BuildCommand {
             BuildTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
             BuildTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
-
 
         Self { artifacts }
     }
@@ -64,7 +65,8 @@ impl BuildCommand {
                     match ArtifactBuilderService::new().build(&artifact) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
-                            spinner.finish_with_message(format!("❌ Error setting up {:?}", artifact));
+                            spinner
+                                .finish_with_message(format!("❌ Error setting up {:?}", artifact));
                             return Err(e.to_string());
                         }
                     }

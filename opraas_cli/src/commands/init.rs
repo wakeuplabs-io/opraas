@@ -23,6 +23,8 @@ pub struct InitCommand {
     artifacts: Vec<Arc<Artifact>>,
 }
 
+// implementations ================================================
+
 impl InitCommand {
     pub fn new(target: InitTargets) -> Self {
         let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();

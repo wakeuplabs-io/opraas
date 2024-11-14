@@ -1,15 +1,20 @@
 use crate::config::get_config_path;
+use crate::console::{print_info, print_warning, style_spinner};
 use ::signal::{trap::Trap, Signal};
-use opraas_core::config::CoreConfig;
-use crate::console::{print_info, print_success, print_warning};
-use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory};
+use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
-use opraas_core::infra::{testnet_node::anvil::AnvilTestnetNode, testnet_node::testnet_node::TTestnetNode};
+use opraas_core::config::CoreConfig;
+use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory};
+use opraas_core::infra::{
+    testnet_node::anvil::AnvilTestnetNode, testnet_node::testnet_node::TTestnetNode,
+};
 
 pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
 }
+
+// implementations ================================================
 
 impl DevCommand {
     pub fn new() -> Self {
@@ -33,6 +38,10 @@ impl DevCommand {
         let contracts_release =
             release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
 
+        // start local network ===========================
+
+        let local_network_spinner =
+            style_spinner(ProgressBar::new_spinner(), "Starting local network...");
         let fork_port = 8545;
         let anvil_node = AnvilTestnetNode::new(
             config.network.l1_chain_id,
@@ -40,19 +49,28 @@ impl DevCommand {
             fork_port,
         );
         anvil_node.start()?;
-        print_success(&format!(
+        local_network_spinner.finish_with_message(format!(
             "L1 fork available at http://127.1.1:{}...",
             fork_port
         ));
 
-        print_info("Deploying contracts to local network...");
+        // Deploy contracts ===========================
+
+        let contracts_deployer_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            "Deploying contracts to local network...",
+        );
         let contracts_deployer = StackContractsDeployerService::new(&project);
         let deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
-        print_success("Contracts deployed to local network");
+        contracts_deployer_spinner.finish_with_message("Contracts deployed to local network");
+
+        // start stack ===========================
 
         print_info("Starting stack...");
         let stack_runner = StackRunnerService::new(&project, &deployment);
         stack_runner.start()?;
+
+        // wait for exit ===========================
 
         print_info("Press Ctrl + C to exit...");
         let trap = Trap::trap(&[Signal::SIGINT]);

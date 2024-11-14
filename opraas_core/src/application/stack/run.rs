@@ -26,8 +26,8 @@ impl StackRunnerService {
             project: project.clone(),
             stack_runner: Box::new(HelmStackRunner::new(
                 &project.infra.helm.to_str().unwrap(),
-                &format!("opruaas-release-{}",&deployment.name),
-                &format!("opruaas-namespace-{}",&deployment.name),
+                &format!("op-ruaas-release-{}",&deployment.name),
+                &format!("op-ruaas-namespace-{}",&deployment.name),
             )),
             stack_infra_repository: Box::new(InMemoryStackInfraRepository::new(
                 &project.infra.root,

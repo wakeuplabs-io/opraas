@@ -14,6 +14,12 @@ use opraas_core::{
 };
 use std::{sync::Arc, thread, time::Instant};
 
+pub struct ReleaseCommand {
+    git: Box<dyn TGit + Send + Sync>,
+    dialoguer: Box<dyn TDialoguer + Send + Sync>,
+    artifacts: Vec<Arc<Artifact>>,
+}
+
 #[derive(Debug, Clone, ValueEnum)]
 pub enum ReleaseTargets {
     Batcher,
@@ -25,11 +31,7 @@ pub enum ReleaseTargets {
     All,
 }
 
-pub struct ReleaseCommand {
-    git: Box<dyn TGit + Send + Sync>,
-    dialoguer: Box<dyn TDialoguer + Send + Sync>,
-    artifacts: Vec<Arc<Artifact>>,
-}
+// implementations ================================================
 
 impl ReleaseCommand {
     pub fn new(target: ReleaseTargets) -> Self {
@@ -90,7 +92,7 @@ impl ReleaseCommand {
             .map(|&ref artifact| {
                 let release_name = release_name.clone();
                 let registry_url = registry_url.clone();
-                let artifact = Arc::clone(artifact); 
+                let artifact = Arc::clone(artifact);
 
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
@@ -101,11 +103,12 @@ impl ReleaseCommand {
                     match ArtifactReleaserService::new().release(
                         &artifact,
                         &release_name,
-                        &registry_url
+                        &registry_url,
                     ) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
-                            spinner.finish_with_message(format!("❌ Error setting up {:?}", artifact));
+                            spinner
+                                .finish_with_message(format!("❌ Error setting up {:?}", artifact));
                             return Err(e.to_string());
                         }
                     }
