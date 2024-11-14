@@ -5,4 +5,13 @@ metadata:
   labels:
     app: {{ .Values.proposer.name }}
 data:
-  EXAMPLE_ENV_VAR: "example_value"
+  OP_PROPOSER_L1_ETH_RPC: http://l1:8545 # fix
+  OP_PROPOSER_ROLLUP_RPC: http://op-node-a:8545 # fix
+  OP_PROPOSER_POLL_INTERVAL: 1s
+  OP_PROPOSER_NUM_CONFIRMATIONS: "1"
+  OP_PROPOSER_GAME_TYPE: "254"
+  OP_PROPOSER_PROPOSAL_INTERVAL: "12s"
+  OP_PROPOSER_PPROF_ENABLED: "true"
+  OP_PROPOSER_METRICS_ENABLED: "true"
+  OP_PROPOSER_ALLOW_NON_FINALIZED: "true"
+  OP_PROPOSER_RPC_ENABLE_ADMIN: "true"

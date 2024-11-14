@@ -1,7 +1,8 @@
 domain:
   host: localhost # demo.example.com
   email: email@email.com
-
+chain:
+  id: "11155420"
 global:
   image:
     pullPolicy: IfNotPresent
@@ -28,31 +29,107 @@ geth:
   deployment:
     replicaCount: 2
   image:
-    repository: wakeuplabs/op-geth
+    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth
     tag: latest
+  sequencer:
+    args:
+      - "--datadir=/db"
+      - "--verbosity=-3"
+      - "--http"
+      - "--http.corsdomain=*"
+      - "--http.vhosts=*"
+      - "--http.addr=0.0.0.0"
+      - "--http.port=8545"
+      - "--http.api=web3,debug,eth,txpool,net,engine,miner"
+      - "--ws"
+      - "--ws.addr=0.0.0.0"
+      - "--ws.port=8546"
+      - "--ws.origins=*"
+      - "--ws.api=debug,eth,txpool,net,engine,miner"
+      - "--syncmode=full"
+      - "--nodiscover"
+      - "--maxpeers=0"
+      - "--rpc.allow-unprotected-txs"
+      - "--authrpc.addr=0.0.0.0"
+      - "--authrpc.port=8551"
+      - "--authrpc.vhosts=*"
+      - "--authrpc.jwtsecret=/config/jwt-secret.txt"
+      - "--gcmode=archive"
+      - "--state.scheme=hash"
+      - "--metrics"
+      - "--metrics.addr=0.0.0.0"
+      - "--metrics.port=606"
+  replicas:
+    args:
+      - "--datadir=/db"
+      - "--verbosity=-3"
+      - "--http"
+      - "--http.corsdomain=*"
+      - "--http.vhosts=*"
+      - "--http.addr=0.0.0.0"
+      - "--http.port=8545"
+      - "--http.api=web3,debug,eth,txpool,net,engine,miner"
+      - "--ws"
+      - "--ws.addr=0.0.0.0"
+      - "--ws.port=8546"
+      - "--ws.origins=*"
+      - "--ws.api=debug,eth,txpool,net,engine,miner"
+      - "--syncmode=full"
+      - "--nodiscover"
+      - "--maxpeers=0"
+      - "--rpc.allow-unprotected-txs"
+      - "--authrpc.addr=0.0.0.0"
+      - "--authrpc.port=8551"
+      - "--authrpc.vhosts=*"
+      - "--authrpc.jwtsecret=/config/jwt-secret.txt"
+      - "--gcmode=archive"
+      - "--state.scheme=hash"
+      - "--metrics"
+      - "--metrics.addr=0.0.0.0"
+      - "--metrics.port=606"
 
 node:
   name: op-node
   image:
-    repository: wakeuplabs/op-node
+    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node
     tag: latest
-
+  sequencer:
+    args:
+        - "--sequencer.enabled"
+        - "--sequencer.l1-confs=0"
+        - "--l2=http://127.0.0.1:8551" # ok?
+        - "--l2.jwt-secret={{ .Values.geth.jwtSecretPath }}" # understand path to generated jwt-secret
+        - "--verifier.l1-confs=0"
+        - "--rollup.config=/app/data/configurations/rollup.json" # hardcoded on configmap
+        - "--metrics.enabled"
+        - "--metrics.addr=0.0.0.0"
+        - "--metrics.port=7300"
+  replicas:
+    args:
+      - "--l2=http://127.0.0.1:8551" # ok?
+      - "--l2.jwt-secret={{ .Values.geth.jwtSecretPath }}" # understand path to generated jwt-secret
+      - "--verifier.l1-confs=0"
+      - "--rollup.config=/app/data/configurations/rollup.json" # hardcoded on configmap
+      - "--metrics.enabled"
+      - "--metrics.addr=0.0.0.0"
+      - "--metrics.port=7300"
 batcher:
   name: op-batcher
   image:
-    repository: wakeuplabs/op-batcher
+    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher
     tag: latest
 
 proposer:
   name: op-proposer
   image:
-    repository: wakeuplabs/op-proposer
+    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer
     tag: latest
+
 
 proxyd:
   name: proxyd
   image:
-    repository: wakeuplabs/proxyd
+    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd
     tag: latest
   service:
     port: 8080

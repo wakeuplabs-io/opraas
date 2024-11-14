@@ -9,5 +9,5 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: hostpath
+  storageClassName: gp2
 {{- end }}

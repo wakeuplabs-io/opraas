@@ -18,6 +18,12 @@ spec:
         - name: {{ .Values.node.name }}-replica
           image: {{ .Values.node.image.repository }}:{{ .Values.node.image.tag }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command: [ "/usr/local/bin/op-node" ]
+          args: 
+            {{- range .Values.node.replicas.args }}
+            - {{ . | quote }}
+            {{- end }}
+            - "--l1={{ .Values.geth.name }}-replica:8545"
           ports:
             - name: http
               containerPort: 8547
@@ -33,14 +39,14 @@ spec:
               mountPath: /app/data/configurations
           readinessProbe:
             httpGet:
-              path: /health
-              port: rpc
+              path: /healthz
+              port: http
             initialDelaySeconds: 5
             periodSeconds: 10
           livenessProbe:
             httpGet:
-              path: /health
-              port: rpc
+              path: /healthz
+              port: http
             initialDelaySeconds: 15
             periodSeconds: 20
       volumes:
@@ -48,5 +54,5 @@ spec:
           persistentVolumeClaim:
             claimName: {{ .Values.node.name }}-replica-pvc-bin
         - name: configurations
-          persistentVolumeClaim:
-            claimName: {{ .Values.node.name }}-replica-pvc-configurations
+          configMap:
+            name: {{ .Values.node.name }}-replica-env

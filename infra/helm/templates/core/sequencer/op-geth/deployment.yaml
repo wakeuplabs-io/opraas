@@ -18,6 +18,11 @@ spec:
         - name: {{ .Values.geth.name }}-sequencer
           image: {{ .Values.geth.image.repository }}:{{ .Values.geth.image.tag }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          args: 
+            {{- range .Values.geth.sequencer.args }}
+            - {{ . | quote }}
+            {{- end }}
+            - "--networkid={{ .Values.chain.id}}" 
           ports:
             - containerPort: 8545
             - containerPort: 8546
@@ -27,8 +32,6 @@ spec:
               mountPath: /app/data/bin
             - name: datadir
               mountPath: /app/data/datadir
-            - name: configurations
-              mountPath: /app/data/configurations
           envFrom:
             - configMapRef:
                 name: {{ .Values.geth.name }}-sequencer-env
@@ -39,6 +42,3 @@ spec:
         - name: datadir
           persistentVolumeClaim:
             claimName: {{ .Values.geth.name }}-sequencer-pvc-datadir
-        - name: configurations
-          persistentVolumeClaim:
-            claimName: {{ .Values.geth.name }}-sequencer-pvc-configurations
