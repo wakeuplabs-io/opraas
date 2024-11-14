@@ -4,6 +4,10 @@ use std::process::Command;
 
 pub struct AnvilTestnetNode;
 
+const ANVIL_IMAGE: &str = "matzapata/anvil";
+
+// implementations ==============================================
+
 impl AnvilTestnetNode {
     pub fn new() -> Self {
         Self 
@@ -21,7 +25,7 @@ impl TTestnetNode for AnvilTestnetNode {
                     &format!("{}:3000", port),
                     "--name",
                     "anvil",
-                    "matzapata/anvil",
+                    ANVIL_IMAGE,
                 ])
                 .args(["anvil", "--chain-id", &chain_id.to_string(), "--fork", fork_url]),
         )?;

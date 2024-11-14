@@ -1,5 +1,4 @@
 use crate::{
-    artifacts_factory::{self, ArtifactFactoryTarget},
     config::get_config_path,
     console::{
         print_error, print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer,
@@ -11,7 +10,7 @@ use indicatif::{HumanDuration, MultiProgress, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
-    domain::{Artifact, Project, Release},
+    domain::{Artifact, ArtifactFactory, ArtifactKind, Project},
 };
 use std::{sync::Arc, thread, time::Instant};
 
@@ -26,24 +25,10 @@ pub enum ReleaseTargets {
     All,
 }
 
-impl From<ReleaseTargets> for ArtifactFactoryTarget {
-    fn from(value: ReleaseTargets) -> Self {
-        match value {
-            ReleaseTargets::Batcher => ArtifactFactoryTarget::Batcher,
-            ReleaseTargets::Node => ArtifactFactoryTarget::Node,
-            ReleaseTargets::Contracts => ArtifactFactoryTarget::Contracts,
-            ReleaseTargets::Explorer => ArtifactFactoryTarget::Explorer,
-            ReleaseTargets::Proposer => ArtifactFactoryTarget::Proposer,
-            ReleaseTargets::Geth => ArtifactFactoryTarget::Geth,
-            ReleaseTargets::All => ArtifactFactoryTarget::All,
-        }
-    }
-}
-
 pub struct ReleaseCommand {
     git: Box<dyn TGit + Send + Sync>,
     dialoguer: Box<dyn TDialoguer + Send + Sync>,
-    artifacts: Vec<(&'static str, Arc<Artifact>)>,
+    artifacts: Vec<Arc<Artifact>>,
 }
 
 impl ReleaseCommand {
@@ -51,10 +36,21 @@ impl ReleaseCommand {
         let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
         let project = Project::new_from_root(std::env::current_dir().unwrap());
 
+        let artifacts_factory = ArtifactFactory::new(&project, &config);
+        let artifacts = match target {
+            ReleaseTargets::All => artifacts_factory.get_all(),
+            ReleaseTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
+            ReleaseTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
+            ReleaseTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
+            ReleaseTargets::Explorer => vec![artifacts_factory.get(ArtifactKind::Explorer)],
+            ReleaseTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
+            ReleaseTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
+        };
+
         Self {
             git: Box::new(crate::git::Git::new()),
             dialoguer: Box::new(Dialoguer::new()),
-            artifacts: artifacts_factory::create_artifacts(target.into(), &project, &config),
+            artifacts,
         }
     }
 
@@ -91,14 +87,14 @@ impl ReleaseCommand {
         let handles: Vec<_> = self
             .artifacts
             .iter()
-            .map(|&(name, ref artifact)| {
+            .map(|&ref artifact| {
                 let release_name = release_name.clone();
                 let registry_url = registry_url.clone();
                 let artifact = Arc::clone(artifact); 
 
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Releasing {}", name).as_str(),
+                    format!("⏳ Releasing {:?}", artifact).as_str(),
                 );
 
                 thread::spawn(move || -> Result<(), String> {
@@ -109,7 +105,7 @@ impl ReleaseCommand {
                     ) {
                         Ok(_) => spinner.finish_with_message("Waiting..."),
                         Err(e) => {
-                            spinner.finish_with_message(format!("❌ Error setting up {}", name));
+                            spinner.finish_with_message(format!("❌ Error setting up {:?}", artifact));
                             return Err(e.to_string());
                         }
                     }

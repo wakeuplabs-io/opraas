@@ -1,5 +1,7 @@
-use crate::config::artifacts::ArtifactConfig;
-use std::path::PathBuf;
+use crate::config::{artifacts::ArtifactConfig, CoreConfig};
+use std::{collections::HashMap, path::PathBuf, sync::Arc};
+
+use super::Project;
 
 #[derive(Debug)]
 pub struct ArtifactData {
@@ -10,6 +12,7 @@ pub struct ArtifactData {
     pub source_tag: String,
 }
 
+#[derive(Hash, Eq, PartialEq, Debug)]
 pub enum ArtifactKind {
     Batcher,
     Node,
@@ -29,6 +32,10 @@ pub enum Artifact {
     Geth(ArtifactData),
 }
 
+pub struct ArtifactFactory {
+    artifacts: HashMap<ArtifactKind, Arc<Artifact>>,
+}
+
 pub trait TArtifactSourceRepository {
     fn pull(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, artifact: &Artifact) -> bool;
@@ -42,7 +49,12 @@ pub trait TArtifactRepository {
 // implementations ==========================================
 
 impl ArtifactData {
-    pub fn new(name: &str, context: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
+    pub fn new(
+        name: &str,
+        context: &PathBuf,
+        dockerfile: &PathBuf,
+        config: &ArtifactConfig,
+    ) -> Self {
         Self {
             name: name.to_string(),
             context: context.to_path_buf(),
@@ -54,14 +66,34 @@ impl ArtifactData {
 }
 
 impl Artifact {
-    pub fn new(kind: ArtifactKind, source: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
+    pub fn new(
+        kind: ArtifactKind,
+        source: &PathBuf,
+        dockerfile: &PathBuf,
+        config: &ArtifactConfig,
+    ) -> Self {
         match kind {
-            ArtifactKind::Batcher => Artifact::Batcher(ArtifactData::new("op-batcher", source, dockerfile, config)),
-            ArtifactKind::Node => Artifact::Node(ArtifactData::new("op-node", source, dockerfile, config)),
-            ArtifactKind::Contracts => Artifact::Contracts(ArtifactData::new("op-contracts",source, dockerfile, config)),
-            ArtifactKind::Explorer => Artifact::Explorer(ArtifactData::new("op-explorer",source, dockerfile, config)),
-            ArtifactKind::Proposer => Artifact::Proposer(ArtifactData::new("op-proposer",source, dockerfile, config)),
-            ArtifactKind::Geth => Artifact::Geth(ArtifactData::new("op-geth",source,dockerfile, config)),
+            ArtifactKind::Batcher => {
+                Artifact::Batcher(ArtifactData::new("op-batcher", source, dockerfile, config))
+            }
+            ArtifactKind::Node => {
+                Artifact::Node(ArtifactData::new("op-node", source, dockerfile, config))
+            }
+            ArtifactKind::Contracts => Artifact::Contracts(ArtifactData::new(
+                "op-contracts",
+                source,
+                dockerfile,
+                config,
+            )),
+            ArtifactKind::Explorer => {
+                Artifact::Explorer(ArtifactData::new("op-explorer", source, dockerfile, config))
+            }
+            ArtifactKind::Proposer => {
+                Artifact::Proposer(ArtifactData::new("op-proposer", source, dockerfile, config))
+            }
+            ArtifactKind::Geth => {
+                Artifact::Geth(ArtifactData::new("op-geth", source, dockerfile, config))
+            }
         }
     }
 
@@ -107,5 +139,79 @@ impl Artifact {
             | Artifact::Geth(data)
             | Artifact::Contracts(data) => &data.dockerfile,
         }
+    }
+}
+
+impl ArtifactFactory {
+    pub fn new(project: &Project, config: &CoreConfig) -> Self {
+        let mut map: HashMap<ArtifactKind, Arc<Artifact>> = HashMap::new();
+
+        map.insert(
+            ArtifactKind::Batcher,
+            Arc::new(Artifact::new(
+                ArtifactKind::Batcher,
+                &project.src.batcher,
+                &project.infra.docker.batcher,
+                &config.artifacts.batcher,
+            )),
+        );
+        map.insert(
+            ArtifactKind::Node,
+            Arc::new(Artifact::new(
+                ArtifactKind::Node,
+                &project.src.node,
+                &project.infra.docker.node,
+                &config.artifacts.node,
+            )),
+        );
+        map.insert(
+            ArtifactKind::Contracts,
+            Arc::new(Artifact::new(
+                ArtifactKind::Contracts,
+                &project.src.contracts,
+                &project.infra.docker.contracts,
+                &config.artifacts.contracts,
+            )),
+        );
+        map.insert(
+            ArtifactKind::Explorer,
+            Arc::new(Artifact::new(
+                ArtifactKind::Explorer,
+                &project.src.explorer,
+                &project.infra.docker.explorer,
+                &config.artifacts.explorer,
+            )),
+        );
+        map.insert(
+            ArtifactKind::Proposer,
+            Arc::new(Artifact::new(
+                ArtifactKind::Proposer,
+                &project.src.proposer,
+                &project.infra.docker.proposer,
+                &config.artifacts.proposer,
+            )),
+        );
+        map.insert(
+            ArtifactKind::Geth,
+            Arc::new(Artifact::new(
+                ArtifactKind::Geth,
+                &project.src.geth,
+                &project.infra.docker.geth,
+                &config.artifacts.geth,
+            )),
+        );
+
+        Self { artifacts: map }
+    }
+
+    pub fn get(&self, kind: ArtifactKind) -> Arc<Artifact> {
+        Arc::clone(self.artifacts.get(&kind).unwrap())
+    }
+
+    pub fn get_all(&self) -> Vec<Arc<Artifact>> {
+        self.artifacts
+            .iter()
+            .map(|(_, artifact)| Arc::clone(artifact))
+            .collect()
     }
 }
