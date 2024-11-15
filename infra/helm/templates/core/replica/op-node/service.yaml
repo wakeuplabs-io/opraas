@@ -10,15 +10,15 @@ spec:
     app: {{ .Values.node.name }}-replica
   ports:
     - name: http
-      port: 8547
-      targetPort: 8547
+      port: 7545
+      targetPort: 7545
     - name: p2p-tcp
-      port: 9221
-      targetPort: 9221
+      port: 9222
+      targetPort: 9222
       protocol: TCP
     - name: p2p-udp
-      port: 9221
-      targetPort: 9221
+      port: 9222
+      targetPort: 9222
       protocol: UDP
     - name: metrics
       port: 7300

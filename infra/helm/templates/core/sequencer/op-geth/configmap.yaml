@@ -1,8 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: {{ .Values.geth.name }}-sequencer-env
-  labels:
-    app: {{ .Values.geth.name }}-sequencer
-data:
-  EXAMPLE_ENV_VAR: "example_value"

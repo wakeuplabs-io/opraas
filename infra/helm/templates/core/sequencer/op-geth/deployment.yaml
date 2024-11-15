@@ -18,27 +18,52 @@ spec:
         - name: {{ .Values.geth.name }}-sequencer
           image: {{ .Values.geth.image.repository }}:{{ .Values.geth.image.tag }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command: [ "/usr/local/bin/op-geth" ] # check
           args: 
-            {{- range .Values.geth.sequencer.args }}
-            - {{ . | quote }}
+            - "--datadir=/app/data/datadir"
+            - "--verbosity=3"
+            - "--networkid={{ .Values.chain.id }}"
+            - "--syncmode=full"
+            - "--gcmode=archive"
+            - "--nodiscover"
+            - "--maxpeers=0" # defaults 0 maybe remove
+            - "--port=30313" # different from optimism's default, 30303
+            - "--rpc.allow-unprotected-txs"  # allow legacy transactions for deterministic deployment
+            - "--http"
+            - "--http.corsdomain=*"
+            - "--http.vhosts=*"
+            - "--http.addr=0.0.0.0"
+            - "--http.port=9545"
+            - "--http.api=web3,debug,eth,txpool,net,engine"
+            - "--ws"
+            - "--ws.addr=0.0.0.0"
+            - "--ws.port=9546"
+            - "--ws.origins=*"
+            - "--ws.api=debug,eth,txpool,net,engine"
+            - "--authrpc.addr=0.0.0.0"
+            - "--authrpc.port=9551"
+            - "--authrpc.vhosts=*"
+            - "--authrpc.jwtsecret=/app/data/configurations/jwt-secret.json"
+            {{- if .Values.monitoring.enabled }}
+            - "--metrics" # defaults localhost:7300
             {{- end }}
-            - "--networkid={{ .Values.chain.id}}" 
+            - "--rollup.disabletxpoolgossip=True"
+            - "--history.transactions=2350000"
+            - "--state.scheme=hash"  # TODO: investigate why state.scheme=path is not working
           ports:
-            - containerPort: 8545
-            - containerPort: 8546
+            - containerPort: 9545
+            - containerPort: 9546
+            - containerPort: 9551
             - containerPort: 7300
           volumeMounts:
-            - name: bin-data
-              mountPath: /app/data/bin
             - name: datadir
               mountPath: /app/data/datadir
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.geth.name }}-sequencer-env
+            - name: configurations
+              mountPath: /app/data/configurations
       volumes:
-        - name: bin-data
-          persistentVolumeClaim:
-            claimName: {{ .Values.geth.name }}-sequencer-pvc-bin
         - name: datadir
           persistentVolumeClaim:
             claimName: {{ .Values.geth.name }}-sequencer-pvc-datadir
+        - name: configurations
+          configMap:
+            name: core-config-files

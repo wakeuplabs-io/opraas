@@ -20,39 +20,47 @@ spec:
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           command: [ "/usr/local/bin/op-node" ]
           args: 
-            {{- range .Values.node.replicas.args }}
-            - {{ . | quote }}
+            # Node-Specific Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/flags.go
+            - "--l1={{ .Values.node.config.l1.rpc }}"
+            - "--l2={{ .Values.geth.name }}-sequencer:9551"
+            - "--l2.jwt-secret=/app/data/configurations/jwt-secret.json"
+            - "--verifier.l1-confs=0"
+            - "--rollup.config=/app/data/configurations/rollup-config.json"
+            - "--l1.rpckind=basic"
+            # Sequencer Options
+            - "--sequencer.enabled"
+            - "--sequencer.l1-confs=0"
+            # RPC Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/rpc/cli.go
+            - "--rpc.addr=0.0.0.0"
+            - "--rpc.port=7545" # different from optimism's default, 8547
+            # P2P Flags
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/p2p_flags.go
+            {{- if not .Values.node.p2p.enabled }}
+            - "--p2p.disable"
+            {{- else }}
+            - "--p2p.listen.ip=0.0.0.0"
+            - "--p2p.listen.tcp=9222"
+            - "--p2p.listen.udp=0"
+            - "--p2p.priv.path=/app/data/configurations/opnode_p2p_priv.txt"
             {{- end }}
-            - "--l1={{ .Values.geth.name }}-sequencer:8545"
+            {{- if .Values.node.p2p.sequencerKey }}
+            - "--p2p.sequencer.key={{ .Values.node.p2p.SequencerKey }}"
+            {{- end }}
+            # Metrics Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
+            {{- if .Values.monitoring.enabled }}
+            - "--metrics.enabled"
+            {{- end }}
           ports:
-            - name: http
-              containerPort: 8547
-            - name: p2p
-              containerPort: 9221
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.node.name }}-sequencer-env
+              containerPort: 7545
+              containerPort: 9222
+              containerPort: 7300
           volumeMounts:
-            - name: bin-data
-              mountPath: /app/data/bin
             - name: configurations
               mountPath: /app/data/configurations
-          readinessProbe:
-            httpGet:
-              path: /healthz
-              port: http
-            initialDelaySeconds: 5
-            periodSeconds: 10
-          livenessProbe:
-            httpGet:
-              path: /healthz
-              port: http
-            initialDelaySeconds: 15
-            periodSeconds: 20
       volumes:
-        - name: bin-data
-          persistentVolumeClaim:
-            claimName: {{ .Values.node.name }}-sequencer-pvc-bin
         - name: configurations
           configMap:
-            name: {{ .Values.node.name }}-sequencer-env
+            name: core-config-files

@@ -10,13 +10,16 @@ spec:
     app: {{ .Values.geth.name }}-sequencer
   ports:
     - name: rpc
-      port: 8545
-      targetPort: 8545
+      port: 9545
+      targetPort: 9545
       protocol: TCP
     - name: ws
-      port: 8546
-      targetPort: 8546
+      port: 9546
+      targetPort: 9546
       protocol: TCP
+    - name: rpc-auth
+      port: 9551
+      containerPort: 9551
     - name: metrics
       port: 7300
       targetPort: 7300

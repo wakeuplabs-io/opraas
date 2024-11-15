@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: core-config-files
+  labels:
+    app: configurations
+data:
+  rollup.json: |
+    {{ .Files.Get (required "configFile.rollup is required" .Values.configFile.rollup) | indent 4 }}
+  jwt-secret.txt: |
+    {{ .Files.Get (required "configFilePaths.jwtSecret is required" .Values.configFilePaths.jwtSecret) | indent 4 }}
+  genesis.json: |
+    {{ .Files.Get (required "configFilePaths.genesis is required" .Values.configFilePaths.genesis) | indent 4 }}
+  opnode_p2p_priv.txt: |
+    {{ .Files.Get .Values.configFile.nodeP2PPriv | indent 4 }}
