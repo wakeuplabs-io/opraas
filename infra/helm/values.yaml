@@ -7,7 +7,7 @@ global:
   image:
     pullPolicy: IfNotPresent
   l1:
-    rpc: "https://eth-sepolia.g.alchemy.com/v2/5600JheK0TTROlJ6O0wrc0gF3W9wIqm8/"
+    rpc: "<L1 eth RPC URL>"
 configFile:
   rollup: "config/rollup.json"
   jwtSecret: "config/jwt-secret.txt"
@@ -56,7 +56,7 @@ batcher:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher
     tag: v1.9.4
   config:
-    batcherKey: ""
+    batcherKey: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     mnemonic: ""
     hdPath: ""
     p2p:
@@ -68,7 +68,7 @@ proposer:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer
     tag: v1.9.4
   config:
-    proposerKey: ""
+    proposerKey: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
     mnemonic: ""
     hdPath: ""
 
@@ -93,10 +93,10 @@ redis:
     tag: latest
 
 explorer:
-  enabled: true
+  enabled: false
 
 monitoring:
-  enabled: true
+  enabled: false
 
 kube-prometheus-stack:
   grafana:
@@ -125,6 +125,11 @@ blockscout-stack:
           secretKeyRef:
             name: blockscout-secret
             key: DATABASE_URL
+      - name: RPC_ADDR
+        value: "op-node-replica"
+      - name: RPC_PORT
+        value: 7545
+    
   frontend:
     ingress:
       enabled: true

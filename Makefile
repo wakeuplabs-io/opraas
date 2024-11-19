@@ -53,3 +53,6 @@ release-cli: bump-versions
 	@echo "Ready, review changes and push tag with git push origin $(VERSION)"
 
 
+zip-config-artifacts: 
+	@echo zipping config artifacts on /infra/helm/config directory
+	zip -j infra/helm/config/artifacts.zip infra/helm/config/*

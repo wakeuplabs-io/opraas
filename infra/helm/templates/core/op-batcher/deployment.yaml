@@ -22,9 +22,9 @@ spec:
           args:
             # Batcher-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-batcher/flags/flags.go
-            - "--l1-eth-rpc='{{ .Values.global.l1.rpc }}'"
-            - "--l2-eth-rpc='{{ .Values.geth.name }}-sequencer:9545'"
-            - "--rollup-rpc='{{ .Values.node.name }}-sequencer:7545'"
+            - "--l1-eth-rpc={{ .Values.global.l1.rpc }}"
+            - "--l2-eth-rpc=http://{{ .Values.geth.name }}-sequencer-service:8545"
+            - "--rollup-rpc=http://{{ .Values.node.name }}-sequencer-service:7545"
             - "--poll-interval=1s"
             - "--sub-safety-margin=4"
             - "--max-channel-duration=1"
@@ -48,7 +48,7 @@ spec:
             {{- if .Values.batcher.config.enableAdmin }}
             - "--rpc.enable-admin"
             {{- end }}
-            - "--rpc.addr={config.batcher_rpc_listen_addr}"
+            - "--rpc.addr=0.0.0.0"
             - "--rpc.port=6545" # different from optimism's default, 8548
           ports:
             - containerPort: 6545

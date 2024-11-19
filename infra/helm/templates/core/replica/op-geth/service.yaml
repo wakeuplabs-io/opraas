@@ -10,8 +10,8 @@ spec:
     app: {{ .Values.geth.name }}-replica
   ports:
     - name: rpc
-      port: 9545
-      targetPort: 9545
+      port: 8545
+      targetPort: 8545
       protocol: TCP
     - name: ws
       port: 8546
