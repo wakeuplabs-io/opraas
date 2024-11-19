@@ -4,12 +4,9 @@ metadata:
   name: core-config-files
   labels:
     app: configurations
-data:
-  rollup.json: |
-    {{ .Files.Get (required "configFile.rollup is required" .Values.configFile.rollup) | indent 4 }}
-  jwt-secret.txt: |
-    {{ .Files.Get (required "configFilePaths.jwtSecret is required" .Values.configFilePaths.jwtSecret) | indent 4 }}
-  genesis.json: |
-    {{ .Files.Get (required "configFilePaths.genesis is required" .Values.configFilePaths.genesis) | indent 4 }}
-  opnode_p2p_priv.txt: |
-    {{ .Files.Get .Values.configFile.nodeP2PPriv | indent 4 }}
+binaryData:
+  rollup-config.json: {{ .Files.Get (required "configFile.rollup is required" .Values.configFile.rollup) | b64enc }}
+  jwt-secret.txt: {{ .Files.Get (required "configFile.jwtSecret is required" .Values.configFile.jwtSecret) | b64enc }}
+  genesis-l2.json: {{ .Files.Get (required "configFile.genesis is required" .Values.configFile.genesis) | b64enc }}
+  addresses.json: {{ .Files.Get (required "configFile.addresses is required" .Values.configFile.addresses) | b64enc }} # TODO: file too big to be uploaded as secret
+  opnode_p2p_priv.txt: {{ .Files.Get .Values.configFile.nodeP2PPriv | b64enc }}

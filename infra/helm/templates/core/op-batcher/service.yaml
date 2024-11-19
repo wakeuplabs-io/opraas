@@ -10,8 +10,8 @@ spec:
     app: {{ .Values.batcher.name }}
   ports:
     - name: http
-      port: 8548
-      targetPort: 8548
+      port: 6545
+      targetPort: 6545
     - name: metrics
       port: 7300
       targetPort: 7300

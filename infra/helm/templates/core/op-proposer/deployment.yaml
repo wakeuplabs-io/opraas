@@ -18,21 +18,32 @@ spec:
         - name: {{ .Values.proposer.name }}
           image: {{ .Values.proposer.image.repository }}:{{ .Values.proposer.image.tag }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command: [ "/usr/local/bin/op-proposer" ]
+          args:
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-proposer/flags/flags.go
+            - "--l1-eth-rpc='{{ .Values.global.l1.rpc }}'"
+            - "--rollup-rpc='{{ .Values.node.name }}-sequencer:9551'"
+            - "--poll-interval=1s"
+            - "--l2oo-address={{- $addresses := .Files.Get .Values.configFile.addresses | fromJson }}{{- required "L2OutputOracleProxy is required" (index $addresses "L2OutputOracleProxy") }}"
+            - "--allow-non-finalized"
+            # RPC Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/rpc/cli.go
+            - "--rpc.addr='0.0.0.0'"
+            - "--rpc.port=5545" # different from optimism's default, 8560
+            # Tx Manager Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/txmgr/cli.go
+            - "--num-confirmations=1"
+            {{ if .Values.proposer.config.proposerKey }}
+            - "--private-key={{ .Values.proposer.config.proposerKey }}"
+            {{- else }}
+            -   "--mnemonic={{ .Values.proposer.config.mnemonic }}"
+            -   "--hd-path={{ .Values.proposer.config.hdPath }}"
+            {{- end }}
+            # Metrics Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
+            {{- if .Values.monitoring.enabled }}
+            - "--metrics.enabled"
+            {{- end }}
           ports:
-            - containerPort: 8560
+            - containerPort: 5545 
             - containerPort: 7300
-          volumeMounts:
-            - name: bin-data
-              mountPath: /app/data/bin
-            - name: deployments
-              mountPath: /app/data/deployments
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.proposer.name }}-env
-      volumes:
-        - name: bin-data
-          persistentVolumeClaim:
-            claimName: {{ .Values.proposer.name }}-pvc-bin
-        - name: deployments
-          persistentVolumeClaim:
-            claimName: {{ .Values.proposer.name }}-pvc-deployments

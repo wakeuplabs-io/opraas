@@ -19,7 +19,7 @@ spec:
       protocol: TCP
     - name: rpc-auth
       port: 9551
-      containerPort: 9551
+      targetPort: 9551
     - name: metrics
       port: 7300
       targetPort: 7300

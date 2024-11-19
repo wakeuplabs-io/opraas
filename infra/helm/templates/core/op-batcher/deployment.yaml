@@ -18,16 +18,38 @@ spec:
         - name: {{ .Values.batcher.name }}
           image: {{ .Values.batcher.image.repository }}:{{ .Values.batcher.image.tag }} 
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
+          command: [ "/usr/local/bin/op-batcher" ] # check
+          args:
+            # Batcher-Specific Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-batcher/flags/flags.go
+            - "--l1-eth-rpc='{{ .Values.global.l1.rpc }}'"
+            - "--l2-eth-rpc='{{ .Values.geth.name }}-sequencer:9545'"
+            - "--rollup-rpc='{{ .Values.node.name }}-sequencer:7545'"
+            - "--poll-interval=1s"
+            - "--sub-safety-margin=4"
+            - "--max-channel-duration=1"
+            # Tx Manager Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/txmgr/cli.go
+            - "--num-confirmations=1"
+            {{ if .Values.batcher.config.batcherKey }}
+            - "--private-key={{ .Values.batcher.config.batcherKey }}"
+            {{- else }}
+            -   "--mnemonic={{ .Values.batcher.config.mnemonic }}"
+            -   "--hd-path={{ .Values.batcher.config.hdPath }}"
+            {{- end }}
+            # Metrics Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
+            {{- if .Values.monitoring.enabled }}
+            - "--metrics.enabled"
+            {{- end }}
+            # RPC Options
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-batcher/rpc/config.go
+            # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/rpc/cli.go
+            {{- if .Values.batcher.config.enableAdmin }}
+            - "--rpc.enable-admin"
+            {{- end }}
+            - "--rpc.addr={config.batcher_rpc_listen_addr}"
+            - "--rpc.port=6545" # different from optimism's default, 8548
           ports:
-            - containerPort: 8548
+            - containerPort: 6545
             - containerPort: 7300
-          volumeMounts:
-            - name: bin-data
-              mountPath: /app/data/bin
-          envFrom:
-            - configMapRef:
-                name: {{ .Values.batcher.name }}-env
-      volumes:
-        - name: bin-data
-          persistentVolumeClaim:
-            claimName: {{ .Values.batcher.name }}-pvc

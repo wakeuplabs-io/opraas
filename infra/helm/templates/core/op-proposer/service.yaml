@@ -10,8 +10,8 @@ spec:
     app: {{ .Values.proposer.name }}
   ports:
     - name: http
-      port: 8560
-      targetPort: 8560
+      port: 5545
+      targetPort: 5545
     - name: metrics
       port: 7300
       targetPort: 7300

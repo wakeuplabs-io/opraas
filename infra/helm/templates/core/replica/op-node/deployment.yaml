@@ -22,7 +22,7 @@ spec:
           args: 
             # Node-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/flags.go
-            - "--l1={{ .Values.node.config.l1.rpc }}"
+            - "--l1='{{ .Values.global.l1.rpc }}'"
             - "--l2={{ .Values.geth.name }}-replica:9551"
             - "--l2.jwt-secret=/app/data/configurations/jwt-secret.json"
             - "--verifier.l1-confs=0"
@@ -30,14 +30,14 @@ spec:
             - "--l1.rpckind=basic"
             # RPC Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/rpc/cli.go
-            - "--rpc.addr=0.0.0.0"
+            - "--rpc.addr='0.0.0.0'"
             - "--rpc.port=7545" # different from optimism's default, 8547
             # P2P Flags
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/p2p_flags.go
-            {{- if not .Values.node.p2p.enabled }}
+            {{- if not .Values.node.config.p2p.enabled }}
             - "--p2p.disable"
             {{- else }}
-            - "--p2p.listen.ip=0.0.0.0"
+            - "--p2p.listen.ip='0.0.0.0'"
             - "--p2p.listen.tcp=9222"
             - "--p2p.listen.udp=0"
             - "--p2p.priv.path=/app/data/configurations/opnode_p2p_priv.txt"
@@ -48,9 +48,9 @@ spec:
             - "--metrics.enabled"
             {{- end }}
           ports:
-              containerPort: 7545
-              containerPort: 9222
-              containerPort: 7300
+            - containerPort: 7545
+            - containerPort: 9222
+            - containerPort: 7300
           volumeMounts:
             - name: configurations
               mountPath: /app/data/configurations
