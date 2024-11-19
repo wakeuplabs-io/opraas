@@ -7,11 +7,12 @@ use opraas_core::application::{StackContractsDeployerService, TStackContractsDep
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory};
 use opraas_core::infra::{
-    testnet_node::anvil::AnvilTestnetNode, testnet_node::testnet_node::TTestnetNode,
+    testnet_node::docker::DockerTestnetNode, testnet_node::testnet_node::TTestnetNode,
 };
 
 pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
+    fork_node: Box<dyn TTestnetNode>,
 }
 
 // implementations ================================================
@@ -20,6 +21,7 @@ impl DevCommand {
     pub fn new() -> Self {
         Self {
             dialoguer: Box::new(crate::console::Dialoguer::new()),
+            fork_node: Box::new(DockerTestnetNode::new()),
         }
     }
 
@@ -42,16 +44,13 @@ impl DevCommand {
 
         let local_network_spinner =
             style_spinner(ProgressBar::new_spinner(), "Starting local network...");
-        let fork_port = 8545;
-        let anvil_node = AnvilTestnetNode::new(
+        self.fork_node.start(
             config.network.l1_chain_id,
             &config.network.l1_rpc_url,
-            fork_port,
-        );
-        anvil_node.start()?;
+            8545,
+        )?;
         local_network_spinner.finish_with_message(format!(
-            "L1 fork available at http://127.1.1:{}...",
-            fork_port
+            "L1 fork available at http://127.1.1:8545",
         ));
 
         // Deploy contracts ===========================
@@ -66,9 +65,9 @@ impl DevCommand {
 
         // start stack ===========================
 
-        print_info("Starting stack...");
-        let stack_runner = StackRunnerService::new(&project, &deployment);
-        stack_runner.start()?;
+        // print_info("Starting stack...");
+        // let stack_runner = StackRunnerService::new(&project, &deployment);
+        // stack_runner.start()?;
 
         // wait for exit ===========================
 
@@ -78,13 +77,25 @@ impl DevCommand {
             match sig {
                 Signal::SIGINT => {
                     print_warning("Ctrl + C received, exiting...");
-                    anvil_node.stop()?;
-                    stack_runner.stop()?;
+                    return Ok(());
                 }
                 _ => {}
             }
         }
 
         Ok(())
+    }
+}
+
+impl Drop for DevCommand {
+    fn drop(&mut self) {
+        print_warning("Cleaning up...");
+
+        match self.fork_node.stop() {
+            Ok(_) => {}
+            Err(e) => {
+                print_warning(&format!("Failed to stop fork node: {}", e));
+            }
+        }
     }
 }
