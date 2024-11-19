@@ -18,7 +18,7 @@ spec:
         - name: {{ .Values.batcher.name }}
           image: {{ .Values.batcher.image.repository }}:{{ .Values.batcher.image.tag }} 
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
-          command: [ "/usr/local/bin/op-batcher" ] # check
+          command: [ "/usr/local/bin/op-batcher" ]
           args:
             # Batcher-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-batcher/flags/flags.go
