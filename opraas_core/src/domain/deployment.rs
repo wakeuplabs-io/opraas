@@ -10,7 +10,8 @@ pub struct Deployment {
     pub accounts_config: AccountsConfig,
     pub rollup_config: PathBuf, 
     pub genesis_config: PathBuf,
-    pub artifacts_dir: PathBuf,
+    pub addresses_config: PathBuf,
+    pub allocs_config: PathBuf,
     pub releases: Vec<Release>,
 }
 

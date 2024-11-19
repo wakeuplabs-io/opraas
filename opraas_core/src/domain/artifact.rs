@@ -1,5 +1,5 @@
 use crate::config::{artifacts::ArtifactConfig, CoreConfig};
-use std::{collections::HashMap, path::PathBuf, sync::Arc};
+use std::{collections::HashMap, fmt, path::PathBuf, sync::Arc};
 
 use super::Project;
 
@@ -30,6 +30,19 @@ pub enum Artifact {
     Explorer(ArtifactData),
     Proposer(ArtifactData),
     Geth(ArtifactData),
+}
+
+impl fmt::Display for Artifact {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Artifact::Batcher(data) => write!(f, "Batcher"),
+            Artifact::Node(data) => write!(f, "Node"),
+            Artifact::Contracts(data) => write!(f, "Contracts"),
+            Artifact::Explorer(data) => write!(f, "Explorer"),
+            Artifact::Proposer(data) => write!(f, "Proposer"),
+            Artifact::Geth(data) => write!(f, "Geth"),
+        }
+    }
 }
 
 pub struct ArtifactFactory {

@@ -96,7 +96,7 @@ impl ReleaseCommand {
 
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Releasing {:?}", artifact).as_str(),
+                    format!("⏳ Releasing {}", artifact).as_str(),
                 );
 
                 thread::spawn(move || -> Result<(), String> {

@@ -44,16 +44,20 @@ impl TStackRunnerService for StackRunnerService {
 
         let mut overrides: HashMap<&str, &str> = HashMap::new();
         overrides.insert(
-            "contracts.rollup",
+            "rollup_config",
             self.deployment.rollup_config.to_str().unwrap(),
         );
         overrides.insert(
-            "contracts.genesis",
+            "genesis_config",
             self.deployment.genesis_config.to_str().unwrap(),
         );
         overrides.insert(
-            "contracts.artifacts",
-            self.deployment.artifacts_dir.to_str().unwrap(),
+            "addresses_config",
+            self.deployment.addresses_config.to_str().unwrap(),
+        );
+        overrides.insert(
+            "allocs_config",
+            self.deployment.allocs_config.to_str().unwrap(),
         );
         overrides.insert(
             "accounts.admin_private_key",

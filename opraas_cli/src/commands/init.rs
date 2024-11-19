@@ -58,7 +58,7 @@ impl InitCommand {
                 let artifact = Arc::new(artifact.clone());
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Preparing {:?}", artifact).as_str(),
+                    format!("⏳ Preparing {}", artifact).as_str(),
                 );
 
                 thread::spawn(move || {

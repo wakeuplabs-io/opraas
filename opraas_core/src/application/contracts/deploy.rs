@@ -28,10 +28,11 @@ pub trait TStackContractsDeployerService {
     ) -> Result<Deployment, Box<dyn std::error::Error>>;
 }
 
-const IN_NETWORK: &str = "in/network-config.json";
+const IN_NETWORK: &str = "in/deploy-config.json";
 const OUT_ROLLUP: &str = "out/rollup.json";
 const OUT_GENESIS: &str = "out/genesis.json";
-const OUT_ARTIFACTS: &str = "out/artifacts.json";
+const OUT_ADDRESSES: &str = "out/addresses.json";
+const OUT_ALLOCS: &str = "out/allocs.json";
 
 // implementations ===================================================
 
@@ -62,7 +63,8 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         let rollup_config = volume_dir.path().join(OUT_ROLLUP);
         let genesis_config = volume_dir.path().join(OUT_GENESIS);
-        let artifacts_dir = volume_dir.path().join(OUT_ARTIFACTS);
+        let addresses_config = volume_dir.path().join(OUT_ADDRESSES);
+        let allocs_config = volume_dir.path().join(OUT_ALLOCS);
         
         // write network config to shared volume
         let network_config_writer = File::create( volume_dir.path().join(IN_NETWORK))?;
@@ -75,7 +77,8 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             accounts_config: config.accounts.clone(),
             rollup_config,
             genesis_config,
-            artifacts_dir,
+            addresses_config,
+            allocs_config,
             releases: vec![],
         };
 
@@ -87,7 +90,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
                 "-e",
                 &format!("IN_NETWORK={}", IN_NETWORK),
                 "-e",
-                &format!("OUT_ARTIFACTS={}", OUT_ARTIFACTS),
+                &format!("OUT_ARTIFACTS={}", OUT_ADDRESSES),
                 "-e",
                 &format!("OUT_GENESIS={}", OUT_GENESIS),
                 "-e",

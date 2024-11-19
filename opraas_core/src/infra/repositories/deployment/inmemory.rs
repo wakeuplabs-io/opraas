@@ -15,7 +15,8 @@ const ACCOUNTS_FILENAME: &str = "network.json";
 const RELEASE_FILENAME: &str = "release.json";
 const ROLLUP_FILENAME: &str = "rollup.json";
 const GENESIS_FILENAME: &str = "genesis.json";
-const ARTIFACTS_FOLDER: &str = "artifacts";
+const ADDRESSES_FILENAME: &str = "addresses.json";
+const ALLOCS_FILENAME: &str = "allocs.json";
 
 // implementations ====================================
 
@@ -115,9 +116,10 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         let network_config = self.load_network_config(&depl_path)?;
         let releases = self.load_releases_config(&depl_path)?;
 
-        let artifacts_dir = self.load_path(&depl_path.join(ARTIFACTS_FOLDER))?;
+        let addresses_config = self.load_path(&depl_path.join(ADDRESSES_FILENAME))?;
         let rollup_config = self.load_path(&depl_path.join(ROLLUP_FILENAME))?;
         let genesis_config = self.load_path(&depl_path.join(GENESIS_FILENAME))?;
+        let allocs_config: PathBuf = self.load_path(&depl_path.join(ALLOCS_FILENAME))?;
 
         Ok(Some(Deployment {
             name,
@@ -125,7 +127,8 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
             network_config,
             rollup_config,
             genesis_config,
-            artifacts_dir,
+            addresses_config,
+            allocs_config,
             releases,
         }))
     }
@@ -138,9 +141,10 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         self.write_accounts_config(&depl_path, &deployment.accounts_config)?;
         self.write_releases_config(&depl_path, &deployment.releases)?;
 
-        self.write_path(&depl_path.join(ARTIFACTS_FOLDER), &deployment.artifacts_dir)?;
+        self.write_path(&depl_path.join(ADDRESSES_FILENAME), &deployment.addresses_config)?;
         self.write_path(&depl_path.join(ROLLUP_FILENAME), &deployment.rollup_config)?;
         self.write_path(&depl_path.join(GENESIS_FILENAME), &deployment.genesis_config)?;
+        self.write_path( &depl_path.join(ALLOCS_FILENAME), &deployment.allocs_config)?;
 
         Ok(())
     }

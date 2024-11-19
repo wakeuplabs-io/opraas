@@ -58,7 +58,7 @@ impl BuildCommand {
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
                 let spinner = style_spinner(
                     m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Building {:?}", artifact).as_str(),
+                    format!("⏳ Building {}", artifact).as_str(),
                 );
 
                 thread::spawn(move || -> Result<(), String> {

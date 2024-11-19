@@ -68,7 +68,6 @@ async fn main() {
         Commands::Build { target } => BuildCommand::new(target).run(),
         Commands::Release { target }  => ReleaseCommand::new(target).run(),
         Commands::Dev {} => DevCommand::new().run(),
-        _ => Ok(()),
         // Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
         // Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
         // Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,
