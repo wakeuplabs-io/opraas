@@ -81,7 +81,7 @@ const GITIGNORE: &str = r#"
 "#;
 
 const ENV_FILE: &str = r#"
-L1_RPC_URL="https://eth-sepolia.g.alchemy.com/v2/..."
+L1_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/..."
 ADMIN_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
 BATCHER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
 PROPOSER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"

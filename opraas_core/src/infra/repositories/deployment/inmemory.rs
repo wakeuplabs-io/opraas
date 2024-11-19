@@ -1,4 +1,7 @@
-use std::{fs::File, path::PathBuf};
+use std::{
+    fs::{File, OpenOptions},
+    path::PathBuf,
+};
 
 use crate::{
     config::{AccountsConfig, NetworkConfig},
@@ -11,7 +14,7 @@ pub struct InMemoryDeploymentRepository {
 }
 
 const NETWORK_FILENAME: &str = "network.json";
-const ACCOUNTS_FILENAME: &str = "network.json";
+const ACCOUNTS_FILENAME: &str = "accounts.json";
 const RELEASE_FILENAME: &str = "release.json";
 const ROLLUP_FILENAME: &str = "rollup.json";
 const GENESIS_FILENAME: &str = "genesis.json";
@@ -22,7 +25,12 @@ const ALLOCS_FILENAME: &str = "allocs.json";
 
 impl InMemoryDeploymentRepository {
     pub fn new(root: &std::path::PathBuf) -> Self {
-        Self { root: root.clone() }
+        let deployments_root = root.join("deployments");
+        std::fs::create_dir_all(&deployments_root).unwrap();
+
+        Self {
+            root: deployments_root,
+        }
     }
 
     fn load_network_config(
@@ -40,8 +48,11 @@ impl InMemoryDeploymentRepository {
         depl_path: &PathBuf,
         value: &NetworkConfig,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let writer = File::open(depl_path.join(NETWORK_FILENAME))?;
-        serde_json::to_writer(writer, value)?;
+        let writer = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(depl_path.join(NETWORK_FILENAME))?;
+        serde_json::to_writer_pretty(writer, value)?;
 
         Ok(())
     }
@@ -61,8 +72,11 @@ impl InMemoryDeploymentRepository {
         depl_path: &PathBuf,
         value: &AccountsConfig,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let writer = File::open(depl_path.join(ACCOUNTS_FILENAME))?;
-        serde_json::to_writer(writer, value)?;
+        let writer = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(depl_path.join(ACCOUNTS_FILENAME))?;
+        serde_json::to_writer_pretty(writer, value)?;
 
         Ok(())
     }
@@ -82,8 +96,11 @@ impl InMemoryDeploymentRepository {
         depl_path: &PathBuf,
         releases: &Vec<Release>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let writer = File::open(depl_path.join(RELEASE_FILENAME))?;
-        serde_json::to_writer(writer, releases)?;
+        let writer = OpenOptions::new()
+            .write(true)
+            .create(true)
+            .open(depl_path.join(RELEASE_FILENAME))?;
+        serde_json::to_writer_pretty(writer, releases)?;
 
         Ok(())
     }
@@ -97,7 +114,7 @@ impl InMemoryDeploymentRepository {
         Ok(path.to_path_buf())
     }
 
-    fn write_path(&self, dest: &PathBuf,  src: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
+    fn write_path(&self, dest: &PathBuf, src: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
         system::copy_and_overwrite(src, dest)?;
 
         Ok(())
@@ -141,10 +158,16 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         self.write_accounts_config(&depl_path, &deployment.accounts_config)?;
         self.write_releases_config(&depl_path, &deployment.releases)?;
 
-        self.write_path(&depl_path.join(ADDRESSES_FILENAME), &deployment.addresses_config)?;
+        self.write_path(
+            &depl_path.join(ADDRESSES_FILENAME),
+            &deployment.addresses_config,
+        )?;
         self.write_path(&depl_path.join(ROLLUP_FILENAME), &deployment.rollup_config)?;
-        self.write_path(&depl_path.join(GENESIS_FILENAME), &deployment.genesis_config)?;
-        self.write_path( &depl_path.join(ALLOCS_FILENAME), &deployment.allocs_config)?;
+        self.write_path(
+            &depl_path.join(GENESIS_FILENAME),
+            &deployment.genesis_config,
+        )?;
+        self.write_path(&depl_path.join(ALLOCS_FILENAME), &deployment.allocs_config)?;
 
         Ok(())
     }

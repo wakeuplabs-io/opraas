@@ -1,4 +1,4 @@
-use std::{fs::File, path::PathBuf};
+use std::fs::File;
 use tempfile::TempDir;
 
 use crate::{
@@ -61,11 +61,6 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         std::fs::create_dir_all(volume_dir.path().join("out"))?;
         std::fs::create_dir_all(volume_dir.path().join("in"))?;
 
-        let rollup_config = volume_dir.path().join(OUT_ROLLUP);
-        let genesis_config = volume_dir.path().join(OUT_GENESIS);
-        let addresses_config = volume_dir.path().join(OUT_ADDRESSES);
-        let allocs_config = volume_dir.path().join(OUT_ALLOCS);
-        
         // write network config to shared volume
         let network_config_writer = File::create( volume_dir.path().join(IN_NETWORK))?;
         serde_json::to_writer(network_config_writer, &config.network)?;
@@ -75,11 +70,11 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             name: deployment_name.to_string(),
             network_config: config.network.clone(),
             accounts_config: config.accounts.clone(),
-            rollup_config,
-            genesis_config,
-            addresses_config,
-            allocs_config,
-            releases: vec![],
+            rollup_config: volume_dir.path().join(OUT_ROLLUP),
+            genesis_config: volume_dir.path().join(OUT_GENESIS),
+            addresses_config: volume_dir.path().join(OUT_ADDRESSES),
+            allocs_config: volume_dir.path().join(OUT_ALLOCS),
+            releases: vec![contracts_release.clone()],
         };
 
         // using contracts artifacts, run to create a deployment
@@ -104,6 +99,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // save outputs from deployment as well as inputs used for it
         self.deployment_repository.save(&deployment)?;
+
 
         Ok(deployment)
     }
