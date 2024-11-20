@@ -9,10 +9,10 @@ spec:
   selector:
     app: {{ .Values.proposer.name }}
   ports:
-    - name: http
-      port: 5545
-      targetPort: 5545
+    - name: rpc
+      port: {{ .Values.proposer.ports.rpc }}
+      targetPort: {{ .Values.proposer.ports.rpc }}
     - name: metrics
-      port: 7300
-      targetPort: 7300
+      port: {{ .Values.proposer.ports.metrics }}
+      targetPort: {{ .Values.proposer.ports.metrics }}
 

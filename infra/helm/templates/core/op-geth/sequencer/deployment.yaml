@@ -33,28 +33,29 @@ spec:
             - "--http.corsdomain=*"
             - "--http.vhosts=*"
             - "--http.addr=0.0.0.0"
-            - "--http.port=8545" # different from optimism's default, 9545
+            - "--http.port={{ .Values.geth.ports.rpc }}"
             - "--http.api=web3,debug,eth,txpool,net,engine"
             - "--ws"
             - "--ws.addr=0.0.0.0"
-            - "--ws.port=8546"
+            - "--ws.port={{ .Values.geth.ports.ws }}"
             - "--ws.origins=*"
             - "--ws.api=debug,eth,txpool,net,engine"
             - "--authrpc.addr=0.0.0.0"
-            - "--authrpc.port=9551"
+            - "--authrpc.port={{ .Values.geth.ports.rpcAuth }}"
             - "--authrpc.vhosts=*"
-            - "--authrpc.jwtsecret=/app/data/configurations/jwt-secret.json"
+            - "--authrpc.jwtsecret=/app/data/configurations/jwt-secret.txt"
             {{- if .Values.monitoring.enabled }}
-            - "--metrics" # defaults localhost:7300
+            - "--metrics"
+            - "--metrics.port={{ .Values.geth.ports.metrics }}"
             {{- end }}
             - "--rollup.disabletxpoolgossip=True"
             - "--history.transactions=2350000"
             - "--state.scheme=hash"  # TODO: investigate why state.scheme=path is not working
           ports:
-            - containerPort: 8545
-            - containerPort: 8546
-            - containerPort: 9551
-            - containerPort: 7300
+            - containerPort: {{ .Values.geth.ports.rpc }}
+            - containerPort: {{ .Values.geth.ports.ws }}
+            - containerPort: {{ .Values.geth.ports.rpcAuth }}
+            - containerPort: {{ .Values.geth.ports.metrics }}
           volumeMounts:
             - name: datadir
               mountPath: /app/data/datadir

@@ -2,7 +2,6 @@ domain:
   host: localhost # demo.example.com
   email: email@email.com
 
-
 global:
   image:
     pullPolicy: IfNotPresent
@@ -10,6 +9,7 @@ global:
 chain:
   l1Rpc: "<L1 eth RPC URL>"
   artifacts: "config/artifacts.zip"
+  addresses: "config/addresses.json"
 
 geth:
   name: op-geth
@@ -18,6 +18,11 @@ geth:
     tag: v1.101408.0
   deployment:
     replicaCount: 2
+  ports:
+    rpc: 8545 # != optimism docs: 9545 
+    ws: 8546 # != optimisms docs: 9546
+    rpcAuth: 9551
+    metrics: 7300
 
 node:
   name: op-node
@@ -27,6 +32,10 @@ node:
   config:
     privateKey: ""
     p2pEnabled: false
+  ports:
+    rpc: 7545 # != optimism docs: 8547
+    p2p: 9222
+    metrics: 7300
 
 batcher:
   name: op-batcher
@@ -35,6 +44,9 @@ batcher:
     tag: v1.9.4
   config:
     privateKey: ""
+  ports:
+    rpc: 6545 # != optimism docs: 8548
+    metrics: 7300
 
 proposer:
   name: op-proposer
@@ -43,6 +55,9 @@ proposer:
     tag: v1.9.4
   config:
     privateKey: ""
+  ports:
+    rpc: 5545 # != optimism docs: 8560
+    metrics: 7300
 
 proxyd:
   name: proxyd
@@ -86,7 +101,7 @@ kube-prometheus-stack:
       enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
       mountPropagation: HostToContainer
 
-blockscout-stack:
+blockscoutStack:
   blockscout:
     extraEnv:
       - name: ECTO_USE_SSL
@@ -97,7 +112,7 @@ blockscout-stack:
             name: blockscout-secret
             key: DATABASE_URL
       - name: RPC_ADDR
-        value: "op-node-replica"
+        value: "http://op-node-replica-service"
       - name: RPC_PORT
         value: 7545
     

@@ -10,16 +10,14 @@ spec:
     app: {{ .Values.geth.name }}-replica
   ports:
     - name: rpc
-      port: 8545
-      targetPort: 8545
-      protocol: TCP
+      port: {{ .Values.geth.ports.rpc }}
+      targetPort: {{ .Values.geth.ports.rpc }}
     - name: ws
-      port: 8546
-      targetPort: 8546
-      protocol: TCP
+      port: {{ .Values.geth.ports.ws }}
+      targetPort: {{ .Values.geth.ports.ws }}
     - name: rpc-auth
-      port: 9551
-      targetPort: 9551
+      port: {{ .Values.geth.ports.rpcAuth }}
+      targetPort: {{ .Values.geth.ports.rpcAuth }}
     - name: metrics
-      port: 7300
-      targetPort: 7300
+      port: {{ .Values.geth.ports.metrics }}
+      targetPort: {{ .Values.geth.ports.metrics }}

@@ -42,14 +42,14 @@ data:
 
     [backends]
     [backends.sequencer]
-    rpc_url = "http://{{ .Values.geth.name }}-sequencer-service:8545"
-    ws_url = "ws://{{ .Values.geth.name }}-sequencer-service:8546"
+    rpc_url = "http://{{ .Values.geth.name }}-sequencer-service:{{ .Values.geth.ports.rpc }}"
+    ws_url = "ws://{{ .Values.geth.name }}-sequencer-service:{{ .Values.geth.ports.ws }}"
     max_rps = 10
     max_ws_conns = 5
 
     [backends.replicas]
-    rpc_url = "http://{{ .Values.geth.name }}-replica-service:8545"
-    ws_url = "ws://{{ .Values.geth.name }}-replica-service:8546"
+    rpc_url = "http://{{ .Values.geth.name }}-replica-service:{{ .Values.geth.ports.rpc }}"
+    ws_url = "ws://{{ .Values.geth.name }}-replica-service:{{ .Values.geth.ports.ws }}"
     max_rps = 10
     max_ws_conns = 5
 

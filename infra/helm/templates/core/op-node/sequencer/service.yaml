@@ -9,17 +9,17 @@ spec:
   selector:
     app: {{ .Values.node.name }}-sequencer
   ports:
-    - name: http
-      port: 7545
-      targetPort: 7545
+    - name: rpc
+      port: {{ .Values.node.ports.rpc }}
+      targetPort: {{ .Values.node.ports.rpc }}
     - name: p2p-tcp
-      port: 9222
-      targetPort: 9222
+      port: {{ .Values.node.ports.p2p }}
+      targetPort: {{ .Values.node.ports.p2p }}
       protocol: TCP
     - name: p2p-udp
-      port: 9222
-      targetPort: 9222
+      port: {{ .Values.node.ports.p2p }}
+      targetPort: {{ .Values.node.ports.p2p }}
       protocol: UDP
     - name: metrics
-      port: 7300
-      targetPort: 7300
+      port: {{ .Values.node.ports.metrics }}
+      targetPort: {{ .Values.node.ports.metrics }}

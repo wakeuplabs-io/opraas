@@ -54,5 +54,17 @@ release-cli: bump-versions
 
 
 zip-config-artifacts: 
+	@echo deleting old zip
+	rm -f infra/helm/config/artifacts.zip
 	@echo zipping config artifacts on /infra/helm/config directory
 	zip -j infra/helm/config/artifacts.zip infra/helm/config/*
+	@echo removing zipped files
+	find infra/helm/config -maxdepth 1 ! -name "addresses.json" ! -name "artifacts.zip" -type f -exec rm -v {} \;
+
+install-helm:
+	@echo installing helm chart
+	helm install opstack infra/helm
+
+uninstall-helm:
+	@echo uninstalling helm chart
+	helm uninstall opstack

@@ -9,9 +9,9 @@ spec:
   selector:
     app: {{ .Values.batcher.name }}
   ports:
-    - name: http
-      port: 6545
-      targetPort: 6545
+    - name: rpc
+      port: {{ .Values.batcher.ports.rpc }}
+      targetPort: {{ .Values.batcher.ports.rpc }}
     - name: metrics
-      port: 7300
-      targetPort: 7300
+      port: {{ .Values.batcher.ports.metrics }}
+      targetPort: {{ .Values.batcher.ports.metrics }}

@@ -23,22 +23,22 @@ spec:
             # Node-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/flags.go
             - "--l1={{ .Values.chain.l1Rpc }}"
-            - "--l2=http://{{ .Values.geth.name }}-replica-service:9551"
-            - "--l2.jwt-secret=/app/data/configurations/jwt-secret.json"
+            - "--l2=http://{{ .Values.geth.name }}-replica-service:{{ .Values.geth.ports.rpcAuth }}"
+            - "--l2.jwt-secret=/app/data/configurations/jwt-secret.txt"
             - "--verifier.l1-confs=0"
             - "--rollup.config=/app/data/configurations/rollup-config.json"
             - "--l1.rpckind=basic"
             # RPC Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/rpc/cli.go
             - "--rpc.addr=0.0.0.0"
-            - "--rpc.port=7545" # different from optimism's default, 8547
+            - "--rpc.port={{ .Values.node.ports.rpc }}"
             # P2P Flags
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/p2p_flags.go
             {{- if not .Values.node.config.p2pEnabled }}
             - "--p2p.disable"
             {{- else }}
             - "--p2p.listen.ip=0.0.0.0"
-            - "--p2p.listen.tcp=9222"
+            - "--p2p.listen.tcp={{ .Values.node.ports.p2p }}"
             - "--p2p.listen.udp=0"
             - "--p2p.priv.path=/app/data/configurations/opnode_p2p_priv.txt"
             {{- end }}
@@ -46,11 +46,12 @@ spec:
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
             {{- if .Values.monitoring.enabled }}
             - "--metrics.enabled"
+            - "--metrics.port={{ .Values.node.ports.metrics }}"
             {{- end }}
           ports:
-            - containerPort: 7545
-            - containerPort: 9222
-            - containerPort: 7300
+            - containerPort: {{ .Values.node.ports.rpc }}
+            - containerPort: {{ .Values.node.ports.p2p }}
+            - containerPort: {{ .Values.node.ports.metrics }}
           volumeMounts:
             - name: configurations
               mountPath: /app/data/configurations

@@ -29,6 +29,7 @@ dependencies:
     repository: "https://prometheus-community.github.io/helm-charts"
     condition: monitoring.enabled
   - name: blockscout-stack
+    alias: blockscoutStack
     version: 1.7.0
     repository: "https://blockscout.github.io/helm-charts"
     condition: explorer.enabled
