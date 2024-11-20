@@ -91,11 +91,6 @@ impl Drop for DevCommand {
     fn drop(&mut self) {
         print_warning("Cleaning up...");
 
-        match self.fork_node.stop() {
-            Ok(_) => {}
-            Err(e) => {
-                print_warning(&format!("Failed to stop fork node: {}", e));
-            }
-        }
+        self.fork_node.stop();
     }
 }

@@ -83,23 +83,18 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             volume_dir.path(),
             vec![
                 "-e",
-                &format!("IN_NETWORK={}", IN_NETWORK),
+                &format!("ETH_RPC_URL={}", deployment.network_config.l1_rpc_url),
                 "-e",
-                &format!("OUT_ARTIFACTS={}", OUT_ADDRESSES),
+                &format!("IMPL_SALT={}", OUT_ADDRESSES),
                 "-e",
-                &format!("OUT_GENESIS={}", OUT_GENESIS),
+                &format!("DEPLOYER_ADDRESS={}", deployment.accounts_config.deployer_address),
                 "-e",
-                &format!("OUT_ROLLUP={}", OUT_ROLLUP),
-                "-e",
-                &format!("DEPLOYER_ADDRESS={}", &deployment.accounts_config.deployer_address),
-                "-e",
-                &format!("DEPLOYER_PRIVATE_KEY={}", &deployment.accounts_config.deployer_private_key),
+                &format!("DEPLOYER_PRIVATE_KEY={}", deployment.accounts_config.deployer_private_key),
             ],
         )?;
 
         // save outputs from deployment as well as inputs used for it
         self.deployment_repository.save(&deployment)?;
-
 
         Ok(deployment)
     }

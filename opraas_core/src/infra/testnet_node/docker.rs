@@ -19,7 +19,12 @@ impl DockerTestnetNode {
 }
 
 impl TTestnetNode for DockerTestnetNode {
-    fn start(&self, chain_id: u32, fork_url: &str, port: u64) -> Result<(), Box<dyn std::error::Error>> {
+    fn start(
+        &self,
+        chain_id: u32,
+        fork_url: &str,
+        port: u64,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         execute_command(Command::new("docker").args(["pull", DOCKER_IMAGE]))?;
 
         execute_command(Command::new("docker").args([
@@ -39,11 +44,15 @@ impl TTestnetNode for DockerTestnetNode {
         // Wait for node to start
         let url = format!("http://localhost:{}", port);
         let timeout_duration = time::Duration::from_secs(MAX_TIMEOUT);
-        let start_time = time::Instant::now(); 
+        let start_time = time::Instant::now();
 
         loop {
             if start_time.elapsed() >= timeout_duration {
-                return Err(format!("Timeout reached: Node did not respond within {} seconds.", MAX_TIMEOUT).into());
+                return Err(format!(
+                    "Timeout reached: Node did not respond within {} seconds.",
+                    MAX_TIMEOUT
+                )
+                .into());
             }
 
             match get(&url) {
@@ -62,10 +71,8 @@ impl TTestnetNode for DockerTestnetNode {
         Ok(())
     }
 
-    fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
-        execute_command(Command::new("docker").arg("stop").arg(CONTAINER_NAME))?;
-        execute_command(Command::new("docker").arg("rm").arg(CONTAINER_NAME))?;
-
-        Ok(())
+    fn stop(&self) {
+        let _ = execute_command(Command::new("docker").arg("stop").arg(CONTAINER_NAME));
+        let _ = execute_command(Command::new("docker").arg("rm").arg(CONTAINER_NAME));
     }
 }

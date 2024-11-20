@@ -47,28 +47,30 @@ impl TCreateProjectService for CreateProjectService {
 }
 
 const README: &str = r#"
-# Opraas
+# Opruaas
 
 Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
 
 ## Commands
 
-- `opraas new <name>` to create a new project
-- `opraas setup` to setup a new project
-- `opraas build <target>` to compile sources and create docker images for it
-- `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
-- `opraas dev` to spin up local dev environment
-- `opraas version` to check the opraas version
+- `opraas new <name>` -> Creates a new project at `<name>`
+- `opraas init` -> Pulls sources as per your config.toml
+- `opraas build` -> Compiles sources and creates docker images for them
+- `opraas release` -> Tags and pushes already built docker images to the registry
+- `opraas dev` -> Spins up local dev environment
+- `opraas deploy` -> Deploys your blockchain
 
 ## Instructions
 
 1. Create a new project with `opraas new <name>`
 2. Update `<name>/config.toml` and `<name>/.env` to match your needs
-2. Run `opraas setup` to download the code for your chain
-3. Run `opraas build <target>` to compile sources and create docker images for them
-4. Run `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
-5. Run `opraas dev` to spin up local dev environment
-6. Run `opraas version` to check the opraas version
+3. If you want to build your own artifacts
+    1. Run `opraas init <target>` to pull sources as per your config.toml
+    2. Run `opraas build <target>` to compile sources and create docker images for them
+    3. Run `opraas release <target>` to tag and push docker images
+4. If you want to use pre-built artifacts
+    1. Run `opraas dev` to spin up local dev environment
+    2. Run `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
 
 
 ## Notes
@@ -87,4 +89,5 @@ BATCHER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859
 PROPOSER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
 SEQUENCER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
 DEPLOYER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
+CHALLENGER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
 "#;
