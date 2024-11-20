@@ -1,18 +1,16 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: batch/v1
+kind: Job
 metadata:
-  name: configuration-deployment
+  name: configuration-job
   labels:
     app: configurations
 spec:
-  selector:
-    matchLabels:
-      app: configurations
   template:
     metadata:
       labels:
         app: configurations
     spec:
+      restartPolicy: OnFailure
       containers:
         - name: unzip-artifacts
           image: busybox:1.36.1
