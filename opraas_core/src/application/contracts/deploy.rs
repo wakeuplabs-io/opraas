@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-
 use crate::{
     config::CoreConfig,
     domain::{self, Deployment, Project, Release},

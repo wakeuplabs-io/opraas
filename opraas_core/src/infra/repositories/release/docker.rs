@@ -23,7 +23,7 @@ impl DockerReleaseRepository {
 }
 
 impl domain::TReleaseRepository for DockerReleaseRepository {
-    fn pull(&self, release: &domain::Release) -> Result<(), Box<dyn std::error::Error>> {
+    fn pull(&self, release: &Release) -> Result<(), Box<dyn std::error::Error>> {
         system::execute_command(Command::new("docker").arg("pull").arg(release.uri()))?;
 
         Ok(())

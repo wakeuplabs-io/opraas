@@ -1,6 +1,8 @@
+use std::path::PathBuf;
+
 use crate::{
     config::CoreConfig,
-    domain::{self, Deployment, Project},
+    domain::{self, Deployment, Project, Stack},
     infra::repositories::deployment::InMemoryDeploymentRepository,
 };
 
@@ -11,6 +13,7 @@ pub struct StackInfraDeployerService {
 pub trait TStackInfraDeployerService {
     fn deploy(
         &self,
+        stack: &Stack,
         name: &str,
         config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>>;
@@ -19,9 +22,9 @@ pub trait TStackInfraDeployerService {
 // implementations ===================================================
 
 impl StackInfraDeployerService {
-    pub fn new(project: &Project) -> Self {
+    pub fn new(root: &PathBuf) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(&project.root)),
+            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
         }
     }
 }
@@ -29,6 +32,7 @@ impl StackInfraDeployerService {
 impl TStackInfraDeployerService for StackInfraDeployerService {
     fn deploy(
         &self,
+        stack: &Stack,
         deployment_name: &str,
         config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>> {

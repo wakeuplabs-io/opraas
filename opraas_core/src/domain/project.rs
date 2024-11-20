@@ -38,8 +38,9 @@ pub struct Src {
 }
 
 pub trait TProjectRepository {
-    fn write(&self, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
-    fn exists(&self, filepath: &PathBuf) -> bool;
+    fn write(&self, project: &Project, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn exists(&self, project: &Project) -> bool;
+    fn has(&self, project: &Project, filepath: &PathBuf) -> bool;
 }
 
 // implementations =================================================================

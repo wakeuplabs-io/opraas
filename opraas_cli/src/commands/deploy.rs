@@ -2,11 +2,10 @@ use clap::ValueEnum;
 use indicatif::ProgressBar;
 use opraas_core::{
     application::{
-        stack::deploy::StackInfraDeployerService, stack::deploy::TStackInfraDeployerService,
-        StackContractsDeployerService, TStackContractsDeployerService,
+        stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService}, StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
-    domain::{ArtifactKind, Project, ReleaseFactory},
+    domain::{ArtifactKind, Project, ReleaseFactory, Stack},
 };
 
 use crate::{
@@ -83,11 +82,14 @@ impl DeployCommand {
                 return Ok(());
             }
 
+            // prepare, confirm and just then deploy
+
             let infra_deployer_spinner =
                 style_spinner(ProgressBar::new_spinner(), "Deploying infra...");
             print_warning("This may take a while...");
 
-            StackInfraDeployerService::new(&project).deploy(&name, &config)?;
+            let stack = Stack::from_project(&project);
+            StackInfraDeployerService::new(&project.root).deploy(&stack, &name, &config)?;
 
             infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
         }

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use crate::domain::{Deployment, Project, TStackInfraRepository};
-use crate::infra::repositories::stack::inmemory::InMemoryStackInfraRepository;
+use crate::domain::{Deployment, Project, Stack, TStackInfraRepository};
+use crate::infra::repositories::stack_infra::inmemory::GitStackInfraRepository;
 use crate::infra::stack_runner::helm::HelmStackRunner;
 use crate::infra::stack_runner::stack_runner::TStackRunner;
 
@@ -13,8 +13,8 @@ pub struct StackRunnerService {
 }
 
 pub trait TStackRunnerService {
-    fn start(&self) -> Result<(), Box<dyn std::error::Error>>;
-    fn stop(&self) -> Result<(), Box<dyn std::error::Error>>;
+    fn start(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>>;
+    fn stop(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 // implementations ===================================================
@@ -22,25 +22,21 @@ pub trait TStackRunnerService {
 impl StackRunnerService {
     pub fn new(project: &Project, deployment: &Deployment) -> Self {
         Self {
-            deployment: deployment.clone(),
             project: project.clone(),
+            deployment: deployment.clone(),
             stack_runner: Box::new(HelmStackRunner::new(
                 &project.infra.helm.to_str().unwrap(),
-                &format!("op-ruaas-release-{}",&deployment.name),
-                &format!("op-ruaas-namespace-{}",&deployment.name),
+                &format!("op-ruaas-release-{}", &deployment.name),
+                &format!("op-ruaas-namespace-{}", &deployment.name),
             )),
-            stack_infra_repository: Box::new(InMemoryStackInfraRepository::new(
-                &project.infra.root,
-            )),
+            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
         }
     }
 }
 
 impl TStackRunnerService for StackRunnerService {
-    fn start(&self) -> Result<(), Box<dyn std::error::Error>> {
-        if self.stack_infra_repository.exists() == false {
-            self.stack_infra_repository.pull()?;
-        }
+    fn start(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
+        self.stack_infra_repository.pull(stack)?;
 
         let mut overrides: HashMap<&str, &str> = HashMap::new();
         overrides.insert(
@@ -99,7 +95,7 @@ impl TStackRunnerService for StackRunnerService {
         Ok(())
     }
 
-    fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
+    fn stop(&self, _stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
         self.stack_runner.stop()?;
 
         Ok(())

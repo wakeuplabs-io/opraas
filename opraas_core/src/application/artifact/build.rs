@@ -8,6 +8,12 @@ pub struct ArtifactBuilderService {
     artifact_source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>,
 }
 
+pub trait TArtifactBuilderService {
+    fn build(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+// implementations ======================================================
+
 impl ArtifactBuilderService {
     pub fn new() -> Self {
         Self {
@@ -19,10 +25,6 @@ impl ArtifactBuilderService {
             ),
         }
     }
-}
-
-pub trait TArtifactBuilderService {
-    fn build(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 impl TArtifactBuilderService for ArtifactBuilderService {
