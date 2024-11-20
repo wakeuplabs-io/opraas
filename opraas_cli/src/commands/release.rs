@@ -57,12 +57,6 @@ impl ReleaseCommand {
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let cwd = std::env::current_dir()?;
 
-        // avoid releasing without committed changes
-        if self.git.has_uncommitted_changes(cwd.to_str().unwrap()) {
-            print_error("You have uncommitted changes. Please commit first.");
-            return Ok(());
-        }
-
         // request release name and repository
         print_info("We'll tag your local builds and push them to your repository.");
         print_warning("Make sure you're docker user has push access to the repository");

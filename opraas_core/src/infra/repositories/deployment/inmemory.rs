@@ -128,7 +128,7 @@ impl InMemoryDeploymentRepository {
 }
 
 impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository {
-    fn find(&self, name: String) -> Result<Option<domain::Deployment>, Box<dyn std::error::Error>> {
+    fn find(&self, name: &str) -> Result<Option<domain::Deployment>, Box<dyn std::error::Error>> {
         let depl_path = self.root.join(&name);
         let exists = std::fs::exists(&depl_path).unwrap_or(false);
         if !exists {
@@ -145,7 +145,7 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         let allocs_config = self.load_path(&depl_path.join(ALLOCS_FILENAME))?;
 
         Ok(Some(Deployment {
-            name,
+            name: name.to_string(),
             accounts_config,
             network_config,
             rollup_config,

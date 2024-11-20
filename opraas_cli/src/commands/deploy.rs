@@ -1,14 +1,17 @@
 use clap::ValueEnum;
 use indicatif::ProgressBar;
 use opraas_core::{
-    application::{StackContractsDeployerService, TStackContractsDeployerService},
+    application::{
+        stack::deploy::StackInfraDeployerService, stack::deploy::TStackInfraDeployerService,
+        StackContractsDeployerService, TStackContractsDeployerService,
+    },
     config::CoreConfig,
     domain::{ArtifactKind, Project, ReleaseFactory},
 };
 
 use crate::{
     config::get_config_path,
-    console::{print_info, style_spinner},
+    console::{print_info, print_warning, style_spinner},
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -41,7 +44,7 @@ impl DeployCommand {
 
         // dev is reserved for local deployments
         if name == "dev" {
-            return Err("Name cannot be 'dev'".into())
+            return Err("Name cannot be 'dev'".into());
         }
 
         let registry_url: String = self
@@ -51,8 +54,14 @@ impl DeployCommand {
         let release_factory = ReleaseFactory::new(&project, &config);
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
+            if !self.dialoguer.confirm("Do you want to deploy contracts?") {
+                print_info("Skipping contracts deployment...");
+                return Ok(());
+            }
+
             let contracts_deployer_spinner =
                 style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
+            print_warning("This may take a while...");
 
             let contracts_release =
                 release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
@@ -66,12 +75,21 @@ impl DeployCommand {
         }
 
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
-            print_info("Deploying infra...");
-            // find deployment
+            if !self
+                .dialoguer
+                .confirm("Are you sure you want to deploy infra?")
+            {
+                print_info("Skipping infra deployment...");
+                return Ok(());
+            }
 
-            // pull terraform files
+            let infra_deployer_spinner =
+                style_spinner(ProgressBar::new_spinner(), "Deploying infra...");
+            print_warning("This may take a while...");
 
-            // set config to terraform
+            StackInfraDeployerService::new(&project).deploy(&name, &config)?;
+
+            infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
         }
 
         Ok(())

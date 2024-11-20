@@ -19,6 +19,7 @@ impl TStackInfraRepository for InMemoryStackInfraRepository {
 
     fn pull(&self) -> Result<(), Box<dyn std::error::Error>> {
         // TODO: download helm infra release from github. Not yet available
+        
         Ok(())
     }
 }

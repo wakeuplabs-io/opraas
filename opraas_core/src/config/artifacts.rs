@@ -8,7 +8,6 @@ pub struct ArtifactsConfig {
     pub contracts: ArtifactConfig,
     pub batcher: ArtifactConfig,
     pub proposer: ArtifactConfig,
-    pub explorer: ArtifactConfig,
 }
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
@@ -43,10 +42,6 @@ impl ArtifactsConfig {
             geth: ArtifactConfig {
                 source_repo: String::from("ethereum-optimism/op-geth"),
                 source_tag: String::from("v1.101315.3"),
-            },
-            explorer: ArtifactConfig {
-                source_repo: String::from("blockscout/blockscout"),
-                source_tag: String::from("v6.9.0-beta"),
             },
         }
     }
