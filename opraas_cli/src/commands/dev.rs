@@ -85,7 +85,7 @@ impl DevCommand {
 
 impl Drop for DevCommand {
     fn drop(&mut self) {
-        print_warning("Cleaning up...");
+        print_warning("Cleaning up don't interrupt...");
 
         self.fork_node.stop();
     }

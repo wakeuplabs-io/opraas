@@ -19,7 +19,6 @@ pub enum BuildTargets {
     Batcher,
     Node,
     Contracts,
-    Explorer,
     Proposer,
     Geth,
     All,
@@ -38,7 +37,6 @@ impl BuildCommand {
             BuildTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
             BuildTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
             BuildTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
-            BuildTargets::Explorer => vec![artifacts_factory.get(ArtifactKind::Explorer)],
             BuildTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
             BuildTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };

@@ -1,16 +1,22 @@
+use serde::{Deserialize, Serialize};
 use std::{
     fs::{File, OpenOptions},
     path::PathBuf,
 };
-
 use crate::{
     config::{AccountsConfig, NetworkConfig},
-    domain::{self, Deployment, Release},
+    domain::{self, Deployment},
     system,
 };
 
 pub struct InMemoryDeploymentRepository {
     root: PathBuf,
+}
+
+#[derive(Debug, Deserialize, Serialize)]
+struct ReleaseMetadata {
+    name: String,
+    registry_url: String,
 }
 
 const NETWORK_FILENAME: &str = "network.json";
@@ -84,9 +90,9 @@ impl InMemoryDeploymentRepository {
     fn load_releases_config(
         &self,
         depl_path: &PathBuf,
-    ) -> Result<Vec<Release>, Box<dyn std::error::Error>> {
+    ) -> Result<ReleaseMetadata, Box<dyn std::error::Error>> {
         let reader = File::open(depl_path.join(RELEASE_FILENAME))?;
-        let config: Vec<Release> = serde_json::from_reader(reader)?;
+        let config: ReleaseMetadata = serde_json::from_reader(reader)?;
 
         Ok(config)
     }
@@ -94,13 +100,13 @@ impl InMemoryDeploymentRepository {
     fn write_releases_config(
         &self,
         depl_path: &PathBuf,
-        releases: &Vec<Release>,
+        release_metadata: &ReleaseMetadata,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let writer = OpenOptions::new()
             .write(true)
             .create(true)
             .open(depl_path.join(RELEASE_FILENAME))?;
-        serde_json::to_writer_pretty(writer, releases)?;
+        serde_json::to_writer_pretty(writer, release_metadata)?;
 
         Ok(())
     }
@@ -136,7 +142,7 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         let addresses_config = self.load_path(&depl_path.join(ADDRESSES_FILENAME))?;
         let rollup_config = self.load_path(&depl_path.join(ROLLUP_FILENAME))?;
         let genesis_config = self.load_path(&depl_path.join(GENESIS_FILENAME))?;
-        let allocs_config: PathBuf = self.load_path(&depl_path.join(ALLOCS_FILENAME))?;
+        let allocs_config = self.load_path(&depl_path.join(ALLOCS_FILENAME))?;
 
         Ok(Some(Deployment {
             name,
@@ -146,7 +152,8 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
             genesis_config,
             addresses_config,
             allocs_config,
-            releases,
+            release_name: releases.name,
+            registry_url: releases.registry_url,
         }))
     }
 
@@ -156,7 +163,13 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
 
         self.write_network_config(&depl_path, &deployment.network_config)?;
         self.write_accounts_config(&depl_path, &deployment.accounts_config)?;
-        self.write_releases_config(&depl_path, &deployment.releases)?;
+        self.write_releases_config(
+            &depl_path,
+            &ReleaseMetadata {
+                name: deployment.release_name.clone(),
+                registry_url: deployment.registry_url.clone(),
+            },
+        )?;
 
         self.write_path(
             &depl_path.join(ADDRESSES_FILENAME),

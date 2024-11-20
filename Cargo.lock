@@ -1769,6 +1769,7 @@ dependencies = [
  "log",
  "mockall",
  "pretty_env_logger",
+ "rand",
  "reqwest 0.10.10",
  "semver",
  "serde",

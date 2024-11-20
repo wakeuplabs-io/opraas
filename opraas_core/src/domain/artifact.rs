@@ -17,7 +17,6 @@ pub enum ArtifactKind {
     Batcher,
     Node,
     Contracts,
-    Explorer,
     Proposer,
     Geth,
 }
@@ -27,7 +26,6 @@ pub enum Artifact {
     Batcher(ArtifactData),
     Node(ArtifactData),
     Contracts(ArtifactData),
-    Explorer(ArtifactData),
     Proposer(ArtifactData),
     Geth(ArtifactData),
 }
@@ -38,7 +36,6 @@ impl fmt::Display for Artifact {
             Artifact::Batcher(data) => write!(f, "Batcher"),
             Artifact::Node(data) => write!(f, "Node"),
             Artifact::Contracts(data) => write!(f, "Contracts"),
-            Artifact::Explorer(data) => write!(f, "Explorer"),
             Artifact::Proposer(data) => write!(f, "Proposer"),
             Artifact::Geth(data) => write!(f, "Geth"),
         }
@@ -98,9 +95,6 @@ impl Artifact {
                 dockerfile,
                 config,
             )),
-            ArtifactKind::Explorer => {
-                Artifact::Explorer(ArtifactData::new("op-explorer", source, dockerfile, config))
-            }
             ArtifactKind::Proposer => {
                 Artifact::Proposer(ArtifactData::new("op-proposer", source, dockerfile, config))
             }
@@ -114,7 +108,6 @@ impl Artifact {
         match self {
             Artifact::Batcher(data)
             | Artifact::Node(data)
-            | Artifact::Explorer(data)
             | Artifact::Proposer(data)
             | Artifact::Geth(data)
             | Artifact::Contracts(data) => &data.name,
@@ -125,7 +118,6 @@ impl Artifact {
         match self {
             Artifact::Batcher(data)
             | Artifact::Node(data)
-            | Artifact::Explorer(data)
             | Artifact::Proposer(data)
             | Artifact::Geth(data)
             | Artifact::Contracts(data) => (&data.source_url, &data.source_tag),
@@ -136,7 +128,6 @@ impl Artifact {
         match self {
             Artifact::Batcher(data)
             | Artifact::Node(data)
-            | Artifact::Explorer(data)
             | Artifact::Proposer(data)
             | Artifact::Geth(data)
             | Artifact::Contracts(data) => &data.context,
@@ -147,7 +138,6 @@ impl Artifact {
         match self {
             Artifact::Batcher(data)
             | Artifact::Node(data)
-            | Artifact::Explorer(data)
             | Artifact::Proposer(data)
             | Artifact::Geth(data)
             | Artifact::Contracts(data) => &data.dockerfile,
@@ -184,15 +174,6 @@ impl ArtifactFactory {
                 &project.src.contracts,
                 &project.infra.docker.contracts,
                 &config.artifacts.contracts,
-            )),
-        );
-        map.insert(
-            ArtifactKind::Explorer,
-            Arc::new(Artifact::new(
-                ArtifactKind::Explorer,
-                &project.src.explorer,
-                &project.infra.docker.explorer,
-                &config.artifacts.explorer,
             )),
         );
         map.insert(

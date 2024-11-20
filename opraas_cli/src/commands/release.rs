@@ -25,7 +25,6 @@ pub enum ReleaseTargets {
     Batcher,
     Node,
     Contracts,
-    Explorer,
     Proposer,
     Geth,
     All,
@@ -44,7 +43,6 @@ impl ReleaseCommand {
             ReleaseTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
             ReleaseTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
             ReleaseTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
-            ReleaseTargets::Explorer => vec![artifacts_factory.get(ArtifactKind::Explorer)],
             ReleaseTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
             ReleaseTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };

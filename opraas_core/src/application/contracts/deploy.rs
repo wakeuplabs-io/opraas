@@ -1,5 +1,4 @@
-use std::fs::File;
-use tempfile::TempDir;
+use std::collections::HashMap;
 
 use crate::{
     config::CoreConfig,
@@ -12,6 +11,8 @@ use crate::{
         },
     },
 };
+use rand::Rng;
+use tempfile::TempDir;
 
 pub struct StackContractsDeployerService {
     deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
@@ -60,10 +61,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         let volume_dir: TempDir = TempDir::new()?; // automatically removed when dropped from scope
         std::fs::create_dir_all(volume_dir.path().join("out"))?;
         std::fs::create_dir_all(volume_dir.path().join("in"))?;
-
-        // write network config to shared volume. TODO: use Deployment for this?
-        let network_config_writer = File::create( volume_dir.path().join(IN_NETWORK))?;
-        serde_json::to_writer(network_config_writer, &config.network)?;
+        let volume = volume_dir.path();
 
         // deployment initially points to local files
         let deployment = Deployment {
@@ -74,24 +72,32 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             genesis_config: volume_dir.path().join(OUT_GENESIS),
             addresses_config: volume_dir.path().join(OUT_ADDRESSES),
             allocs_config: volume_dir.path().join(OUT_ALLOCS),
-            releases: vec![contracts_release.clone()], // TODO: write just release tag and repository
+            release_name: contracts_release.artifact_tag.clone(),
+            registry_url: contracts_release.registry_url.clone(),
         };
 
-        // using contracts artifacts, run to create a deployment
-        self.release_runner.run(
-            &contracts_release,
-            volume_dir.path(),
-            vec![
-                "-e",
-                &format!("ETH_RPC_URL={}", deployment.network_config.l1_rpc_url),
-                "-e",
-                &format!("IMPL_SALT={}", OUT_ADDRESSES),
-                "-e",
-                &format!("DEPLOYER_ADDRESS={}", deployment.accounts_config.deployer_address),
-                "-e",
-                &format!("DEPLOYER_PRIVATE_KEY={}", deployment.accounts_config.deployer_private_key),
-            ],
-        )?;
+        // write contracts config to shared volume for artifact consumption
+        deployment.write_contracts_config(&volume_dir.path().join(IN_NETWORK))?;
+
+        // create environment
+        let mut env: HashMap<&str, String> = HashMap::new();
+        env.insert("ETH_RPC_URL", config.network.l1_rpc_url.clone());
+        env.insert("DEPLOYER_ADDRESS", config.accounts.deployer_address.clone());
+        env.insert(
+            "DEPLOYER_PRIVATE_KEY",
+            config.accounts.deployer_private_key.clone(),
+        );
+        env.insert(
+            "IMPL_SALT",
+            rand::thread_rng()
+                .gen::<[u8; 16]>()
+                .iter()
+                .map(|b| format!("{:02x}", b))
+                .collect::<String>(),
+        );
+
+        // using contracts artifact, create a deployment
+        self.release_runner.run(&contracts_release, volume, env)?;
 
         // save outputs from deployment as well as inputs used for it
         self.deployment_repository.save(&deployment)?;

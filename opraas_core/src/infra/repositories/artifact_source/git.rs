@@ -42,14 +42,6 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             },
-            Artifact::Explorer(..) => {
-                git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
-                    artifact.dockerfile().as_path().to_str().unwrap(),
-                )?;
-            },
             Artifact::Proposer(..) => {
                 git::download_release_asset(
                     OP_RUAAS_REPO,

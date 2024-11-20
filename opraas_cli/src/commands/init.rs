@@ -13,7 +13,6 @@ pub enum InitTargets {
     Batcher,
     Node,
     Contracts,
-    Explorer,
     Proposer,
     Geth,
     All,
@@ -36,7 +35,6 @@ impl InitCommand {
             InitTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
             InitTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
             InitTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
-            InitTargets::Explorer => vec![artifacts_factory.get(ArtifactKind::Explorer)],
             InitTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
             InitTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
