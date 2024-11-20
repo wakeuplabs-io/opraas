@@ -133,7 +133,7 @@ resource "helm_release" "opraas" {
   create_namespace = true
 
   values = [
-    file("${path.module}/../helm/values.yaml")
+     file(var.values_file_path)
   ]
 
   depends_on = [

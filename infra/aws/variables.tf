@@ -10,3 +10,9 @@ variable "proy-name" {
   type        = string
   default     = "opraas-chain"
 }
+
+variable "values_file_path" {
+  description = "The path to the Helm values.yaml file"
+  type        = string
+  default     = "${path.module}/../helm/values.yaml"  
+}
