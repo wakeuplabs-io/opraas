@@ -61,7 +61,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         std::fs::create_dir_all(volume_dir.path().join("out"))?;
         std::fs::create_dir_all(volume_dir.path().join("in"))?;
 
-        // write network config to shared volume
+        // write network config to shared volume. TODO: use Deployment for this?
         let network_config_writer = File::create( volume_dir.path().join(IN_NETWORK))?;
         serde_json::to_writer(network_config_writer, &config.network)?;
 
@@ -74,7 +74,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             genesis_config: volume_dir.path().join(OUT_GENESIS),
             addresses_config: volume_dir.path().join(OUT_ADDRESSES),
             allocs_config: volume_dir.path().join(OUT_ALLOCS),
-            releases: vec![contracts_release.clone()],
+            releases: vec![contracts_release.clone()], // TODO: write just release tag and repository
         };
 
         // using contracts artifacts, run to create a deployment

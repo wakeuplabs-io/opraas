@@ -37,21 +37,15 @@ impl DevCommand {
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let release_factory = ReleaseFactory::new(&project, &config);
-        let contracts_release =
-            release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
 
         // start local network ===========================
 
         let local_network_spinner =
             style_spinner(ProgressBar::new_spinner(), "Starting local network...");
-        self.fork_node.start(
-            config.network.l1_chain_id,
-            &config.network.l1_rpc_url,
-            8545,
-        )?;
-        local_network_spinner.finish_with_message(format!(
-            "L1 fork available at http://127.1.1:8545",
-        ));
+        self.fork_node
+            .start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
+        local_network_spinner
+            .finish_with_message(format!("L1 fork available at http://127.1.1:8545",));
 
         // Deploy contracts ===========================
 
@@ -59,6 +53,8 @@ impl DevCommand {
             ProgressBar::new_spinner(),
             "Deploying contracts to local network...",
         );
+        let contracts_release =
+            release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project);
         let deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
         contracts_deployer_spinner.finish_with_message("Contracts deployed to local network");

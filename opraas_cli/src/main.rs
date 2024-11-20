@@ -3,6 +3,7 @@ mod config;
 mod console;
 mod utils;
 use build::BuildTargets;
+use deploy::DeployTarget;
 use init::InitTargets;
 use release::ReleaseTargets;
 pub use utils::*;
@@ -33,8 +34,8 @@ enum Commands {
     Release { target: ReleaseTargets },
     /// Spin up local dev environment
     Dev {},
-    // /// Deploy your blockchain. Target must be one of: contracts, infra, all
-    // Deploy { name: String, target: DeployTarget },
+    /// Deploy your blockchain. Target must be one of: contracts, infra, all
+    Deploy { name: String, target: DeployTarget },
     // /// Get details about the current deployment. Target must be one of: contracts, infra
     // Inspect { target: InspectTarget },
     // /// Monitor your chain. Target must be one of: onchain, offchain
@@ -68,9 +69,9 @@ async fn main() {
         Commands::Build { target } => BuildCommand::new(target).run(),
         Commands::Release { target }  => ReleaseCommand::new(target).run(),
         Commands::Dev {} => DevCommand::new().run(),
+        Commands::Deploy { target, name } => DeployCommand::new().run(target, name),
         // Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
         // Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
-        // Commands::Deploy { target, name } => DeployCommand::new(target, name).run(&config).await,
     } {
         print_error(&format!("\n\nError: {}\n\n", e));
         std::process::exit(1);
