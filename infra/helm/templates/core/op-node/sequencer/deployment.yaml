@@ -22,7 +22,7 @@ spec:
           args: 
             # Node-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/flags.go
-            - "--l1={{ .Values.global.l1.rpc }}"
+            - "--l1={{ .Values.chain.l1Rpc }}"
             - "--l2=http://{{ .Values.geth.name }}-sequencer-service:9551"
             - "--l2.jwt-secret=/app/data/configurations/jwt-secret.json"
             - "--verifier.l1-confs=0"
@@ -37,7 +37,7 @@ spec:
             - "--rpc.port=7545" # different from optimism's default, 8547
             # P2P Flags
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/p2p_flags.go
-            {{- if not .Values.node.config.p2p.enabled }}
+            {{- if not .Values.node.config.p2pEnabled }}
             - "--p2p.disable"
             {{- else }}
             - "--p2p.listen.ip=0.0.0.0"
@@ -45,9 +45,7 @@ spec:
             - "--p2p.listen.udp=0"
             - "--p2p.priv.path=/app/data/configurations/opnode_p2p_priv.txt"
             {{- end }}
-            {{- if .Values.node.config.p2p.sequencerKey }}
-            - "--p2p.sequencer.key={{ .Values.node.config.p2p.sequencerKey }}"
-            {{- end }}
+            - "--p2p.sequencer.key={{ .Values.node.config.privateKey }}"
             # Metrics Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
             {{- if .Values.monitoring.enabled }}

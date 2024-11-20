@@ -6,22 +6,18 @@ domain:
 global:
   image:
     pullPolicy: IfNotPresent
-  l1:
-    rpc: "<L1 eth RPC URL>"
-configFile:
-  rollup: "config/rollup.json"
-  jwtSecret: "config/jwt-secret.txt"
-  nodeP2PPriv: "config/opnode_p2p_priv.txt"
-  addresses: "config/addresses.json"
-  genesis: "config/genesis-l2.json"
+
+chain:
+  l1Rpc: "<L1 eth RPC URL>"
+  artifacts: "config/artifacts.zip"
 
 geth:
   name: op-geth
-  deployment:
-    replicaCount: 2
   image:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth
     tag: v1.101408.0
+  deployment:
+    replicaCount: 2
 
 node:
   name: op-node
@@ -29,9 +25,8 @@ node:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node
     tag: v1.3.1
   config:
-    p2p:
-      enabled: false
-      sequencerKey: ""
+    privateKey: ""
+    p2pEnabled: false
 
 batcher:
   name: op-batcher
@@ -39,11 +34,7 @@ batcher:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher
     tag: v1.9.4
   config:
-    batcherKey: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    mnemonic: ""
-    hdPath: ""
-    p2p:
-      sequencerAccount: ""
+    privateKey: ""
 
 proposer:
   name: op-proposer
@@ -51,9 +42,7 @@ proposer:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer
     tag: v1.9.4
   config:
-    proposerKey: "ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
-    mnemonic: ""
-    hdPath: ""
+    privateKey: ""
 
 proxyd:
   name: proxyd
@@ -66,14 +55,13 @@ proxyd:
   ingress:
     path: /proxyd
   config:
-    rpc_url_alchemy: "https://opt-sepolia.g.alchemy.com/v2/5600JheK0TTROlJ6O0wrc0gF3W9wIqm8"
-    ws_url_alchemy: "wss://opt-sepolia.g.alchemy.com/v2/5600JheK0TTROlJ6O0wrc0gF3W9wIqm8"
-
-redis:
-  name: proxyd-redis
-  image:
-    repository: redis
-    tag: latest
+    rpc_url_alchemy: "https://opt-sepolia.g.alchemy.com/v2/..."
+    ws_url_alchemy: "wss://opt-sepolia.g.alchemy.com/v2/..."
+  redis:
+    name: proxyd-redis
+    image:
+      repository: redis
+      tag: latest
 
 explorer:
   enabled: false
@@ -81,6 +69,7 @@ explorer:
 monitoring:
   enabled: false
 
+# TODO: is this required?
 kube-prometheus-stack:
   grafana:
     ingress:
@@ -98,6 +87,7 @@ kube-prometheus-stack:
       enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
       mountPropagation: HostToContainer
 
+# TODO: is this required?
 blockscout-stack:
   blockscout:
     extraEnv:

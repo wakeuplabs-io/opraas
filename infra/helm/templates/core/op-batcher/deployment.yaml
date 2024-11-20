@@ -22,7 +22,7 @@ spec:
           args:
             # Batcher-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-batcher/flags/flags.go
-            - "--l1-eth-rpc={{ .Values.global.l1.rpc }}"
+            - "--l1-eth-rpc={{ .Values.chain.l1Rpc }}"
             - "--l2-eth-rpc=http://{{ .Values.geth.name }}-sequencer-service:8545"
             - "--rollup-rpc=http://{{ .Values.node.name }}-sequencer-service:7545"
             - "--poll-interval=1s"
@@ -31,12 +31,7 @@ spec:
             # Tx Manager Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/txmgr/cli.go
             - "--num-confirmations=1"
-            {{ if .Values.batcher.config.batcherKey }}
-            - "--private-key={{ .Values.batcher.config.batcherKey }}"
-            {{- else }}
-            -   "--mnemonic={{ .Values.batcher.config.mnemonic }}"
-            -   "--hd-path={{ .Values.batcher.config.hdPath }}"
-            {{- end }}
+            - "--private-key={{ .Values.batcher.config.privateKey }}"
             # Metrics Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
             {{- if .Values.monitoring.enabled }}

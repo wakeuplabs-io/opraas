@@ -1,21 +1,21 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ .Values.redis.name }}-deployment
+  name: {{ .Values.proxyd.redis.name }}-deployment
   labels:
-    app: {{ .Values.redis.name }}
+    app: {{ .Values.proxyd.redis.name }}
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: {{ .Values.redis.name }}
+      app: {{ .Values.proxyd.redis.name }}
   template:
     metadata:
       labels:
-        app: {{ .Values.redis.name }}
+        app: {{ .Values.proxyd.redis.name }}
     spec:
       containers:
-        - name: {{ .Values.redis.name }}
-          image: {{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}
+        - name: {{ .Values.proxyd.redis.name }}
+          image: {{ .Values.proxyd.redis.image.repository }}:{{ .Values.proxyd.redis.image.tag }}
           ports:
             - containerPort: 6379

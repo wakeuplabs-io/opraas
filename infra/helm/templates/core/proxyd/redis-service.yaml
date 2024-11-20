@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Values.redis.name }}-service
+  name: {{ .Values.proxyd.redis.name }}-service
 spec:
   type: ClusterIP
   selector:
-    app: {{ .Values.redis.name }}
+    app: {{ .Values.proxyd.redis.name }}
   ports:
     - port: 6379
       targetPort: 6379

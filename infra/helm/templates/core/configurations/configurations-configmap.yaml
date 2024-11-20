@@ -5,4 +5,4 @@ metadata:
   labels:
     app: configurations
 binaryData:
-  artifacts.zip: {{ .Files.Get (required "configFile.artifacts is required" "config/artifacts.zip") | b64enc }}
+  artifacts.zip: artifacts.zip: {{ .Files.Get (required "configFile.artifacts is required" .Values.configFile.artifacts) | b64enc }}

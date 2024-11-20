@@ -24,7 +24,7 @@ data:
     log_level = "info"
 
     [redis]
-    url = "redis://{{ .Values.redis.name }}-service:6379"
+    url = "redis://{{ .Values.proxyd.redis.name }}-service:6379"
 
     [metrics]
     enabled = true
