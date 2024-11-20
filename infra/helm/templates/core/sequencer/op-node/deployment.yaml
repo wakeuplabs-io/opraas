@@ -23,7 +23,7 @@ spec:
             # Node-Specific Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-node/flags/flags.go
             - "--l1={{ .Values.global.l1.rpc }}"
-            - "--l2=http://{{ .Values.geth.name }}-sequencer:9551"
+            - "--l2=http://{{ .Values.geth.name }}-sequencer-service:9551"
             - "--l2.jwt-secret=/app/data/configurations/jwt-secret.json"
             - "--verifier.l1-confs=0"
             - "--rollup.config=/app/data/configurations/rollup-config.json"
@@ -53,6 +53,9 @@ spec:
             {{- if .Values.monitoring.enabled }}
             - "--metrics.enabled"
             {{- end }}
+          env:
+            - name: L1_RPC_URL
+              value: 
           ports:
             - containerPort: 7545
             - containerPort: 9222
