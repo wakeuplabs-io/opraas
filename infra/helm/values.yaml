@@ -1,8 +1,8 @@
 domain:
   host: localhost # demo.example.com
   email: email@email.com
-chain:
-  id: "11155420"
+
+
 global:
   image:
     pullPolicy: IfNotPresent
@@ -14,23 +14,6 @@ configFile:
   nodeP2PPriv: "config/opnode_p2p_priv.txt"
   addresses: "config/addresses.json"
   genesis: "config/genesis-l2.json"
-  
-demo:
-  ingress:
-    path: /demo
-  deployment:
-    name: demo-deployment
-    appLabel: demo-app
-    replicaCount: 1
-    containerPort: 80
-    containerName: demo
-    image:
-      repository: nginx
-      tag: latest
-  service:
-    name: demo-service
-    port: 80
-    targetPort: 80
 
 geth:
   name: op-geth

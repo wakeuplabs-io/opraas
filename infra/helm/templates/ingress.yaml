@@ -14,10 +14,4 @@ spec:
     - host: {{ .Values.domain.host }}
       http:
         paths:
-          - path: {{ .Values.demo.ingress.path }}
-            pathType: Prefix
-            backend:
-              service:
-                name: {{ .Values.demo.service.name }}
-                port:
-                  number: {{ .Values.demo.service.port }}
+        
