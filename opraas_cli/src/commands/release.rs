@@ -133,7 +133,6 @@ impl ReleaseCommand {
             }
         }
         m.clear()?;
-
         print_success(&format!(
             "🎉 Released in {}",
             HumanDuration(started.elapsed())
