@@ -69,7 +69,6 @@ explorer:
 monitoring:
   enabled: false
 
-# TODO: is this required?
 kube-prometheus-stack:
   grafana:
     ingress:
@@ -87,7 +86,6 @@ kube-prometheus-stack:
       enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
       mountPropagation: HostToContainer
 
-# TODO: is this required?
 blockscout-stack:
   blockscout:
     extraEnv:
@@ -116,11 +114,10 @@ blockscout-stack:
       - name: NEXT_PUBLIC_API_HOST
         value: localhost
 
-blockscout:
   postgres:
     dbName: blockscout
-    user: userShouldBeSet
-    password: passwordShouldBeSet
+    user: blockscout-db-user
+    password: blockscout-db-password
     image:
       repository: postgres
       tag: latest
