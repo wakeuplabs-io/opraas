@@ -23,7 +23,7 @@ impl CoreConfig {
         Ok(())
     }
 
-    pub fn new_from_null() -> Self {
+    pub fn default() -> Self {
         Self {
             artifacts: ArtifactsConfig::null(),
             accounts: AccountsConfig::null(),

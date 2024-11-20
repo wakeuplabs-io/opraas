@@ -1,4 +1,5 @@
-use assert_cmd::Command;
+use std::process::Command;
+
 use mockall::automock;
 
 pub struct  System;

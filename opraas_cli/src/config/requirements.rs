@@ -1,5 +1,6 @@
+use std::process::Command;
+
 use crate::system::{System, TSystem};
-use assert_cmd::Command;
 use regex::Regex;
 use semver::Version;
 

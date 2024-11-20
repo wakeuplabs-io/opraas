@@ -1,106 +1,28 @@
+use crate::console::{print_info, print_success};
+use opraas_core::application::{CreateProjectService, TCreateProjectService};
 use std::path::PathBuf;
 
-use assert_cmd::Command;
-use async_trait::async_trait;
-
-use crate::console::{print_info, print_success};
-
 pub struct NewCommand {
-    pub name: String,
-    system: Box<dyn crate::utils::system::TSystem>,
+    create_project_service: Box<dyn TCreateProjectService>,
 }
+
+// implementations ================================================
 
 impl NewCommand {
-    pub fn new(name: String) -> Self {
-        Self { 
-            name,
-            system: Box::new(crate::utils::system::System::new()), 
+    pub fn new() -> Self {
+        Self {
+            create_project_service: Box::new(CreateProjectService::new()),
         }
     }
-}
 
-#[async_trait]
-impl crate::Runnable for NewCommand {
-    async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
-        let proy_dir = PathBuf::from(&self.name);
+    pub fn run(&self, name: String) -> Result<(), Box<dyn std::error::Error>> {
+        let root = PathBuf::from(&name);
 
-        if proy_dir.exists() {
-            return Err("Directory already exists".into());
-        }
+        self.create_project_service.create(&root)?;
 
-
-        // create dir
-        std::fs::create_dir(&proy_dir)?;
-        std::fs::write(&proy_dir.join("README.md"), README)?;
-        std::fs::write(&proy_dir.join(".gitignore"), GITIGNORE)?;
-        std::fs::write(&proy_dir.join(".env"), ENV_FILE)?;
-
-        // create default config
-        let null_cfg = opraas_core::config::CoreConfig::new_from_null();
-        null_cfg.to_toml(&proy_dir.join("config.toml"))?;
-
-        // initialize git and create first commit
-        self.system.execute_command(Command::new("git").arg("init").current_dir(&proy_dir))?;
-        self.system.execute_command(
-            Command::new("git")
-                .arg("add")
-                .arg(".")
-                .current_dir(&proy_dir),   
-        )?;
-        self.system.execute_command(
-            Command::new("git")
-                .arg("commit")
-                .arg("-m")
-                .arg("Initial commit")
-                .current_dir(&proy_dir),
-        )?;
-
-        print_success(&format!("✅ Project created at ./{}", self.name));
+        print_success(&format!("✅ Project created at ./{}", name));
         print_info("🚀 Check the config file and run `opraas setup` to setup the project");
 
         Ok(())
     }
 }
-
-const README: &str = r#"
-# Opraas
-
-Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
-
-## Commands
-
-- `opraas new <name>` to create a new project
-- `opraas setup` to setup a new project
-- `opraas build <target>` to compile sources and create docker images for it
-- `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
-- `opraas dev` to spin up local dev environment
-- `opraas version` to check the opraas version
-
-## Instructions
-
-1. Create a new project with `opraas new <name>`
-2. Update `<name>/config.toml` and `<name>/.env` to match your needs
-2. Run `opraas setup` to download the code for your chain
-3. Run `opraas build <target>` to compile sources and create docker images for them
-4. Run `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
-5. Run `opraas dev` to spin up local dev environment
-6. Run `opraas version` to check the opraas version
-
-
-## Notes
-
-...
-"#;
-
-const GITIGNORE: &str = r#"
-.env
-"#;
-
-const ENV_FILE: &str = r#"
-L1_RPC_URL="https://eth-sepolia.g.alchemy.com/v2/..."
-ADMIN_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-BATCHER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-PROPOSER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-SEQUENCER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-DEPLOYER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-"#;

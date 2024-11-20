@@ -1,70 +1,46 @@
-use mockall::automock;
 use std::fs;
-use std::io::Cursor;
 use std::path::Path;
+use std::process::Command;
 
-pub struct Git;
+use super::system;
 
-impl Git {
-    pub fn new() -> Self {
-        Self {}
-    }
+pub fn clone(
+    source_repo: &str,
+    source_tag: &str,
+    dst_path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    system::execute_command(
+        Command::new("git")
+            .arg("clone")
+            .arg("--branch")
+            .arg(source_tag)
+            .arg("--depth")
+            .arg("1")
+            .arg(format!("https://github.com/{}", source_repo))
+            .arg(dst_path),
+    )?;
+
+    Ok(())
 }
 
-#[automock]
-pub trait GitReleaseDownloader: Send + Sync {
-    fn download_release(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>>;
 
-    fn download_release_zipped_asset(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        asset_name: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-impl GitReleaseDownloader for Git {
-    fn download_release(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        download_and_extract(&format!("{}/archive/refs/tags/{}.zip", release_url, release_tag), destination)?;
-
-        Ok(())
-    }
-
-    fn download_release_zipped_asset(
-        &self,
-        release_url: &str,
-        release_tag: &str,
-        zip_name: &str,
-        destination: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
-        download_and_extract(&format!("{}/releases/download/{}/{}.zip", release_url, release_tag, zip_name), destination)?;
-
-        Ok(())
-    }
-}
-
-fn download_and_extract(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let response = reqwest::blocking::get(url)?;
-
+pub fn download_release_asset(
+    release_repo: &str,
+    release_tag: &str,
+    asset_path: &str,
+    dst_path: &str,
+) -> Result<(), Box<dyn std::error::Error>> {
+    let response = reqwest::blocking::get(&format!(
+        "https://raw.githubusercontent.com/{}/refs/tags/{}/{}",
+        release_repo, release_tag, asset_path
+    ))?;
     let bytes = response.bytes()?;
 
-    let target = Path::new(destination);
-    if !target.exists() {
-        fs::create_dir_all(target)?;
+    let dst_dir = Path::new(dst_path).parent().unwrap();
+    if !dst_dir.exists() {
+        fs::create_dir_all(dst_dir)?;
     }
-
-    zip_extract::extract(Cursor::new(bytes), &target, true)?;
+    fs::write(dst_path, bytes)?;
 
     Ok(())
 }

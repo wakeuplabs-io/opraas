@@ -9,8 +9,8 @@ permissions:
   contents: write
 
 jobs:
-    infra_release:
-      name: Build and Release infra
+    helm_release:
+      name: Zip and Release helm files
       runs-on: ubuntu-latest
 
       steps:
@@ -24,13 +24,49 @@ jobs:
         - name: Create ZIP and TAR files
           shell: bash
           run: |
-            outdir="infra"
+            outdir="helm"
             echo "DIRNAME=$outdir"
 
-            zip -r "$outdir.zip" "infra"
+            zip -r "$outdir.zip" "infra/helm"
             echo "ZIP=$outdir.zip" >> $GITHUB_ENV
                 
-            tar -czf "$outdir.tar.gz" "infra"
+            tar -czf "$outdir.tar.gz" "infra/helm"
+            echo "TAR=$outdir.tar.gz" >> $GITHUB_ENV
+
+        - name: Release
+          uses: softprops/action-gh-release@v1
+          with:
+            files: |
+                ${{ env.TAR }}
+
+        - name: Release
+          uses: softprops/action-gh-release@v1
+          with:
+            files: |
+                    ${{ env.ZIP }}
+    
+    aws_release:
+      name: Zip and Release aws terraform files
+      runs-on: ubuntu-latest
+
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v3
+
+        - name: Set Version from Tag
+          shell: bash
+          run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
+
+        - name: Create ZIP and TAR files
+          shell: bash
+          run: |
+            outdir="aws"
+            echo "DIRNAME=$outdir"
+
+            zip -r "$outdir.zip" "infra/aws"
+            echo "ZIP=$outdir.zip" >> $GITHUB_ENV
+                
+            tar -czf "$outdir.tar.gz" "infra/aws"
             echo "TAR=$outdir.tar.gz" >> $GITHUB_ENV
 
         - name: Release

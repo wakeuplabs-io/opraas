@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use std::process::Command;
 
 pub struct Git {
     system: Box<dyn crate::system::TSystem>,

@@ -1,32 +1,29 @@
-use std::process::Command;
-use mockall::automock;
-
-pub struct System;
-
-impl System {
-    pub fn new() -> Self {
-        Self
-    }   
-}
-
-#[automock]
-pub trait TSystem: Send + Sync {
-    fn execute_command(&self, command: &mut Command) -> Result<String, String>;
-}
+use std::{fs, io, path::PathBuf, process::Command};
 
 
-impl TSystem for System {
-    fn execute_command(&self, command: &mut Command) -> Result<String, String> {
-        let output = command.output().map_err(|e| format!("Failed to execute command: {}", e))?;
-    
-        if output.status.success() {
-            // Convert the output to a String
-            let result =   String::from_utf8_lossy(&output.stdout)
-                .to_string();
-            Ok(result)
-        } else {
-            let error_message = String::from_utf8_lossy(&output.stderr);
-            Err(error_message.to_string())
-        }
+pub fn execute_command(command: &mut Command) -> Result<String, String> {
+    let output = command.output().map_err(|e| format!("Failed to execute command: {}", e))?;
+
+    if output.status.success() {
+        let result =   String::from_utf8_lossy(&output.stdout)
+            .to_string();
+        Ok(result)
+    } else {
+        let error_message = String::from_utf8_lossy(&output.stderr);
+        Err(error_message.to_string())
     }
+}
+
+pub fn copy_and_overwrite(src: &PathBuf, dest: &PathBuf) -> io::Result<()> {
+    if dest.exists() {
+        fs::remove_file(dest)?;
+    }
+
+    if src.is_file() {
+        fs::copy(src, dest)?;
+    } else {
+        return Err(io::Error::new(io::ErrorKind::InvalidInput, "Source is not a file."));
+    }
+
+    Ok(())
 }
