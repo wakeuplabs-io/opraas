@@ -44,7 +44,9 @@ impl DeployCommand {
         // dev is reserved for local deployments
         if name == "dev" {
             return Err("Name cannot be 'dev'".into());
-        }
+        } 
+
+        // TODO: check if it already exists. TODO: validate name
 
         let registry_url: String = self
             .dialoguer
@@ -54,13 +56,12 @@ impl DeployCommand {
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
             if !self.dialoguer.confirm("Do you want to deploy contracts?") {
-                print_info("Skipping contracts deployment...");
+                print_warning("Skipping contracts deployment...");
                 return Ok(());
             }
 
             let contracts_deployer_spinner =
                 style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
-            print_warning("This may take a while...");
 
             let contracts_release =
                 release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
@@ -78,7 +79,7 @@ impl DeployCommand {
                 .dialoguer
                 .confirm("Are you sure you want to deploy infra?")
             {
-                print_info("Skipping infra deployment...");
+                print_warning("Skipping infra deployment...");
                 return Ok(());
             }
 

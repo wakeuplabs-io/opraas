@@ -47,25 +47,37 @@ impl TStackInfraDeployer for TerraformDeployer {
 
         system::execute_command(
             Command::new("terraform")
+                .arg("init")
+                .current_dir(stack.aws.to_str().unwrap())
+        )?;
+
+        system::execute_command(
+            Command::new("terraform")
                 .arg("plan")
                 .current_dir(stack.aws.to_str().unwrap())
         )?;
 
+        system::execute_command(
+            Command::new("terraform")
+            .arg("apply")
+            .arg("-auto-approve")
+            .arg(format!("-var=\"values_file_path={}\"", values.path().to_str().unwrap()))
+            .current_dir(stack.aws.to_str().unwrap())
+        )?;
+        
         let infra_artifacts = tempfile::NamedTempFile::new()?;
         system::execute_command(
             Command::new("terraform")
-               .arg("apply")
-               .arg("-auto-approve")
-               .arg("-json")
-               .arg(format!("-var=\"values_file_path={}\"", values.path().to_str().unwrap()))
-               .arg(">")
-               .arg(infra_artifacts.path().to_str().unwrap())
-               .current_dir(stack.aws.to_str().unwrap())
+                .arg("output")
+                .arg("-json")
+                .arg(">")
+                .arg(infra_artifacts.path().to_str().unwrap())
+                .current_dir(stack.aws.to_str().unwrap())
         )?;
 
         // set terraform artifacts
         deployment.infra_artifacts = Some(infra_artifacts.path().to_path_buf());
-        self.deployment_repository.save(&deployment);
+        self.deployment_repository.save(&deployment)?;
 
         Ok(deployment)
     }
