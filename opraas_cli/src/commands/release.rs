@@ -1,7 +1,7 @@
 use crate::{
     config::get_config_path,
     console::{
-        print_error, print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer,
+        print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer,
     },
     git::TGit,
 };

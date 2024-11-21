@@ -1,7 +1,7 @@
 use crate::config::get_config_path;
-use crate::console::{print_info, print_warning, style_spinner};
-use ::signal::{trap::Trap, Signal};
+use crate::console::{print_info, print_success, print_warning, style_spinner};
 use indicatif::ProgressBar;
+use ::signal::{trap::Trap, Signal};
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
@@ -42,11 +42,9 @@ impl DevCommand {
 
         // start local network ===========================
 
-        let local_network_spinner =
-            style_spinner(ProgressBar::new_spinner(), "Starting local network...");
+        let fork_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
 
-        self.fork_node
-            .start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
+        self.fork_node.start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
 
         // update config to connect to fork
         let wallet_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
@@ -65,35 +63,34 @@ impl DevCommand {
         config.accounts.challenger_private_key = wallet_private_key.to_string();
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
 
-        local_network_spinner
-            .finish_with_message(format!("L1 fork available at http://127.1.1:8545",));
+        fork_spinner.finish_with_message("✅ Fork ready");
 
         // Deploy contracts ===========================
 
-        let contracts_deployer_spinner = style_spinner(
-            ProgressBar::new_spinner(),
-            "Deploying contracts to local network...",
-        );
-        let contracts_release =
-            release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
+        let contracts_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Deploying contracts to local network...");
 
+        let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project);
-        println!("abc");
-        let deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
+        contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
-        contracts_deployer_spinner.finish_with_message("Contracts deployed to local network");
+        contracts_spinner.finish_with_message("✅ Contracts deployed");
 
         // start stack ===========================
 
-        print_info("Starting stack...");
+        let stack_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting stack...");
 
         self.stack_runner.start(&Stack::load(&project, "dev"))?;
 
-        print_info("Stack started...");
+        stack_spinner.finish_with_message("✅ Stack ready");
 
-        // wait for exit ===========================
-
+        // inform results and wait for exit ===========================
+        
+        print_success("🚀 All ready...");
+        print_info("\t- L1 fork available at http://127.1.1:8545");
+        print_info("\t- L2 rpc available at http://127.1.1:8545/rpc");
+        print_info("\t- Explorer available at http://127.1.1:8545/rpc");
         print_info("Press Ctrl + C to exit...");
+
         let trap = Trap::trap(&[Signal::SIGINT]);
         for sig in trap {
             match sig {

@@ -12,7 +12,7 @@ impl TerraformDeployer {
 }
 
 impl TStackInfraDeployer for TerraformDeployer {
-    fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>> {
+    fn deploy(&self, _stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>> {
         todo!()
     }
 }

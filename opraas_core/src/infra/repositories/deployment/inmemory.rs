@@ -154,6 +154,8 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
     fn save(&self, deployment: &Deployment) -> Result<(), Box<dyn std::error::Error>> {
         let depl_path = self.root.join(&deployment.name);
         std::fs::create_dir_all(&depl_path)?;
+        std::fs::create_dir_all(&depl_path.join("artifacts"))?;
+        std::fs::create_dir_all(&depl_path.join("config"))?;
 
         self.write_network_config(&depl_path, &deployment.network_config)?;
         self.write_accounts_config(&depl_path, &deployment.accounts_config)?;

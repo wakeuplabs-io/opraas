@@ -15,7 +15,7 @@ impl DockerReleaseRepository {
             Command::new("docker")
                 .arg("images")
                 .arg("-q")
-                .arg(artifact.name()),
+                .arg(artifact.name())
         )
         .unwrap()
         .is_empty()

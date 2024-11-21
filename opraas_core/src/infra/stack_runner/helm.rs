@@ -1,6 +1,6 @@
 use super::stack_runner::TStackRunner;
 use crate::{domain::Stack, system, yaml};
-use std::{collections::HashMap, io::Read, process::Command};
+use std::{collections::HashMap, process::Command};
 
 pub struct HelmStackRunner {
     release_name: String,
@@ -43,20 +43,17 @@ impl TStackRunner for HelmStackRunner {
             &updates,
         )?;
 
-        // print values file content
-        let mut file = std::fs::File::open(values.path().to_str().unwrap())?;
-        let mut contents = String::new();
-        file.read_to_string(&mut contents)?;
-
-        // system::execute_command(
-        //     Command::new("helm")
-        //         .arg("install")
-        //         .arg(stack.helm.to_str().unwrap())
-        //         .arg("-f")
-        //         .arg(values.path().to_str().unwrap())
-        //         .arg("--namespace")
-        //         .arg(&self.namespace),
-        // )?;
+        system::execute_command(
+            Command::new("helm")
+                .arg("install")
+                .arg(format!("op-ruaas-runner-{}", &self.release_name))
+                .arg("-f")
+                .arg(values.path().to_str().unwrap())
+                .arg("--namespace")
+                .arg(&self.namespace)
+                .arg("--create-namespace")
+                .arg(stack.helm.to_str().unwrap())
+        )?;
 
         Ok(())
     }
@@ -65,7 +62,7 @@ impl TStackRunner for HelmStackRunner {
         system::execute_command(
             Command::new("helm")
                 .arg("uninstall")
-                .arg(&self.release_name)
+                .arg(format!("op-ruaas-runner-{}", &self.release_name))
                 .arg("--namespace")
                 .arg(&self.namespace),
         )?;
