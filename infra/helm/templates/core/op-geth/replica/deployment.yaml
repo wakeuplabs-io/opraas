@@ -18,39 +18,7 @@ spec:
         - name: {{ .Values.geth.name }}-replica
           image: {{ .Values.geth.image.repository }}:{{ .Values.geth.image.tag }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
-          command: [ "/usr/local/bin/geth" ]
-          args: 
-            - "--datadir=/app/data/datadir"
-            - "--verbosity=3"
-            - "--networkid={{ .Values.chain.id }}"
-            - "--syncmode=full"
-            - "--gcmode=full" # replicas use full instead of archive
-            - "--nodiscover"
-            - "--maxpeers=0" # defaults 0 maybe remove
-            - "--port=30313" # different from optimism's default, 30303
-            - "--rpc.allow-unprotected-txs"  # allow legacy transactions for deterministic deployment
-            - "--http"
-            - "--http.corsdomain=*"
-            - "--http.vhosts=*"
-            - "--http.addr=0.0.0.0"
-            - "--http.port={{ .Values.geth.ports.rpc }}"
-            - "--http.api=web3,debug,eth,txpool,net,engine"
-            - "--ws"
-            - "--ws.addr=0.0.0.0"
-            - "--ws.port={{ .Values.geth.ports.ws }}"
-            - "--ws.origins=*"
-            - "--ws.api=debug,eth,txpool,net,engine"
-            - "--authrpc.addr=0.0.0.0"
-            - "--authrpc.port={{ .Values.geth.ports.rpcAuth }}"
-            - "--authrpc.vhosts=*"
-            - "--authrpc.jwtsecret=/app/data/configurations/jwt-secret.txt"
-            {{- if .Values.monitoring.enabled }}
-            - "--metrics"
-            - "--metrics.port={{ .Values.geth.ports.metrics }}"
-            {{- end }}
-            - "--rollup.disabletxpoolgossip=True"
-            - "--history.transactions=2350000"
-            - "--state.scheme=hash"  # TODO: investigate why state.scheme=path is not working
+          command: [ "sh", "/app/data/scripts/entrypoint.sh" ]
           ports:
             - containerPort: {{ .Values.geth.ports.rpc }}
             - containerPort: {{ .Values.geth.ports.ws }}
@@ -61,6 +29,8 @@ spec:
               mountPath: /app/data/datadir
             - name: configurations
               mountPath: /app/data/configurations
+            - name: configuration-scripts
+              mountPath: /app/data/scripts
       volumes:
         - name: datadir
           persistentVolumeClaim:
@@ -68,3 +38,6 @@ spec:
         - name: configurations
           persistentVolumeClaim:
             claimName: configurations-pvc
+        - name: configuration-scripts
+          configMap:
+            name: geth-replica-scripts

@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: geth-replica-scripts
+data:
+  entrypoint.sh: |
+    sleep 3
+    
+    /usr/local/bin/geth \
+      --verbosity=3 \
+      --datadir=/app/data/datadir \
+      --state.scheme=hash \
+      init /app/data/configurations/genesis.json
+
+    /usr/local/bin/geth \
+      --datadir=/app/data/datadir \
+      --verbosity=3 \
+      --networkid={{ .Values.chain.id }} \
+      --syncmode=full \
+      --gcmode=full \
+      --nodiscover \
+      --maxpeers=0 \
+      --port=30313 \
+      --rpc.allow-unprotected-txs \
+      --http \
+      --http.corsdomain=* \
+      --http.vhosts=* \
+      --http.addr=0.0.0.0 \
+      --http.port={{ .Values.geth.ports.rpc }} \
+      --http.api=web3,debug,eth,txpool,net,engine \
+      --ws \
+      --ws.addr=0.0.0.0 \
+      --ws.port={{ .Values.geth.ports.ws }} \
+      --ws.origins=* \
+      --ws.api=debug,eth,txpool,net,engine \
+      --authrpc.addr=0.0.0.0 \
+      --authrpc.port={{ .Values.geth.ports.rpcAuth }} \
+      --authrpc.vhosts=* \
+      --authrpc.jwtsecret=/app/data/configurations/jwt-secret.txt \
+      --metrics \
+      --metrics.port={{ .Values.geth.ports.metrics }} \
+      --rollup.disabletxpoolgossip=True \
+      --history.transactions=2350000 \
+      --state.scheme=hash

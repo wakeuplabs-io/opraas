@@ -9,6 +9,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Gi # 1Tb recommended
+      storage: 4Ti
   storageClassName: gp2
 
