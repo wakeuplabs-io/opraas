@@ -78,6 +78,7 @@ impl DevCommand {
             release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
 
         let contracts_deployer = StackContractsDeployerService::new(&project);
+        println!("abc");
         let deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
         contracts_deployer_spinner.finish_with_message("Contracts deployed to local network");

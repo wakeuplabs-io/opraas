@@ -19,11 +19,11 @@ struct ReleaseMetadata {
     registry_url: String,
 }
 
-const NETWORK_FILENAME: &str = "network.json";
-const ACCOUNTS_FILENAME: &str = "accounts.json";
-const RELEASE_FILENAME: &str = "release.json";
-const CONTRACTS_ARTIFACTS_FILENAME: &str = "contracts_artifacts.zip";
-const INFRA_ARTIFACTS_FILENAME: &str = "infra_artifacts.json";
+const NETWORK_FILENAME: &str = "config/network.json";
+const ACCOUNTS_FILENAME: &str = "config/accounts.json";
+const RELEASE_FILENAME: &str = "config/release.json";
+const CONTRACTS_ARTIFACTS_FILENAME: &str = "artifacts/contracts_artifacts.zip";
+const INFRA_ARTIFACTS_FILENAME: &str = "artifacts/infra_artifacts.json";
 
 // implementations ====================================
 
@@ -164,6 +164,10 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
                 registry_url: deployment.registry_url.clone(),
             },
         )?;
+
+        if let Some(contracts_artifacts) = &deployment.contracts_artifacts {
+            self.write_path(&depl_path.join(CONTRACTS_ARTIFACTS_FILENAME), contracts_artifacts)?;
+        }
 
         if let Some(infra_artifacts) = &deployment.infra_artifacts {
             self.write_path(&depl_path.join(INFRA_ARTIFACTS_FILENAME), infra_artifacts)?;

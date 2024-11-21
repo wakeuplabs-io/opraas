@@ -50,14 +50,18 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         contracts_release: &Release,
         config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>> {
+        println!("abc 2");
         // ensure release is available locally for run
         self.release_repository.pull(&contracts_release)?;
+        println!("abc 3");
 
         // we'll create a shared volume to share data with the contracts deployer
         let volume_dir: TempDir = TempDir::new()?; // automatically removed when dropped from scope
         std::fs::create_dir_all(volume_dir.path().join("out"))?;
         std::fs::create_dir_all(volume_dir.path().join("in"))?;
         let volume = volume_dir.path();
+
+        println!("abc 4");
 
         // deployment initially points to local files
         let mut deployment = Deployment::new(
@@ -68,9 +72,12 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             config.accounts.clone(),
         );
 
+        println!("abc 5");
+
         // write contracts config to shared volume for artifact consumption
         deployment.write_contracts_config(&volume_dir.path().join(IN_NETWORK))?;
 
+        println!("abc 6");
         // create environment
         let mut env: HashMap<&str, String> = HashMap::new();
         env.insert("ETH_RPC_URL", config.network.l1_rpc_url.clone());
@@ -88,8 +95,11 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
                 .collect::<String>(),
         );
 
+        println!("abc 6 {}", contracts_release.uri());
         // using contracts artifact, create a deployment
         self.release_runner.run(&contracts_release, volume, env)?;
+
+        println!("abc 7");
 
         // check out zip exists and add it to deployment
         let artifact_path = volume_dir.path().join(OUT_ARTIFACTS);
@@ -98,6 +108,8 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         }
         deployment.contracts_artifacts = Some(artifact_path);
         self.deployment_repository.save(&deployment)?;
+
+        println!("abc 8");
 
         Ok(deployment)
     }

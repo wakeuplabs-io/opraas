@@ -24,14 +24,12 @@ impl TReleaseRunner for DockerArtifactRunner {
             .map(|(key, value)| format!("-e {}={}", key, value))
             .collect();
 
-        execute_command(Command::new("docker").arg("pull").arg(release.uri()))?;
-
         execute_command(
             Command::new("docker")
                 .arg("run")
                 .arg("--rm")
-                .arg("-v")
                 .args(env_args)
+                .arg("-v")
                 .arg(format!("{}:{}", volume.display(), "/shared"))
                 .arg(release.uri()),
         )?;

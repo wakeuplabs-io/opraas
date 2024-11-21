@@ -1,6 +1,6 @@
 use super::stack_runner::TStackRunner;
 use crate::{domain::Stack, system, yaml};
-use std::{collections::HashMap, process::Command};
+use std::{collections::HashMap, io::Read, process::Command};
 
 pub struct HelmStackRunner {
     release_name: String,
@@ -27,13 +27,13 @@ impl TStackRunner for HelmStackRunner {
         updates.insert("node.config.privateKey".to_string(), deployment.accounts_config.sequencer_private_key.clone());
         updates.insert("batcher.config.privateKey".to_string(), deployment.accounts_config.batcher_private_key.clone()); 
         updates.insert("proposer.config.privateKey".to_string(), deployment.accounts_config.proposer_private_key.clone());
-        updates.insert("node.image.repository".to_string(), format!("{}:{}", deployment.registry_url, "op-node"));
+        updates.insert("node.image.repository".to_string(), format!("{}/{}", deployment.registry_url, "op-node"));
         updates.insert("node.image.tag".to_string(), deployment.release_name.clone());
-        updates.insert("batcher.image.repository".to_string(), format!("{}:{}", deployment.registry_url, "op-batcher"));
+        updates.insert("batcher.image.repository".to_string(), format!("{}/{}", deployment.registry_url, "op-batcher"));
         updates.insert("batcher.image.tag".to_string(), deployment.release_name.clone());
-        updates.insert("proposer.image.repository".to_string(), format!("{}:{}", deployment.registry_url, "op-proposer"));
+        updates.insert("proposer.image.repository".to_string(), format!("{}/{}", deployment.registry_url, "op-proposer"));
         updates.insert("proposer.image.tag".to_string(), deployment.release_name.clone());
-        updates.insert("geth.image.repository".to_string(),format!("{}:{}", deployment.registry_url, "op-geth"));
+        updates.insert("geth.image.repository".to_string(),format!("{}/{}", deployment.registry_url, "op-geth"));
         updates.insert("geth.image.tag".to_string(), deployment.release_name.clone());
 
         let values = tempfile::NamedTempFile::new()?;
@@ -42,6 +42,11 @@ impl TStackRunner for HelmStackRunner {
             values.path().to_str().unwrap(),
             &updates,
         )?;
+
+        // print values file content
+        let mut file = std::fs::File::open(values.path().to_str().unwrap())?;
+        let mut contents = String::new();
+        file.read_to_string(&mut contents)?;
 
         // system::execute_command(
         //     Command::new("helm")
