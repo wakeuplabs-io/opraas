@@ -82,10 +82,9 @@ impl DeployCommand {
                 return Ok(());
             }
 
-            let infra_deployer_spinner =
-                style_spinner(ProgressBar::new_spinner(), "Deploying infra...");
+            let infra_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
-            StackInfraDeployerService::new().deploy(&Stack::load(&project, &name))?;
+            StackInfraDeployerService::new(&project.root).deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
         }

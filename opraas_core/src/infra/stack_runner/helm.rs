@@ -21,6 +21,7 @@ impl HelmStackRunner {
 impl TStackRunner for HelmStackRunner {
     fn run(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
         let deployment = stack.deployment.as_ref().unwrap();
+        let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
 
         // create values file
         let mut updates: HashMap<String, String> = HashMap::new();
@@ -35,6 +36,9 @@ impl TStackRunner for HelmStackRunner {
         updates.insert("proposer.image.tag".to_string(), deployment.release_name.clone());
         updates.insert("geth.image.repository".to_string(),format!("{}/{}", deployment.registry_url, "op-geth"));
         updates.insert("geth.image.tag".to_string(), deployment.release_name.clone());
+        updates.insert("chain.artifacts".to_string(), contracts_artifacts.to_str().unwrap().to_string());
+        updates.insert("chain.l1Rpc".to_string(), deployment.network_config.l1_rpc_url.clone());
+
 
         let values = tempfile::NamedTempFile::new()?;
         yaml::rewrite_yaml_to(

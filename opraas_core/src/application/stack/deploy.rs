@@ -18,9 +18,9 @@ pub trait TStackInfraDeployerService {
 // implementations ===================================================
 
 impl StackInfraDeployerService {
-    pub fn new() -> Self {
+    pub fn new(root: &std::path::PathBuf) -> Self {
         Self {
-            stack_deployer: Box::new(TerraformDeployer::new()),
+            stack_deployer: Box::new(TerraformDeployer::new(root)),
             stack_infra_repository: Box::new(GitStackInfraRepository::new()),
         }
     }
