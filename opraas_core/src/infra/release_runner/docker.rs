@@ -19,18 +19,21 @@ impl TReleaseRunner for DockerArtifactRunner {
         volume: &Path,
         env: HashMap<&str, String>,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let args: Vec<String> = env.iter().map(|(key, value)| {
-            format!("-e {}={}", key, value)
-        }).collect();
+        let env_args: Vec<String> = env
+            .iter()
+            .map(|(key, value)| format!("-e {}={}", key, value))
+            .collect();
+
+        execute_command(Command::new("docker").arg("pull").arg(release.uri()))?;
 
         execute_command(
             Command::new("docker")
                 .arg("run")
                 .arg("--rm")
                 .arg("-v")
-                .arg(format!("{}:{}", volume.display(), "/data"))
-                .arg(release.uri())
-                .args(args),
+                .args(env_args)
+                .arg(format!("{}:{}", volume.display(), "/shared"))
+                .arg(release.uri()),
         )?;
 
         Ok(())

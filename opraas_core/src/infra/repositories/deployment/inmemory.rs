@@ -1,12 +1,12 @@
-use serde::{Deserialize, Serialize};
-use std::{
-    fs::{File, OpenOptions},
-    path::PathBuf,
-};
 use crate::{
     config::{AccountsConfig, NetworkConfig},
     domain::{self, Deployment},
     system,
+};
+use serde::{Deserialize, Serialize};
+use std::{
+    fs::{File, OpenOptions},
+    path::PathBuf,
 };
 
 pub struct InMemoryDeploymentRepository {
@@ -22,10 +22,8 @@ struct ReleaseMetadata {
 const NETWORK_FILENAME: &str = "network.json";
 const ACCOUNTS_FILENAME: &str = "accounts.json";
 const RELEASE_FILENAME: &str = "release.json";
-const ROLLUP_FILENAME: &str = "rollup.json";
-const GENESIS_FILENAME: &str = "genesis.json";
-const ADDRESSES_FILENAME: &str = "addresses.json";
-const ALLOCS_FILENAME: &str = "allocs.json";
+const CONTRACTS_ARTIFACTS_FILENAME: &str = "contracts_artifacts.zip";
+const INFRA_ARTIFACTS_FILENAME: &str = "infra_artifacts.json";
 
 // implementations ====================================
 
@@ -111,13 +109,13 @@ impl InMemoryDeploymentRepository {
         Ok(())
     }
 
-    fn load_path(&self, path: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    fn load_path(&self, path: &PathBuf) -> Result<Option<PathBuf>, Box<dyn std::error::Error>> {
         let exists = std::fs::exists(&path)?;
         if !exists {
-            return Err("Path doesn't exist".into());
+            return Ok(None);
         }
 
-        Ok(path.to_path_buf())
+        Ok(Some(path.to_path_buf()))
     }
 
     fn write_path(&self, dest: &PathBuf, src: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
@@ -139,21 +137,17 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         let network_config = self.load_network_config(&depl_path)?;
         let releases = self.load_releases_config(&depl_path)?;
 
-        let addresses_config = self.load_path(&depl_path.join(ADDRESSES_FILENAME))?;
-        let rollup_config = self.load_path(&depl_path.join(ROLLUP_FILENAME))?;
-        let genesis_config = self.load_path(&depl_path.join(GENESIS_FILENAME))?;
-        let allocs_config = self.load_path(&depl_path.join(ALLOCS_FILENAME))?;
+        let infra_artifacts = self.load_path(&depl_path.join(INFRA_ARTIFACTS_FILENAME))?;
+        let contracts_artifacts = self.load_path(&depl_path.join(CONTRACTS_ARTIFACTS_FILENAME))?;
 
         Ok(Some(Deployment {
             name: name.to_string(),
-            accounts_config,
-            network_config,
-            rollup_config,
-            genesis_config,
-            addresses_config,
-            allocs_config,
             release_name: releases.name,
             registry_url: releases.registry_url,
+            network_config,
+            accounts_config,
+            infra_artifacts,
+            contracts_artifacts,
         }))
     }
 
@@ -171,16 +165,9 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
             },
         )?;
 
-        self.write_path(
-            &depl_path.join(ADDRESSES_FILENAME),
-            &deployment.addresses_config,
-        )?;
-        self.write_path(&depl_path.join(ROLLUP_FILENAME), &deployment.rollup_config)?;
-        self.write_path(
-            &depl_path.join(GENESIS_FILENAME),
-            &deployment.genesis_config,
-        )?;
-        self.write_path(&depl_path.join(ALLOCS_FILENAME), &deployment.allocs_config)?;
+        if let Some(infra_artifacts) = &deployment.infra_artifacts {
+            self.write_path(&depl_path.join(INFRA_ARTIFACTS_FILENAME), infra_artifacts)?;
+        }
 
         Ok(())
     }

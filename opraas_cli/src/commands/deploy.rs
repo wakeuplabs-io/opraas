@@ -1,16 +1,16 @@
+use crate::{
+    config::get_config_path,
+    console::{print_info, print_warning, style_spinner},
+};
 use clap::ValueEnum;
 use indicatif::ProgressBar;
 use opraas_core::{
     application::{
-        stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService}, StackContractsDeployerService, TStackContractsDeployerService,
+        stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
+        StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
     domain::{ArtifactKind, Project, ReleaseFactory, Stack},
-};
-
-use crate::{
-    config::get_config_path,
-    console::{print_info, print_warning, style_spinner},
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -82,14 +82,10 @@ impl DeployCommand {
                 return Ok(());
             }
 
-            // prepare, confirm and just then deploy
-
             let infra_deployer_spinner =
                 style_spinner(ProgressBar::new_spinner(), "Deploying infra...");
-            print_warning("This may take a while...");
 
-            let stack = Stack::from_project(&project);
-            StackInfraDeployerService::new(&project.root).deploy(&stack, &name, &config)?;
+            StackInfraDeployerService::new().deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
         }

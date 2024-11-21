@@ -1,8 +1,8 @@
-use std::{fs, io, path::PathBuf, process::Command};
+use std::{fs, io, path::PathBuf, process::{Command, Stdio}};
 
 
 pub fn execute_command(command: &mut Command) -> Result<String, String> {
-    let output = command.output().map_err(|e| format!("Failed to execute command: {}", e))?;
+    let output = command.stdout(Stdio::piped()).output().map_err(|e| format!("Failed to execute command: {}", e))?;
 
     if output.status.success() {
         let result =   String::from_utf8_lossy(&output.stdout)

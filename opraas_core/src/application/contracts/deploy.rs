@@ -29,10 +29,7 @@ pub trait TStackContractsDeployerService {
 }
 
 const IN_NETWORK: &str = "in/deploy-config.json";
-const OUT_ROLLUP: &str = "out/rollup.json";
-const OUT_GENESIS: &str = "out/genesis.json";
-const OUT_ADDRESSES: &str = "out/addresses.json";
-const OUT_ALLOCS: &str = "out/allocs.json";
+const OUT_ARTIFACTS: &str = "out/artifacts.zip";
 
 // implementations ===================================================
 
@@ -63,17 +60,13 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         let volume = volume_dir.path();
 
         // deployment initially points to local files
-        let deployment = Deployment {
-            name: deployment_name.to_string(),
-            network_config: config.network.clone(),
-            accounts_config: config.accounts.clone(),
-            rollup_config: volume_dir.path().join(OUT_ROLLUP),
-            genesis_config: volume_dir.path().join(OUT_GENESIS),
-            addresses_config: volume_dir.path().join(OUT_ADDRESSES),
-            allocs_config: volume_dir.path().join(OUT_ALLOCS),
-            release_name: contracts_release.artifact_tag.clone(),
-            registry_url: contracts_release.registry_url.clone(),
-        };
+        let mut deployment = Deployment::new(
+            deployment_name.to_string(),
+            contracts_release.artifact_tag.clone(),
+            contracts_release.registry_url.clone(),
+            config.network.clone(),
+            config.accounts.clone(),
+        );
 
         // write contracts config to shared volume for artifact consumption
         deployment.write_contracts_config(&volume_dir.path().join(IN_NETWORK))?;
@@ -98,7 +91,12 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         // using contracts artifact, create a deployment
         self.release_runner.run(&contracts_release, volume, env)?;
 
-        // save outputs from deployment as well as inputs used for it
+        // check out zip exists and add it to deployment
+        let artifact_path = volume_dir.path().join(OUT_ARTIFACTS);
+        if !artifact_path.exists() {
+            return Err("Contracts artifact not found".into());
+        }
+        deployment.contracts_artifacts = Some(artifact_path);
         self.deployment_repository.save(&deployment)?;
 
         Ok(deployment)

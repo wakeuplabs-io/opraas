@@ -1,30 +1,27 @@
-use std::path::PathBuf;
-
 use crate::{
-    config::CoreConfig,
-    domain::{self, Deployment, Project, Stack},
-    infra::repositories::deployment::InMemoryDeploymentRepository,
+    domain::{self, Deployment, Stack},
+    infra::{self, repositories::stack_infra::GitStackInfraRepository, stack_deployer::TerraformDeployer},
 };
 
 pub struct StackInfraDeployerService {
-    deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
+    stack_deployer: Box<dyn infra::stack_deployer::TStackInfraDeployer>,
+    stack_infra_repository: Box<dyn domain::stack::TStackInfraRepository>,
 }
 
 pub trait TStackInfraDeployerService {
     fn deploy(
         &self,
         stack: &Stack,
-        name: &str,
-        config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>>;
 }
 
 // implementations ===================================================
 
 impl StackInfraDeployerService {
-    pub fn new(root: &PathBuf) -> Self {
+    pub fn new() -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
+            stack_deployer: Box::new(TerraformDeployer::new()),
+            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
         }
     }
 }
@@ -33,18 +30,14 @@ impl TStackInfraDeployerService for StackInfraDeployerService {
     fn deploy(
         &self,
         stack: &Stack,
-        deployment_name: &str,
-        config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>> {
-        let deployment = self.deployment_repository.find(deployment_name)?.unwrap();
+        if stack.deployment.is_none() {
+            return Err("Stack does not contain deployment".into());
+        }
 
-        // get zipped artifacts from deployment
-
-        // ensure terraform and helm files are available
-
-        // call terraform to deploy 
-
-        // save outputs if any
+        self.stack_infra_repository.pull(stack)?;
+        
+        let deployment = self.stack_deployer.deploy(stack)?;
 
         Ok(deployment)
     }

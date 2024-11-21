@@ -47,7 +47,7 @@ impl TCreateProjectService for CreateProjectService {
         )?;
 
         // pull stack infra
-        self.stack_infra_repository.pull(&Stack::from_project(&project))?;
+        self.stack_infra_repository.pull(&Stack::new(project.infra.helm.clone(), project.infra.aws.clone(), None ))?;
 
         // initialize git and create first commit
         self.version_control.init(&root.to_str().unwrap())?;

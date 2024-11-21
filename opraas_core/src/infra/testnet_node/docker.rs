@@ -71,8 +71,10 @@ impl TTestnetNode for DockerTestnetNode {
         Ok(())
     }
 
-    fn stop(&self) {
+    fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
         let _ = execute_command(Command::new("docker").arg("stop").arg(CONTAINER_NAME));
         let _ = execute_command(Command::new("docker").arg("rm").arg(CONTAINER_NAME));
+
+        Ok(())
     }
 }

@@ -33,11 +33,11 @@ pub enum Artifact {
 impl fmt::Display for Artifact {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         match self {
-            Artifact::Batcher(data) => write!(f, "Batcher"),
-            Artifact::Node(data) => write!(f, "Node"),
-            Artifact::Contracts(data) => write!(f, "Contracts"),
-            Artifact::Proposer(data) => write!(f, "Proposer"),
-            Artifact::Geth(data) => write!(f, "Geth"),
+            Artifact::Batcher(_data) => write!(f, "Batcher"),
+            Artifact::Node(_data) => write!(f, "Node"),
+            Artifact::Contracts(_data) => write!(f, "Contracts"),
+            Artifact::Proposer(_data) => write!(f, "Proposer"),
+            Artifact::Geth(_data) => write!(f, "Geth"),
         }
     }
 }
