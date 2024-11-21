@@ -1,3 +1,5 @@
+use std::io::Read;
+
 use crate::{
     config::get_config_path,
     console::{print_info, print_warning, style_spinner},
@@ -10,7 +12,7 @@ use opraas_core::{
         StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
-    domain::{ArtifactKind, Project, ReleaseFactory, Stack},
+    domain::{ArtifactKind, Project, ReleaseFactory, Stack}, infra,
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -85,9 +87,19 @@ impl DeployCommand {
 
             let infra_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
-            StackInfraDeployerService::new(&project.root).deploy(&Stack::load(&project, &name))?;
+            let deployment = StackInfraDeployerService::new(&project.root).deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
+
+            // Print artifacts data if available. TODO: replace with inspect application
+            if let Some(deployment) = deployment.infra_artifacts {
+                let mut file = std::fs::File::open(deployment).unwrap();
+                let mut contents = String::new();
+                file.read_to_string(&mut contents).unwrap();
+
+                print_info("Infra artifacts details");
+                print_info(&contents);
+            }
         }
 
         Ok(())
