@@ -1,3 +1,5 @@
+use log::info;
+
 use super::stack_runner::TStackRunner;
 use crate::{domain::Stack, system, yaml};
 use std::{collections::HashMap, process::Command};
@@ -22,6 +24,40 @@ impl TStackRunner for HelmStackRunner {
     fn run(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
         let deployment = stack.deployment.as_ref().unwrap();
         let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
+
+        // install ingress nginx if not available
+        let check_output = system::execute_command(
+            Command::new("helm").args(["list", "-n", "ingress-nginx"]),
+            true,
+        )?;
+        if !check_output.contains("ingress-nginx") {
+            info!("Installing ingress-nginx...");
+
+            system::execute_command(
+                Command::new("helm")
+                    .arg("repo")
+                    .arg("add")
+                    .arg("ingress-nginx")
+                    .arg("https://kubernetes.github.io/ingress-nginx")
+                    .arg("&&")
+                    .arg("helm")
+                    .arg("repo")
+                    .arg("update"),
+                false,
+            )?;
+
+            system::execute_command(
+                Command::new("helm").args([
+                    "install",
+                    "ingress-nginx",
+                    "ingress-nginx/ingress-nginx",
+                    "--namespace",
+                    "ingress-nginx",
+                    "--create-namespace",
+                ]),
+                true,
+            )?;
+        }
 
         // create values file
         let mut updates: HashMap<String, String> = HashMap::new();

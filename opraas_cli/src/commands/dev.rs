@@ -85,8 +85,8 @@ impl DevCommand {
 
         print_info("\n\n================================================\n\n");
         print_info("L1 fork available at http://127.1.1:8545");
-        print_info("L2 rpc available at http://127.1.1:8545/rpc");
-        print_info("Explorer available at http://127.1.1:8545/rpc");
+        print_info("L2 rpc available at http://localhost:80/rpc");
+        print_info("Explorer available at http://localhost:80/explorer");
         print_info("\n\n================================================\n\n");
 
         print_warning("Press Ctrl + C to exit...");

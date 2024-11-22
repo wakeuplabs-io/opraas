@@ -24,9 +24,9 @@ struct Args {
     #[command(subcommand)]
     cmd: Commands,
 
-    /// Set the logging level (e.g., debug, info, warn, error)
-    #[arg(short, long, default_value = "off")]
-    log_level: String,
+    /// Suppress logging output
+    #[arg(short, long, default_value_t = false)]
+    quiet: bool,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -56,11 +56,11 @@ async fn main() {
     // parse args
     let args = Args::parse();
 
-    // setup logging
-    let log_level = args
-        .log_level
-        .parse::<LevelFilter>()
-        .unwrap_or(LevelFilter::Off);
+    let log_level = if args.quiet {
+        LevelFilter::Off
+    } else {
+        LevelFilter::Debug
+    };
 
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Off) // Turn off all logs by default
@@ -82,12 +82,26 @@ async fn main() {
 
     // Check requirements
     SystemRequirementsChecker::new()
-        .check(vec![Requirement {
-            program: "docker",
-            version_arg: "-v",
-            required_version: Version::parse("24.0.0").unwrap(),
-            required_comparator: Comparison::GreaterThanOrEqual,
-        }])
+        .check(vec![
+            Requirement {
+                program: "docker",
+                version_arg: "-v",
+                required_version: Version::parse("24.0.0").unwrap(),
+                required_comparator: Comparison::GreaterThanOrEqual,
+            },
+            Requirement {
+                program: "kubectl",
+                version_arg: "version",
+                required_version: Version::parse("1.28.0").unwrap(),
+                required_comparator: Comparison::GreaterThanOrEqual,
+            },
+            Requirement {
+                program: "helm",
+                version_arg: "version",
+                required_version: Version::parse("3.0.0").unwrap(),
+                required_comparator: Comparison::GreaterThanOrEqual,
+            }
+        ])
         .unwrap_or_else(|e| {
             print_error(&format!("\n\nError: {}\n\n", e));
             std::process::exit(1);
