@@ -59,6 +59,44 @@ impl TStackRunner for HelmStackRunner {
             )?;
         }
 
+        // install cert-manager if not available
+        let check_output = system::execute_command(
+            Command::new("helm").args(["list", "-n", "cert-manager"]),
+            true,
+        )?;
+        if !check_output.contains("cert-manager") {
+            info!("Installing cert-manager...");
+
+            system::execute_command(
+                Command::new("helm")
+                    .arg("repo")
+                    .arg("add")
+                    .arg("jetstack")
+                    .arg("https://charts.jetstack.io")
+                    .arg("&&")
+                    .arg("helm")
+                    .arg("repo")
+                    .arg("update"),
+                false,
+            )?;
+
+            system::execute_command(
+                Command::new("helm").args([
+                    "install",
+                    "cert-manager",
+                    "jetstack/cert-manager",
+                    "--namespace",
+                    "cert-manager",
+                    "--create-namespace",
+                    "--version",
+                    "v1.10.0",
+                    "--set",
+                    "installCRDs=true"
+                ]),
+                true,
+            )?;
+        }
+
         // create values file
         let mut updates: HashMap<String, String> = HashMap::new();
         updates.insert(
