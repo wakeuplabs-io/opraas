@@ -63,8 +63,6 @@ impl DevCommand {
         config.accounts.challenger_private_key = wallet_private_key.to_string();
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
 
-        print_success("✅ Fork ready");
-
         // Deploy contracts ===========================
 
         print_info("⏳ Deploying contracts to local network...");
@@ -74,23 +72,21 @@ impl DevCommand {
         let contracts_deployer = StackContractsDeployerService::new(&project);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
-        print_success("✅ Contracts deployed");
-
         // start stack ===========================
 
         print_info("⏳ Starting stack...");
 
         self.stack_runner.start(&Stack::load(&project, "dev"))?;
 
-        print_success("✅ Stack ready");
-
         // inform results and wait for exit ===========================
 
         print_success("🚀 All ready...");
-        
+
+        print_info("\n\n================================================\n\n");
         print_info("L1 fork available at http://127.1.1:8545");
         print_info("L2 rpc available at http://127.1.1:8545/rpc");
         print_info("Explorer available at http://127.1.1:8545/rpc");
+        print_info("\n\n================================================\n\n");
 
         print_warning("Press Ctrl + C to exit...");
 
