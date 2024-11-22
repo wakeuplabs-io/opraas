@@ -49,3 +49,10 @@ spec:
           ports:
             - containerPort: {{ .Values.batcher.ports.rpc }}
             - containerPort: {{ .Values.batcher.ports.metrics }}
+          resources:
+            requests:
+              cpu: "500m" 
+              memory: "1Gi" # 2Gi
+            limits:
+              cpu: "1"
+              memory: "2Gi" # 4Gi

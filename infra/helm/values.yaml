@@ -16,7 +16,7 @@ geth:
   name: op-geth
   image:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth
-    tag: v1.101411.2
+    tag: v1.101315.3
   deployment:
     replicaCount: 2
   ports:
@@ -29,7 +29,7 @@ node:
   name: op-node
   image:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node
-    tag: v1.10.0-rc.1
+    tag: v1.9.4
   config:
     privateKey: ""
     p2pEnabled: false
@@ -42,7 +42,7 @@ batcher:
   name: op-batcher
   image:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher
-    tag: v1.10.0-rc.1
+    tag: v1.9.4
   config:
     privateKey: ""
   ports:
@@ -53,7 +53,7 @@ proposer:
   name: op-proposer
   image:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer
-    tag: v1.10.0-rc.1
+    tag: v1.9.4
   config:
     privateKey: ""
   ports:

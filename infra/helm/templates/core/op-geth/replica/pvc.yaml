@@ -9,5 +9,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 3Ti
+      storage: 50Gi # 3Ti optimal
   storageClassName: gp2

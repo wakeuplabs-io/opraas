@@ -43,3 +43,10 @@ spec:
           ports:
             - containerPort: {{ .Values.proposer.ports.rpc }} 
             - containerPort: {{ .Values.proposer.ports.metrics }} 
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi" # 2Gi
+            limits:
+              cpu: "1"
+              memory: "2Gi" # 4 Gi

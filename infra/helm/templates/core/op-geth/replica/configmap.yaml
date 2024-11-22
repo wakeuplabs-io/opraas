@@ -38,6 +38,7 @@ data:
       --authrpc.vhosts=* \
       --authrpc.jwtsecret=/app/data/configurations/jwt-secret.txt \
       --metrics \
+      --metrics.addr=0.0.0.0 \
       --metrics.port={{ .Values.geth.ports.metrics }} \
       --rollup.disabletxpoolgossip=True \
       --history.transactions=2350000 \

@@ -28,6 +28,7 @@ spec:
             - "--verifier.l1-confs=0"
             - "--rollup.config=/app/data/configurations/rollup-config.json"
             - "--l1.rpckind=basic"
+            - "--l1.trustrpc"
             # Sequencer Options
             - "--sequencer.enabled"
             - "--sequencer.l1-confs=0"
@@ -52,15 +53,24 @@ spec:
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/metrics/cli.go
             {{- if .Values.monitoring.enabled }}
             - "--metrics.enabled"
+            - "--metrics.addr=0.0.0.0"
             - "--metrics.port={{ .Values.node.ports.metrics }}"
             {{- end }}
           ports:
             - containerPort: {{ .Values.node.ports.rpc }}
             - containerPort: {{ .Values.node.ports.p2p }}
             - containerPort: {{ .Values.node.ports.metrics }}
+          resources:
+            requests:
+              memory: "1Gi" # 4Gi
+              cpu: "1" # 2 
+            limits:
+              memory: "2Gi" # 8Gi
+              cpu: "2" # 4
           volumeMounts:
             - name: configurations
               mountPath: /app/data/configurations
+              readOnly: true
       volumes:
         - name: configurations
           persistentVolumeClaim:
