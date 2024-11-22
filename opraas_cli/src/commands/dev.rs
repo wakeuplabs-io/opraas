@@ -1,7 +1,6 @@
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success, print_warning, style_spinner};
+use crate::console::{print_info, print_success, print_warning};
 use ::signal::{trap::Trap, Signal};
-use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
@@ -42,14 +41,14 @@ impl DevCommand {
 
         // start local network ===========================
 
-        let fork_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
+        print_info("⏳ Starting l1 fork...");
 
         self.fork_node
             .start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
 
         // update config to connect to fork
         let wallet_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-        let wallet_private_key = "5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c";
+        let wallet_private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
         config.accounts.admin_address = wallet_address.to_string();
         config.accounts.admin_private_key = wallet_private_key.to_string();
         config.accounts.batcher_address = wallet_address.to_string();
@@ -64,29 +63,26 @@ impl DevCommand {
         config.accounts.challenger_private_key = wallet_private_key.to_string();
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
 
-        fork_spinner.finish_with_message("✅ Fork ready");
+        print_success("✅ Fork ready");
 
         // Deploy contracts ===========================
 
-        let contracts_spinner = style_spinner(
-            ProgressBar::new_spinner(),
-            "⏳ Deploying contracts to local network...",
-        );
+        print_info("⏳ Deploying contracts to local network...");
 
         let contracts_release =
             release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
-        contracts_spinner.finish_with_message("✅ Contracts deployed");
+        print_success("✅ Contracts deployed");
 
         // start stack ===========================
 
-        let stack_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting stack...");
+        print_info("⏳ Starting stack...");
 
         self.stack_runner.start(&Stack::load(&project, "dev"))?;
 
-        stack_spinner.finish_with_message("✅ Stack ready");
+        print_success("✅ Stack ready");
 
         // inform results and wait for exit ===========================
 

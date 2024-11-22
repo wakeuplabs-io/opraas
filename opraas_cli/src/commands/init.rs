@@ -1,7 +1,7 @@
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success, style_spinner};
+use crate::console::{print_info, print_success};
 use clap::ValueEnum;
-use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use indicatif::{HumanDuration, MultiProgress};
 use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{artifact::Artifact, project::Project};

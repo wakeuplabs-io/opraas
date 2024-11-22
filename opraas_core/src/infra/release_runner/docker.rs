@@ -21,7 +21,7 @@ impl TReleaseRunner for DockerArtifactRunner {
     ) -> Result<(), Box<dyn std::error::Error>> {
         let env_args: Vec<Vec<String>> = env
             .iter()
-            .map(|(key, value)| vec!["--env".to_string(), format!("{}={}", key, value)])
+            .map(|(key, value)| vec!["-e".to_string(), format!("{}={}", key, value)])
             .collect();
 
         execute_command(
@@ -29,7 +29,6 @@ impl TReleaseRunner for DockerArtifactRunner {
                 .arg("run")
                 .arg("--rm")
                 .args(env_args.concat())
-                .arg("-it")
                 .arg("-v")
                 .arg(format!("{}:{}", volume.display(), "/shared"))
                 .arg(release.uri()),

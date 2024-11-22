@@ -39,10 +39,9 @@ impl TTestnetNode for DockerTestnetNode {
                 &format!("FORK_URL={}", fork_url),
                 "-e",
                 &format!("CHAIN_ID={}", chain_id),
-                "-it",
                 DOCKER_IMAGE,
             ]),
-            false,
+            true,
         )?;
 
         // Wait for node to start

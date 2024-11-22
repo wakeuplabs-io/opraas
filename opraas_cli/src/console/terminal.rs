@@ -1,7 +1,7 @@
 use colored::Colorize;
 
 pub fn print_info(msg: &str) {
-    println!("{}", msg.bold());
+    println!("{}", msg.blue());
 }
 
 pub fn print_error(msg: &str) {
