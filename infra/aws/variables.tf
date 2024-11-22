@@ -14,5 +14,5 @@ variable "proy-name" {
 variable "values_file_path" {
   description = "The path to the Helm values.yaml file"
   type        = string
-  default     = "${path.module}/../helm/values.yaml"  
+  default     = "../helm/values.yaml"  
 }

@@ -107,7 +107,7 @@ impl TStackInfraDeployer for TerraformDeployer {
                 .arg("apply")
                 .arg("-auto-approve")
                 .arg(format!(
-                    "-var=\"values_file_path={}\"",
+                    "-var=values_file_path={}",
                     values.path().to_str().unwrap()
                 ))
                 .current_dir(stack.aws.to_str().unwrap()),

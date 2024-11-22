@@ -73,7 +73,7 @@ impl DeployCommand {
                 &config,
             )?;
 
-            contracts_deployer_spinner.finish_with_message("Contracts deployed to local network");
+            contracts_deployer_spinner.finish_with_message("Contracts deployed...");
         }
 
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
