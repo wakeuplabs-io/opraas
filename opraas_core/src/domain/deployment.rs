@@ -20,7 +20,13 @@ pub trait TDeploymentRepository {
 // implementations ========================================================
 
 impl Deployment {
-    pub fn new(name : String, release_name: String, registry_url: String, network_config: NetworkConfig, accounts_config: AccountsConfig) -> Self {
+    pub fn new(
+        name: String,
+        release_name: String,
+        registry_url: String,
+        network_config: NetworkConfig,
+        accounts_config: AccountsConfig,
+    ) -> Self {
         Self {
             name,
             release_name,

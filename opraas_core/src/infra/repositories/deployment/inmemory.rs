@@ -168,7 +168,10 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         )?;
 
         if let Some(contracts_artifacts) = &deployment.contracts_artifacts {
-            self.write_path(&depl_path.join(CONTRACTS_ARTIFACTS_FILENAME), contracts_artifacts)?;
+            self.write_path(
+                &depl_path.join(CONTRACTS_ARTIFACTS_FILENAME),
+                contracts_artifacts,
+            )?;
         }
 
         if let Some(infra_artifacts) = &deployment.infra_artifacts {

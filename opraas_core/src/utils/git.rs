@@ -19,6 +19,7 @@ pub fn clone(
             .arg("1")
             .arg(format!("https://github.com/{}", source_repo))
             .arg(dst_path),
+        true,
     )?;
 
     Ok(())

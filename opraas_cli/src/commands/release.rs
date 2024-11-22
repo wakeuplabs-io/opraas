@@ -1,8 +1,6 @@
 use crate::{
     config::get_config_path,
-    console::{
-        print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer,
-    },
+    console::{print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer},
     git::TGit,
 };
 use clap::ValueEnum;

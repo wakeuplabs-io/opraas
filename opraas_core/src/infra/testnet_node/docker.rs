@@ -25,21 +25,25 @@ impl TTestnetNode for DockerTestnetNode {
         fork_url: &str,
         port: u64,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        execute_command(Command::new("docker").args(["pull", DOCKER_IMAGE]))?;
+        execute_command(Command::new("docker").args(["pull", DOCKER_IMAGE]), false)?;
 
-        execute_command(Command::new("docker").args([
-            "run",
-            "-d",
-            "-p",
-            &format!("{}:8545", port),
-            "--name",
-            CONTAINER_NAME,
-            "-e",
-            &format!("FORK_URL={}", fork_url),
-            "-e",
-            &format!("CHAIN_ID={}", chain_id),
-            DOCKER_IMAGE,
-        ]))?;
+        execute_command(
+            Command::new("docker").args([
+                "run",
+                "-d",
+                "-p",
+                &format!("{}:8545", port),
+                "--name",
+                CONTAINER_NAME,
+                "-e",
+                &format!("FORK_URL={}", fork_url),
+                "-e",
+                &format!("CHAIN_ID={}", chain_id),
+                "-it",
+                DOCKER_IMAGE,
+            ]),
+            false,
+        )?;
 
         // Wait for node to start
         let url = format!("http://localhost:{}", port);
@@ -72,8 +76,8 @@ impl TTestnetNode for DockerTestnetNode {
     }
 
     fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let _ = execute_command(Command::new("docker").arg("stop").arg(CONTAINER_NAME));
-        let _ = execute_command(Command::new("docker").arg("rm").arg(CONTAINER_NAME));
+        let _ = execute_command(Command::new("docker").arg("stop").arg(CONTAINER_NAME), true);
+        let _ = execute_command(Command::new("docker").arg("rm").arg(CONTAINER_NAME), true);
 
         Ok(())
     }

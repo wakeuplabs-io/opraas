@@ -1,7 +1,7 @@
-use std::sync::Arc;
+use super::{Artifact, ArtifactFactory, ArtifactKind, Project};
 use crate::config::CoreConfig;
 use serde::{Deserialize, Serialize};
-use super::{Artifact, ArtifactFactory, ArtifactKind, Project};
+use std::sync::Arc;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {

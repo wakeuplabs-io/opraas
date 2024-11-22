@@ -29,9 +29,11 @@ impl TReleaseRunner for DockerArtifactRunner {
                 .arg("run")
                 .arg("--rm")
                 .args(env_args.concat())
+                .arg("-it")
                 .arg("-v")
                 .arg(format!("{}:{}", volume.display(), "/shared"))
                 .arg(release.uri()),
+            false,
         )?;
 
         Ok(())

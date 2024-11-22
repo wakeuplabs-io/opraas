@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::{
     config::CoreConfig,
     domain::{self, Deployment, Project, Release},
@@ -11,6 +10,7 @@ use crate::{
     },
 };
 use rand::Rng;
+use std::collections::HashMap;
 use tempfile::TempDir;
 
 pub struct StackContractsDeployerService {
@@ -90,7 +90,6 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // using contracts artifact, create a deployment
         self.release_runner.run(&contracts_release, volume, env)?;
-
 
         // check out zip exists and add it to deployment
         let artifact_path = volume_dir.path().join(OUT_ARTIFACTS);

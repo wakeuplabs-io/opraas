@@ -8,7 +8,7 @@ pub struct Project {
 }
 
 #[derive(Debug, Clone)]
-pub struct  Infra {
+pub struct Infra {
     pub root: PathBuf,
     pub aws: PathBuf,
     pub helm: PathBuf,
@@ -38,7 +38,12 @@ pub struct Src {
 }
 
 pub trait TProjectRepository {
-    fn write(&self, project: &Project, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn write(
+        &self,
+        project: &Project,
+        filepath: &PathBuf,
+        content: &str,
+    ) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, project: &Project) -> bool;
     fn has(&self, project: &Project, filepath: &PathBuf) -> bool;
 }
@@ -58,9 +63,18 @@ impl Project {
                     node: root.join("infra").join("docker").join("node.dockerfile"),
                     geth: root.join("infra").join("docker").join("geth.dockerfile"),
                     batcher: root.join("infra").join("docker").join("batcher.dockerfile"),
-                    proposer: root.join("infra").join("docker").join("proposer.dockerfile"),
-                    explorer: root.join("infra").join("docker").join("explorer.dockerfile"),
-                    contracts: root.join("infra").join("docker").join("contracts.dockerfile"),
+                    proposer: root
+                        .join("infra")
+                        .join("docker")
+                        .join("proposer.dockerfile"),
+                    explorer: root
+                        .join("infra")
+                        .join("docker")
+                        .join("explorer.dockerfile"),
+                    contracts: root
+                        .join("infra")
+                        .join("docker")
+                        .join("contracts.dockerfile"),
                 },
             },
             src: Src {
@@ -71,7 +85,7 @@ impl Project {
                 batcher: root.join("src").join("batcher"),
                 proposer: root.join("src").join("proposer"),
                 explorer: root.join("src").join("explorer"),
-            }
+            },
         }
     }
 }

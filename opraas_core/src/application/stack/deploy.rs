@@ -1,6 +1,8 @@
 use crate::{
     domain::{self, Deployment, Stack},
-    infra::{self, repositories::stack_infra::GitStackInfraRepository, stack_deployer::TerraformDeployer},
+    infra::{
+        self, repositories::stack_infra::GitStackInfraRepository, stack_deployer::TerraformDeployer,
+    },
 };
 
 pub struct StackInfraDeployerService {
@@ -9,10 +11,7 @@ pub struct StackInfraDeployerService {
 }
 
 pub trait TStackInfraDeployerService {
-    fn deploy(
-        &self,
-        stack: &Stack,
-    ) -> Result<Deployment, Box<dyn std::error::Error>>;
+    fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>>;
 }
 
 // implementations ===================================================
@@ -27,16 +26,13 @@ impl StackInfraDeployerService {
 }
 
 impl TStackInfraDeployerService for StackInfraDeployerService {
-    fn deploy(
-        &self,
-        stack: &Stack,
-    ) -> Result<Deployment, Box<dyn std::error::Error>> {
+    fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>> {
         if stack.deployment.is_none() {
             return Err("Stack does not contain deployment".into());
         }
 
         self.stack_infra_repository.pull(stack)?;
-        
+
         let deployment = self.stack_deployer.deploy(stack)?;
 
         Ok(deployment)

@@ -1,4 +1,7 @@
-use crate::{domain::{self, Release}, system};
+use crate::{
+    domain::{self, Release},
+    system,
+};
 use std::process::Command;
 
 pub struct DockerReleaseRepository;
@@ -15,7 +18,8 @@ impl DockerReleaseRepository {
             Command::new("docker")
                 .arg("images")
                 .arg("-q")
-                .arg(artifact.name())
+                .arg(artifact.name()),
+            false,
         )
         .unwrap()
         .is_empty()
@@ -24,7 +28,7 @@ impl DockerReleaseRepository {
 
 impl domain::TReleaseRepository for DockerReleaseRepository {
     fn pull(&self, release: &Release) -> Result<(), Box<dyn std::error::Error>> {
-        system::execute_command(Command::new("docker").arg("pull").arg(release.uri()))?;
+        system::execute_command(Command::new("docker").arg("pull").arg(release.uri()), false)?;
 
         Ok(())
     }
@@ -32,8 +36,8 @@ impl domain::TReleaseRepository for DockerReleaseRepository {
     fn create_for_artifact(
         &self,
         artifact: &domain::Artifact,
-        release_name: &str, 
-        registry_url: &str
+        release_name: &str,
+        registry_url: &str,
     ) -> Result<Release, Box<dyn std::error::Error>> {
         // check image exists locally
         if self.exists(&artifact) == false {
@@ -47,9 +51,10 @@ impl domain::TReleaseRepository for DockerReleaseRepository {
                 .arg("tag")
                 .arg(artifact.name())
                 .arg(release.uri()),
+            true,
         )?;
 
-        system::execute_command(Command::new("docker").arg("push").arg(release.uri()))?;
+        system::execute_command(Command::new("docker").arg("push").arg(release.uri()), false)?;
 
         Ok(release)
     }

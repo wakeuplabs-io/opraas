@@ -54,16 +54,12 @@ impl InitCommand {
             .iter()
             .map(|&ref artifact| {
                 let artifact = Arc::new(artifact.clone());
-                let spinner = style_spinner(
-                    m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Preparing {}", artifact).as_str(),
-                );
 
                 thread::spawn(move || {
                     match ArtifactInitializer::new().initialize(&artifact) {
-                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Ok(_) => println!("✅ {} done", &artifact),
                         Err(e) => {
-                            spinner.finish_with_message(format!("❌ Error setting up {:?}", artifact));
+                            println!("❌ Error setting up {:?}", artifact);
                             return Err(e.to_string());
                         }
                     }

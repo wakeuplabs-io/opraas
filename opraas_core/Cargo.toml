@@ -20,3 +20,5 @@ mockall = "0.13.0"
 tempfile = "3.14.0"
 rand = "0.8.5"
 serde_yaml = "0.9.34"
+regex = "1.11.1"
+

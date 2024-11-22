@@ -1,8 +1,12 @@
-use serde_yaml::{Value, to_writer};
-use std::fs::File;
+use serde_yaml::{to_writer, Value};
 use std::collections::HashMap;
+use std::fs::File;
 
-pub fn rewrite_yaml_to(from: &str, to: &str, updates: &HashMap<String, String>) -> Result<(), Box<dyn std::error::Error>> {
+pub fn rewrite_yaml_to(
+    from: &str,
+    to: &str,
+    updates: &HashMap<String, String>,
+) -> Result<(), Box<dyn std::error::Error>> {
     let file = File::open(from)?;
     let mut yaml: Value = serde_yaml::from_reader(file)?;
 
@@ -17,12 +21,16 @@ pub fn rewrite_yaml_to(from: &str, to: &str, updates: &HashMap<String, String>) 
             // If we're at the last part of the key, update the value
             if i == keys.len() - 1 {
                 if let Value::Mapping(map) = current {
-                    map.insert(Value::String(key_part.to_string()), Value::String(new_value.to_string()));
+                    map.insert(
+                        Value::String(key_part.to_string()),
+                        Value::String(new_value.to_string()),
+                    );
                 }
             } else {
                 // Otherwise, move deeper into the structure
                 if let Value::Mapping(map) = current {
-                    current = map.entry(Value::String(key_part.to_string()))
+                    current = map
+                        .entry(Value::String(key_part.to_string()))
                         .or_insert(Value::Mapping(serde_yaml::Mapping::new()));
                 }
             }

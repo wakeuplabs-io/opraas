@@ -1,7 +1,7 @@
 use crate::config::get_config_path;
 use crate::console::{print_info, print_success, print_warning, style_spinner};
-use indicatif::ProgressBar;
 use ::signal::{trap::Trap, Signal};
+use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
@@ -44,7 +44,8 @@ impl DevCommand {
 
         let fork_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
 
-        self.fork_node.start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
+        self.fork_node
+            .start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
 
         // update config to connect to fork
         let wallet_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
@@ -67,9 +68,13 @@ impl DevCommand {
 
         // Deploy contracts ===========================
 
-        let contracts_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Deploying contracts to local network...");
+        let contracts_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            "⏳ Deploying contracts to local network...",
+        );
 
-        let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
+        let contracts_release =
+            release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
@@ -84,7 +89,7 @@ impl DevCommand {
         stack_spinner.finish_with_message("✅ Stack ready");
 
         // inform results and wait for exit ===========================
-        
+
         print_success("🚀 All ready...");
         print_info("\t- L1 fork available at http://127.1.1:8545");
         print_info("\t- L2 rpc available at http://127.1.1:8545/rpc");

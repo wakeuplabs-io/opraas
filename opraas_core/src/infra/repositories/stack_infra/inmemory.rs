@@ -33,7 +33,6 @@ impl TStackInfraRepository for GitStackInfraRepository {
             )?;
         }
 
-
         Ok(())
     }
 }

@@ -1,12 +1,12 @@
-use std::path::PathBuf;
 use crate::infra::repositories::deployment::InMemoryDeploymentRepository;
+use std::path::PathBuf;
 
-use super::{Deployment, TDeploymentRepository, Project};
+use super::{Deployment, Project, TDeploymentRepository};
 
 pub struct Stack {
     pub helm: PathBuf,
     pub aws: PathBuf,
-    pub deployment: Option<Deployment>
+    pub deployment: Option<Deployment>,
 }
 
 pub trait TStackInfraRepository {
@@ -17,7 +17,11 @@ pub trait TStackInfraRepository {
 
 impl Stack {
     pub fn new(helm: PathBuf, aws: PathBuf, deployment: Option<Deployment>) -> Self {
-        Self { helm, aws, deployment }
+        Self {
+            helm,
+            aws,
+            deployment,
+        }
     }
 
     pub fn load(project: &Project, deployment_name: &str) -> Self {
@@ -27,8 +31,7 @@ impl Stack {
         Self {
             helm: project.infra.helm.clone(),
             aws: project.infra.aws.clone(),
-            deployment
+            deployment,
         }
     }
-    
 }

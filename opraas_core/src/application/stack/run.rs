@@ -18,10 +18,7 @@ pub trait TStackRunnerService {
 impl StackRunnerService {
     pub fn new(release_name: &str, namespace: &str) -> Self {
         Self {
-            stack_runner: Box::new(HelmStackRunner::new(
-                release_name,
-                namespace,
-            )),
+            stack_runner: Box::new(HelmStackRunner::new(release_name, namespace)),
             stack_infra_repository: Box::new(GitStackInfraRepository::new()),
         }
     }

@@ -2,9 +2,12 @@ mod commands;
 mod config;
 mod console;
 mod utils;
+
 use build::BuildTargets;
+use colored::Colorize;
 use deploy::DeployTarget;
 use init::InitTargets;
+use log::{Level, LevelFilter};
 use release::ReleaseTargets;
 pub use utils::*;
 
@@ -20,6 +23,10 @@ use semver::Version;
 struct Args {
     #[command(subcommand)]
     cmd: Commands,
+
+    /// Set the logging level (e.g., debug, info, warn, error)
+    #[arg(short, long, default_value = "debug")]
+    log_level: String,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -42,32 +49,55 @@ enum Commands {
     // Monitor { target: MonitorTarget },
 }
 
-
 #[tokio::main]
 async fn main() {
     dotenv().ok();
 
-    // enable logging
-    pretty_env_logger::init_custom_env("LOG_LEVEL");
+    // parse args
+    let args = Args::parse();
+
+    // setup logging
+    let log_level = args
+        .log_level
+        .parse::<LevelFilter>()
+        .unwrap_or(LevelFilter::Debug);
+    env_logger::Builder::from_default_env()
+        .filter_level(log::LevelFilter::Off) // Turn off all logs by default
+        .format(|f, record| {
+            use std::io::Write;
+            let target = record.target();
+            let level = match record.level() {
+                Level::Trace => "TRACE".red().to_string(),
+                Level::Debug => "DEBUG".blue().to_string(),
+                Level::Info => "INFO".green().to_string(),
+                Level::Warn => "WARN".yellow().to_string(),
+                Level::Error => "ERROR".red().to_string(),
+            };
+            writeln!(f, " {} {} > {}", level, target.bold(), record.args())
+        })
+        .filter_module("main", log_level)
+        .filter_module("opraas_core", log_level)
+        .init();
 
     // Check requirements
-    SystemRequirementsChecker::new().check(vec![Requirement {
-        program: "docker",
-        version_arg: "-v",
-        required_version: Version::parse("24.0.0").unwrap(),
-        required_comparator: Comparison::GreaterThanOrEqual,
-    }]).unwrap_or_else(|e| {
-        print_error(&format!("\n\nError: {}\n\n", e));
-        std::process::exit(1);
-    });
+    SystemRequirementsChecker::new()
+        .check(vec![Requirement {
+            program: "docker",
+            version_arg: "-v",
+            required_version: Version::parse("24.0.0").unwrap(),
+            required_comparator: Comparison::GreaterThanOrEqual,
+        }])
+        .unwrap_or_else(|e| {
+            print_error(&format!("\n\nError: {}\n\n", e));
+            std::process::exit(1);
+        });
 
     // run commands
-    let args = Args::parse();
-    if let Err(e) =  match args.cmd {
+    if let Err(e) = match args.cmd {
         Commands::New { name } => NewCommand::new().run(name),
         Commands::Init { target } => InitCommand::new(target).run(),
         Commands::Build { target } => BuildCommand::new(target).run(),
-        Commands::Release { target }  => ReleaseCommand::new(target).run(),
+        Commands::Release { target } => ReleaseCommand::new(target).run(),
         Commands::Dev {} => DevCommand::new().run(),
         Commands::Deploy { target, name } => DeployCommand::new().run(target, name),
         // Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
@@ -77,4 +107,3 @@ async fn main() {
         std::process::exit(1);
     }
 }
-

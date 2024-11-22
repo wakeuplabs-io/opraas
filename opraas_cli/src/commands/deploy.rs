@@ -12,7 +12,7 @@ use opraas_core::{
         StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
-    domain::{ArtifactKind, Project, ReleaseFactory, Stack}, infra,
+    domain::{ArtifactKind, Project, ReleaseFactory, Stack},
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -46,7 +46,7 @@ impl DeployCommand {
         // dev is reserved for local deployments
         if name == "dev" {
             return Err("Name cannot be 'dev'".into());
-        } 
+        }
 
         // TODO: check if it already exists. TODO: validate name
 
@@ -85,9 +85,11 @@ impl DeployCommand {
                 return Ok(());
             }
 
-            let infra_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
+            let infra_deployer_spinner =
+                style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
-            let deployment = StackInfraDeployerService::new(&project.root).deploy(&Stack::load(&project, &name))?;
+            let deployment = StackInfraDeployerService::new(&project.root)
+                .deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
 
@@ -100,6 +102,8 @@ impl DeployCommand {
                 print_info("Infra artifacts details");
                 print_info(&contents);
             }
+
+            print_info("\nFor https domain make sure to create an A record pointing to `elb_dnsname` as specified here: https://github.com/amcginlay/venafi-demos/tree/main/demos/01-eks-ingress-nginx-cert-manager#configure-route53");
         }
 
         Ok(())
