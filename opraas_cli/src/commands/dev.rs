@@ -87,10 +87,12 @@ impl DevCommand {
         // inform results and wait for exit ===========================
 
         print_success("🚀 All ready...");
-        print_info("\t- L1 fork available at http://127.1.1:8545");
-        print_info("\t- L2 rpc available at http://127.1.1:8545/rpc");
-        print_info("\t- Explorer available at http://127.1.1:8545/rpc");
-        print_info("Press Ctrl + C to exit...");
+        
+        print_info("L1 fork available at http://127.1.1:8545");
+        print_info("L2 rpc available at http://127.1.1:8545/rpc");
+        print_info("Explorer available at http://127.1.1:8545/rpc");
+
+        print_warning("Press Ctrl + C to exit...");
 
         let trap = Trap::trap(&[Signal::SIGINT]);
         for sig in trap {

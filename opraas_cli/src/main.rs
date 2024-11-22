@@ -25,7 +25,7 @@ struct Args {
     cmd: Commands,
 
     /// Set the logging level (e.g., debug, info, warn, error)
-    #[arg(short, long, default_value = "debug")]
+    #[arg(short, long, default_value = "off")]
     log_level: String,
 }
 
@@ -60,7 +60,8 @@ async fn main() {
     let log_level = args
         .log_level
         .parse::<LevelFilter>()
-        .unwrap_or(LevelFilter::Debug);
+        .unwrap_or(LevelFilter::Off);
+    
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Off) // Turn off all logs by default
         .format(|f, record| {
