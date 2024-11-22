@@ -74,4 +74,4 @@ CMD echo "Updating deploy config..." && \
       --l1-deployments ${OUT_ADDRESSES} \
       --outfile.l2 ${OUT_GENESIS} \
       --outfile.rollup ${OUT_ROLLUP_CONFIG} && \
-  zip -r /shared/out/artifacts.zip ${OUT_ADDRESSES} ${OUT_ALLOCS} ${OUT_GENESIS} ${OUT_ROLLUP_CONFIG} ${OUT_DEPLOY_CONFIG}
+  zip -j /shared/out/artifacts.zip ${OUT_ADDRESSES} ${OUT_ALLOCS} ${OUT_GENESIS} ${OUT_ROLLUP_CONFIG} ${OUT_DEPLOY_CONFIG}
