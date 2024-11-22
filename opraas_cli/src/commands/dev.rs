@@ -48,7 +48,8 @@ impl DevCommand {
 
         // update config to connect to fork
         let wallet_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
-        let wallet_private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+        let wallet_private_key =
+            "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
         config.accounts.admin_address = wallet_address.to_string();
         config.accounts.admin_private_key = wallet_private_key.to_string();
         config.accounts.batcher_address = wallet_address.to_string();

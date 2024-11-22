@@ -28,7 +28,16 @@ pub trait TReleaseRepository {
 
 impl Release {
     pub fn new(artifact_name: String, artifact_tag: String, registry_url: String) -> Self {
-        // TODO: validations
+        if artifact_name.is_empty() {
+            panic!("Artifact name can't be empty");
+        }
+        if artifact_tag.is_empty() {
+            panic!("Artifact tag can't be empty");
+        }
+        if registry_url.is_empty() {
+            panic!("Registry url can't be empty");
+        }
+
         Self {
             artifact_name,
             artifact_tag,
@@ -37,7 +46,16 @@ impl Release {
     }
 
     pub fn from_artifact(artifact: &Artifact, release_name: &str, registry_url: &str) -> Self {
-        // TODO: validations
+        if artifact.name().is_empty() {
+            panic!("Artifact name can't be empty");
+        }
+        if release_name.is_empty() {
+            panic!("Artifact tag can't be empty");
+        }
+        if registry_url.is_empty() {
+            panic!("Registry url can't be empty");
+        }
+
         Self {
             artifact_name: artifact.name().to_string(),
             artifact_tag: release_name.to_string(),

@@ -19,7 +19,7 @@ impl DockerReleaseRepository {
                 .arg("images")
                 .arg("-q")
                 .arg(artifact.name()),
-            false,
+            true,
         )
         .unwrap()
         .is_empty()

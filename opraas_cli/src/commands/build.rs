@@ -1,8 +1,8 @@
 use crate::{
     config::get_config_path,
-    console::{print_info, print_success, style_spinner},
+    console::{print_error, print_info, print_success},
 };
-use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use indicatif::{HumanDuration, MultiProgress};
 use opraas_core::{
     application::build::{ArtifactBuilderService, TArtifactBuilderService},
     config::CoreConfig,
@@ -54,17 +54,13 @@ impl BuildCommand {
             .iter()
             .map(|&ref artifact| {
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
-                let spinner = style_spinner(
-                    m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Building {}", artifact).as_str(),
-                );
+                print_info(&format!("⏳ Building {}", artifact));
 
                 thread::spawn(move || -> Result<(), String> {
                     match ArtifactBuilderService::new().build(&artifact) {
-                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Ok(_) => print_success(&format!("{} ready...", &artifact)),
                         Err(e) => {
-                            spinner
-                                .finish_with_message(format!("❌ Error setting up {:?}", artifact));
+                            print_error(&format!("❌ Error building {}", artifact));
                             return Err(e.to_string());
                         }
                     }

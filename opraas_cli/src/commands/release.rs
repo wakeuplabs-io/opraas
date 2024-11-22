@@ -1,10 +1,10 @@
 use crate::{
     config::get_config_path,
-    console::{print_info, print_success, print_warning, style_spinner, Dialoguer, TDialoguer},
+    console::{print_error, print_info, print_success, print_warning, Dialoguer, TDialoguer},
     git::TGit,
 };
 use clap::ValueEnum;
-use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use indicatif::{HumanDuration, MultiProgress};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
@@ -84,10 +84,7 @@ impl ReleaseCommand {
                 let registry_url = registry_url.clone();
                 let artifact = Arc::clone(artifact);
 
-                let spinner = style_spinner(
-                    m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Releasing {}", artifact).as_str(),
-                );
+                print_info(&format!("⏳ Releasing {}", artifact));
 
                 thread::spawn(move || -> Result<(), String> {
                     match ArtifactReleaserService::new().release(
@@ -95,10 +92,9 @@ impl ReleaseCommand {
                         &release_name,
                         &registry_url,
                     ) {
-                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Ok(_) => println!("{} done...", &artifact),
                         Err(e) => {
-                            spinner
-                                .finish_with_message(format!("❌ Error setting up {:?}", artifact));
+                            print_error(&format!("❌ Error releasing {}", artifact));
                             return Err(e.to_string());
                         }
                     }

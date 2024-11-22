@@ -61,7 +61,7 @@ async fn main() {
         .log_level
         .parse::<LevelFilter>()
         .unwrap_or(LevelFilter::Off);
-    
+
     env_logger::Builder::from_default_env()
         .filter_level(log::LevelFilter::Off) // Turn off all logs by default
         .format(|f, record| {

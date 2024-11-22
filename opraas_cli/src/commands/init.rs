@@ -59,7 +59,7 @@ impl InitCommand {
                     match ArtifactInitializer::new().initialize(&artifact) {
                         Ok(_) => println!("✅ {} done", &artifact),
                         Err(e) => {
-                            println!("❌ Error setting up {:?}", artifact);
+                            println!("❌ Error setting up {}", artifact);
                             return Err(e.to_string());
                         }
                     }
