@@ -42,8 +42,7 @@ impl InspectCommand {
             let deployment = self.contracts_deployer_service.find(&deployment_name)?;
 
             if let Some(deployment) = deployment {
-                info!("Inspecting contracts deployment: {}", deployment.name);
-                deployment.display_contracts_artifacts()?;
+                println!("{}", deployment.display_contracts_artifacts()?);
             } else {
                 return Err("Contracts deployment not found".into());
             }
@@ -53,8 +52,7 @@ impl InspectCommand {
             let deployment = self.infra_deployer_service.find(&deployment_name)?;
 
             if let Some(deployment) = deployment {
-                info!("Inspecting infra deployment: {}", deployment.name);
-                deployment.display_infra_artifacts()?;
+                println!("{}", deployment.display_infra_artifacts()?);
             } else {
                 return Err("Infra deployment not found".into());
             }

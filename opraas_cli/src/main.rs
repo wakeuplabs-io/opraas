@@ -33,24 +33,24 @@ struct Args {
 #[derive(Subcommand, Debug, Clone)]
 enum Commands {
     /// Create new project, template config file and folders
-    New { 
+    New {
         #[arg(long)]
-        name: String 
+        name: String,
     },
     /// Initialize a new project
-    Init { 
+    Init {
         #[arg(long)]
-        target: InitTargets 
+        target: InitTargets,
     },
     /// Compile sources and create docker images for it
-    Build { 
+    Build {
         #[arg(long)]
-        target: BuildTargets 
+        target: BuildTargets,
     },
     /// Tags and pushes already built docker images to the registry for usage in the deployment
-    Release { 
+    Release {
         #[arg(long)]
-        target: ReleaseTargets 
+        target: ReleaseTargets,
     },
     /// Spin up local dev environment
     Dev {},
