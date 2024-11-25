@@ -114,6 +114,49 @@ impl DeployCommand {
             } else {
                 return Err("Infra deployment not found".into());
             }
+
+            let contracts_deployer_spinner =
+                style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
+
+            let contracts_release =
+                release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
+            StackContractsDeployerService::new(&project).deploy(
+                &name,
+                &contracts_release,
+                &config,
+            )?;
+
+            contracts_deployer_spinner.finish_with_message("Contracts deployed...");
+        }
+
+        if matches!(target, DeployTarget::Infra | DeployTarget::All) {
+            if !self
+                .dialoguer
+                .confirm("Are you sure you want to deploy infra?")
+            {
+                print_warning("Skipping infra deployment...");
+                return Ok(());
+            }
+
+            let infra_deployer_spinner =
+                style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
+
+            let deployment = StackInfraDeployerService::new(&project.root)
+                .deploy(&Stack::load(&project, &name))?;
+
+            infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
+
+            // Print artifacts data if available. TODO: replace with inspect application
+            if let Some(deployment) = deployment.infra_artifacts {
+                let mut file = std::fs::File::open(deployment).unwrap();
+                let mut contents = String::new();
+                file.read_to_string(&mut contents).unwrap();
+
+                print_info("Infra artifacts details");
+                print_info(&contents);
+            }
+
+            print_info("\nFor https domain make sure to create an A record pointing to `elb_dnsname` as specified here: https://github.com/amcginlay/venafi-demos/tree/main/demos/01-eks-ingress-nginx-cert-manager#configure-route53");
         }
 
         Ok(())
