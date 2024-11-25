@@ -91,7 +91,7 @@ impl TStackRunner for HelmStackRunner {
                     "--version",
                     "v1.10.0",
                     "--set",
-                    "installCRDs=true"
+                    "installCRDs=true",
                 ]),
                 true,
             )?;

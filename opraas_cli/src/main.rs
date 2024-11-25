@@ -7,6 +7,7 @@ use build::BuildTargets;
 use colored::Colorize;
 use deploy::DeployTarget;
 use init::InitTargets;
+use inspect::InspectTarget;
 use log::{Level, LevelFilter};
 use release::ReleaseTargets;
 pub use utils::*;
@@ -42,9 +43,19 @@ enum Commands {
     /// Spin up local dev environment
     Dev {},
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
-    Deploy { name: String, target: DeployTarget },
-    // /// Get details about the current deployment. Target must be one of: contracts, infra
-    // Inspect { target: InspectTarget },
+    Deploy {
+        name: String,
+
+        #[arg(long)]
+        target: DeployTarget,
+    },
+    /// Get details about the current deployment. Target must be one of: contracts, infra
+    Inspect {
+        name: String,
+
+        #[arg(long, default_value = "all")]
+        target: InspectTarget,
+    },
     // /// Monitor your chain. Target must be one of: onchain, offchain
     // Monitor { target: MonitorTarget },
 }
@@ -100,7 +111,7 @@ async fn main() {
                 version_arg: "version",
                 required_version: Version::parse("3.0.0").unwrap(),
                 required_comparator: Comparison::GreaterThanOrEqual,
-            }
+            },
         ])
         .unwrap_or_else(|e| {
             print_error(&format!("\n\nError: {}\n\n", e));
@@ -115,7 +126,7 @@ async fn main() {
         Commands::Release { target } => ReleaseCommand::new(target).run(),
         Commands::Dev {} => DevCommand::new().run(),
         Commands::Deploy { target, name } => DeployCommand::new().run(target, name),
-        // Commands::Inspect { target } => InspectCommand::new(target).run(&config).await,
+        Commands::Inspect { target, name } => InspectCommand::new().run(target, name),
         // Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
     } {
         print_error(&format!("\n\nError: {}\n\n", e));

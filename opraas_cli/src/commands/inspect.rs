@@ -1,37 +1,65 @@
-use log::info;
-use async_trait::async_trait;
 use clap::ValueEnum;
-
-pub struct InspectCommand {
-     target: InspectTarget
-}
+use log::info;
+use opraas_core::application::{
+    stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
+    StackContractsDeployerService, TStackContractsDeployerService,
+};
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum InspectTarget {
     Contracts,
-    Infra
+    Infra,
+    All,
 }
+
+pub struct InspectCommand {
+    contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
+    infra_deployer_service: Box<dyn TStackInfraDeployerService>,
+}
+
+// implementations ===================================================
 
 impl InspectCommand {
-    pub fn new(target: InspectTarget) -> Self {
-        Self { target }
+    pub fn new() -> Self {
+        let cwd = std::env::current_dir().unwrap();
+        Self {
+            contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
+            infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
+        }
     }
-}
 
-#[async_trait]
-impl crate::Runnable for InspectCommand {
-    async fn run(&self, _cfg: &crate::config::Config) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(
+        &self,
+        target: InspectTarget,
+        deployment_name: String,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        info!(
+            "Inspecting deployment: {}, target: {:?}",
+            deployment_name, target
+        );
 
-        match self.target {
-            InspectTarget::Contracts => {
-                info!("Inspecting contracts");
-            },
-            InspectTarget::Infra => {
-                info!("Inspecting infra");
+        if matches!(target, InspectTarget::Contracts | InspectTarget::All) {
+            let deployment = self.contracts_deployer_service.find(&deployment_name)?;
+
+            if let Some(deployment) = deployment {
+                info!("Inspecting contracts deployment: {}", deployment.name);
+                deployment.display_contracts_artifacts()?;
+            } else {
+                return Err("Contracts deployment not found".into());
+            }
+        }
+
+        if matches!(target, InspectTarget::Infra | InspectTarget::All) {
+            let deployment = self.infra_deployer_service.find(&deployment_name)?;
+
+            if let Some(deployment) = deployment {
+                info!("Inspecting infra deployment: {}", deployment.name);
+                deployment.display_infra_artifacts()?;
+            } else {
+                return Err("Infra deployment not found".into());
             }
         }
 
         Ok(())
     }
 }
-

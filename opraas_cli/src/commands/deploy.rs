@@ -67,7 +67,7 @@ impl DeployCommand {
 
             let contracts_release =
                 release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
-            StackContractsDeployerService::new(&project).deploy(
+            StackContractsDeployerService::new(&project.root).deploy(
                 &name,
                 &contracts_release,
                 &config,
