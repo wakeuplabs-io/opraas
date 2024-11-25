@@ -1,6 +1,6 @@
-use assert_cmd::prelude::*; 
-use std::process::Command; 
-use predicates::prelude::*; 
+use assert_cmd::prelude::*;
+use predicates::prelude::*;
+use std::process::Command;
 
 const BIN: &str = env!("CARGO_PKG_NAME");
 
@@ -8,9 +8,9 @@ const BIN: &str = env!("CARGO_PKG_NAME");
 fn get_help() {
     let mut cmd = Command::cargo_bin(BIN).unwrap();
 
-    cmd.arg("--help"); 
+    cmd.arg("--help");
     cmd.assert()
-        .success() 
+        .success()
         .stdout(predicate::str::contains("Usage:"));
 }
 
@@ -18,8 +18,8 @@ fn get_help() {
 fn get_help_per_command() {
     let mut cmd = Command::cargo_bin(BIN).unwrap();
 
-    cmd.arg("new").arg("--help"); 
+    cmd.arg("new").arg("--help");
     cmd.assert()
-        .success() 
+        .success()
         .stdout(predicate::str::contains("Usage:"));
 }

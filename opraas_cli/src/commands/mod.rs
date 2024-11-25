@@ -1,11 +1,13 @@
-pub mod new;
+pub mod build;
+pub mod deploy;
 pub mod dev;
 pub mod init;
-pub mod build;
+pub mod new;
 pub mod release;
 
-pub use new::NewCommand;
-pub use init::InitCommand;
 pub use build::BuildCommand;
-pub use release::ReleaseCommand;
+pub use deploy::DeployCommand;
 pub use dev::DevCommand;
+pub use init::InitCommand;
+pub use new::NewCommand;
+pub use release::ReleaseCommand;

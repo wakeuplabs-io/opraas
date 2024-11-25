@@ -67,7 +67,7 @@ module "eks" {
       instance_types = ["t3.small"]
       min_size       = 1
       max_size       = 3
-      desired_size   = 1
+      desired_size   = 3
     }
   }
 }
@@ -106,6 +106,7 @@ resource "helm_release" "ingress_nginx" {
   repository = "https://kubernetes.github.io/ingress-nginx"
   chart      = "ingress-nginx"
   namespace  = "ingress-nginx"
+  timeout    = 600
 
   create_namespace = true
 }
@@ -116,6 +117,7 @@ resource "helm_release" "cert_manager" {
   chart      = "cert-manager"
   namespace  = "cert-manager"
   version    = "v1.10.0"
+  timeout    = 600
 
   create_namespace = true
 
@@ -129,11 +131,12 @@ resource "helm_release" "opraas" {
   name      = "opraas"
   chart     = "../helm"
   namespace = "opraas"
+  timeout    = 600
 
   create_namespace = true
 
   values = [
-    file("${path.module}/../helm/values.yaml")
+     file(var.values_file_path)
   ]
 
   depends_on = [

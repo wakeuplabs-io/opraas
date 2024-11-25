@@ -1,8 +1,8 @@
 pub mod artifact;
+pub mod contracts;
 pub mod project;
 pub mod stack;
-pub mod contracts;
 
 pub use artifact::*;
-pub use project::*;
 pub use contracts::*;
+pub use project::*;

@@ -1,12 +1,17 @@
-use crate::{config::CoreConfig, domain, infra};
+use crate::{
+    config::CoreConfig,
+    domain::{self, Project, Stack, TStackInfraRepository},
+    infra::{self, repositories::stack_infra::GitStackInfraRepository},
+};
 
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
-    version_control: Box<dyn infra::version_control::TVersionControl>
+    version_control: Box<dyn infra::version_control::TVersionControl>,
+    stack_infra_repository: Box<dyn TStackInfraRepository>,
 }
 
 pub trait TCreateProjectService {
-    fn create(&self, root: &std::path::PathBuf) -> Result<(), Box<dyn std::error::Error>>;
+    fn create(&self, root: &std::path::PathBuf) -> Result<Project, Box<dyn std::error::Error>>;
 }
 
 impl CreateProjectService {
@@ -14,35 +19,47 @@ impl CreateProjectService {
         Self {
             repository: Box::new(infra::repositories::project::InMemoryProjectRepository::new()),
             version_control: Box::new(infra::version_control::GitVersionControl::new()),
+            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
         }
     }
 }
 
 impl TCreateProjectService for CreateProjectService {
-    fn create(
-        &self,
-        root: &std::path::PathBuf,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn create(&self, root: &std::path::PathBuf) -> Result<Project, Box<dyn std::error::Error>> {
         if root.exists() {
             return Err("Directory already exists".into());
         }
 
-        self.repository.write(&root.join("README.md"), README)?;
-        self.repository.write(&root.join(".gitignore"), GITIGNORE)?;
-        self.repository.write(&root.join(".env"), ENV_FILE)?;
-        self.repository.write(&root.join(".env.sample"), ENV_FILE)?;
+        let project = Project::new_from_root(root.to_path_buf());
+
+        self.repository
+            .write(&project, &root.join("README.md"), README)?;
+        self.repository
+            .write(&project, &root.join(".gitignore"), GITIGNORE)?;
+        self.repository
+            .write(&project, &root.join(".env"), ENV_FILE)?;
+        self.repository
+            .write(&project, &root.join(".env.sample"), ENV_FILE)?;
         self.repository.write(
+            &project,
             &root.join("config.toml"),
             &toml::to_string(&CoreConfig::default()).unwrap(),
         )?;
+
+        // pull stack infra
+        self.stack_infra_repository.pull(&Stack::new(
+            project.infra.helm.clone(),
+            project.infra.aws.clone(),
+            None,
+        ))?;
 
         // initialize git and create first commit
         self.version_control.init(&root.to_str().unwrap())?;
         self.version_control.stage(&root.to_str().unwrap())?;
         self.version_control
-            .commit(&root.to_str().unwrap(), "Initial commit")?;
+            .commit(&root.to_str().unwrap(), "First commit")?;
 
-        Ok(())
+        Ok(project)
     }
 }
 
@@ -84,10 +101,10 @@ const GITIGNORE: &str = r#"
 
 const ENV_FILE: &str = r#"
 L1_RPC_URL="https://eth-mainnet.g.alchemy.com/v2/..."
-ADMIN_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-BATCHER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-PROPOSER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-SEQUENCER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-DEPLOYER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
-CHALLENGER_PRIVATE_KEY="5a814bcdce11f289bf252b2a29a85f06e5fe32d05621bcb459a94328859d0c1c"
+ADMIN_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+BATCHER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+PROPOSER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+SEQUENCER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+DEPLOYER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+CHALLENGER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 "#;

@@ -1,9 +1,9 @@
 pub mod accounts;
-pub mod network;
 pub mod artifacts;
 pub mod core;
+pub mod network;
 
 pub use accounts::AccountsConfig;
-pub use network::NetworkConfig;
 pub use artifacts::ArtifactsConfig;
 pub use core::CoreConfig;
+pub use network::NetworkConfig;

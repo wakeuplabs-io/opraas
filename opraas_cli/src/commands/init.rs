@@ -1,7 +1,7 @@
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success, style_spinner};
+use crate::console::{print_info, print_success};
 use clap::ValueEnum;
-use indicatif::{HumanDuration, MultiProgress, ProgressBar};
+use indicatif::{HumanDuration, MultiProgress};
 use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{artifact::Artifact, project::Project};
@@ -13,7 +13,6 @@ pub enum InitTargets {
     Batcher,
     Node,
     Contracts,
-    Explorer,
     Proposer,
     Geth,
     All,
@@ -36,7 +35,6 @@ impl InitCommand {
             InitTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
             InitTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
             InitTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
-            InitTargets::Explorer => vec![artifacts_factory.get(ArtifactKind::Explorer)],
             InitTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
             InitTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
@@ -56,16 +54,12 @@ impl InitCommand {
             .iter()
             .map(|&ref artifact| {
                 let artifact = Arc::new(artifact.clone());
-                let spinner = style_spinner(
-                    m.add(ProgressBar::new_spinner()),
-                    format!("⏳ Preparing {}", artifact).as_str(),
-                );
 
                 thread::spawn(move || {
                     match ArtifactInitializer::new().initialize(&artifact) {
-                        Ok(_) => spinner.finish_with_message("Waiting..."),
+                        Ok(_) => println!("✅ {} done", &artifact),
                         Err(e) => {
-                            spinner.finish_with_message(format!("❌ Error setting up {:?}", artifact));
+                            println!("❌ Error setting up {}", artifact);
                             return Err(e.to_string());
                         }
                     }

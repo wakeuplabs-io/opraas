@@ -4,34 +4,6 @@ use serde::{Deserialize, Serialize};
 pub struct NetworkConfig {
     #[serde(default = "defaults::l1_rpc_url", skip_serializing)]
     pub l1_rpc_url: String,
-    
-    // accounts
-    #[serde(default = "defaults::sequencer_address")]
-    pub p2p_sequencer_address: String,
-    #[serde(default = "defaults::batcher_address")]
-    pub batch_sender_address: String,
-    #[serde(default = "defaults::proposer_address")]
-    pub l2_output_oracle_proposer: String,
-    #[serde(default = "defaults::admin_address")]
-    pub l2_output_oracle_challenger: String,
-    #[serde(default = "defaults::admin_address")]
-    pub proxy_admin_owner: String,
-    #[serde(default = "defaults::admin_address")]
-    pub final_system_owner: String,
-    #[serde(default = "defaults::admin_address")]
-    pub base_fee_vault_recipient: String,
-    #[serde(default = "defaults::admin_address")]
-    pub l1_fee_vault_recipient: String,
-    #[serde(default = "defaults::admin_address")]
-    pub sequencer_fee_vault_recipient: String,
-    #[serde(default = "defaults::admin_address")]
-    pub governance_token_owner: String,
-    #[serde(default = "defaults::admin_address")]
-    pub superchain_config_guardian: String,
-    #[serde(default = "defaults::admin_address")]
-    pub clique_signer_address: String,
-
-    // rollop
     pub max_sequencer_drift: u32,
     pub sequencer_window_size: u32,
     pub channel_timeout: u32,
@@ -87,40 +59,12 @@ mod defaults {
     pub fn l1_rpc_url() -> String {
         env::var("L1_RPC_URL").expect("L1_RPC_URL must be set")
     }
-
-    pub fn admin_address() -> String {
-        env::var("ADMIN_ADDRESS").expect("ADMIN_ADDRESS must be set")
-    }
-
-    pub fn batcher_address() -> String {
-        env::var("BATCHER_ADDRESS").expect("BATCHER_ADDRESS must be set")
-    }
-
-    pub fn proposer_address() -> String {
-        env::var("PROPOSER_ADDRESS").expect("PROPOSER_ADDRESS must be set")
-    }
-
-    pub fn sequencer_address() -> String {
-        env::var("SEQUENCER_ADDRESS").expect("SEQUENCER_ADDRESS must be set")
-    }
 }
 
 impl NetworkConfig {
     pub fn null() -> Self {
         Self {
             l1_rpc_url: "http://127.0.0.1:8545".to_string(),
-            p2p_sequencer_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            batch_sender_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            l2_output_oracle_proposer: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            l2_output_oracle_challenger: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            proxy_admin_owner: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            final_system_owner: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            base_fee_vault_recipient: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            l1_fee_vault_recipient: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            sequencer_fee_vault_recipient: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            governance_token_owner: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            superchain_config_guardian: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
-            clique_signer_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
             l1_chain_id: 1,
             l2_chain_id: 101,
             max_sequencer_drift: 600,

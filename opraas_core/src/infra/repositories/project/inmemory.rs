@@ -1,4 +1,4 @@
-use crate::domain;
+use crate::domain::{self, Project};
 
 pub struct InMemoryProjectRepository;
 
@@ -9,18 +9,32 @@ impl InMemoryProjectRepository {
 }
 
 impl domain::project::TProjectRepository for InMemoryProjectRepository {
-    fn exists(&self, filepath: &std::path::PathBuf) -> bool {
-        filepath.exists()
+    fn exists(&self, project: &Project) -> bool {
+        project.root.exists()
     }
 
-    fn write(&self, filepath: &std::path::PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>> {
+    fn has(&self, project: &Project, filepath: &std::path::PathBuf) -> bool {
+        filepath.starts_with(&project.root) && filepath.exists()
+    }
+
+    fn write(
+        &self,
+        project: &Project,
+        filepath: &std::path::PathBuf,
+        content: &str,
+    ) -> Result<(), Box<dyn std::error::Error>> {
+        // ensure filepath is a subpath of the project root
+        if !filepath.starts_with(&project.root) {
+            return Err("File path is not a subpath of the project root".into());
+        }
+
+        // Creates all missing directories in the path
         if let Some(parent) = filepath.parent() {
-            std::fs::create_dir_all(parent)?;  // Creates all missing directories in the path
+            std::fs::create_dir_all(parent)?;
         }
 
         std::fs::write(filepath, content)?;
 
         Ok(())
     }
-    
 }

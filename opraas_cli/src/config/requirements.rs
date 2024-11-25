@@ -5,6 +5,7 @@ use regex::Regex;
 use semver::Version;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum Comparison {
     Equal,
     GreaterThanOrEqual,

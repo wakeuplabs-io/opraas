@@ -33,7 +33,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                     "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
-            },
+            }
             Artifact::Contracts(..) => {
                 git::download_release_asset(
                     OP_RUAAS_REPO,
@@ -41,15 +41,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                     "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
-            },
-            Artifact::Explorer(..) => {
-                git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
-                    artifact.dockerfile().as_path().to_str().unwrap(),
-                )?;
-            },
+            }
             Artifact::Proposer(..) => {
                 git::download_release_asset(
                     OP_RUAAS_REPO,
@@ -57,7 +49,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                     "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
-            },
+            }
             Artifact::Geth(..) => {
                 git::download_release_asset(
                     OP_RUAAS_REPO,
@@ -65,7 +57,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                     "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
-            },
+            }
             Artifact::Node(..) => {
                 git::download_release_asset(
                     OP_RUAAS_REPO,
@@ -80,6 +72,6 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
     }
 
     fn exists(&self, artifact: &Artifact) -> bool {
-        artifact.context().exists() 
+        artifact.context().exists()
     }
 }

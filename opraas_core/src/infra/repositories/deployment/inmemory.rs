@@ -1,25 +1,29 @@
+use crate::{
+    config::{AccountsConfig, NetworkConfig},
+    domain::{self, Deployment},
+    system,
+};
+use serde::{Deserialize, Serialize};
 use std::{
     fs::{File, OpenOptions},
     path::PathBuf,
-};
-
-use crate::{
-    config::{AccountsConfig, NetworkConfig},
-    domain::{self, Deployment, Release},
-    system,
 };
 
 pub struct InMemoryDeploymentRepository {
     root: PathBuf,
 }
 
-const NETWORK_FILENAME: &str = "network.json";
-const ACCOUNTS_FILENAME: &str = "accounts.json";
-const RELEASE_FILENAME: &str = "release.json";
-const ROLLUP_FILENAME: &str = "rollup.json";
-const GENESIS_FILENAME: &str = "genesis.json";
-const ADDRESSES_FILENAME: &str = "addresses.json";
-const ALLOCS_FILENAME: &str = "allocs.json";
+#[derive(Debug, Deserialize, Serialize)]
+struct ReleaseMetadata {
+    name: String,
+    registry_url: String,
+}
+
+const NETWORK_FILENAME: &str = "config/network.json";
+const ACCOUNTS_FILENAME: &str = "config/accounts.json";
+const RELEASE_FILENAME: &str = "config/release.json";
+const CONTRACTS_ARTIFACTS_FILENAME: &str = "artifacts/contracts_artifacts.zip";
+const INFRA_ARTIFACTS_FILENAME: &str = "artifacts/infra_artifacts.json";
 
 // implementations ====================================
 
@@ -84,9 +88,9 @@ impl InMemoryDeploymentRepository {
     fn load_releases_config(
         &self,
         depl_path: &PathBuf,
-    ) -> Result<Vec<Release>, Box<dyn std::error::Error>> {
+    ) -> Result<ReleaseMetadata, Box<dyn std::error::Error>> {
         let reader = File::open(depl_path.join(RELEASE_FILENAME))?;
-        let config: Vec<Release> = serde_json::from_reader(reader)?;
+        let config: ReleaseMetadata = serde_json::from_reader(reader)?;
 
         Ok(config)
     }
@@ -94,24 +98,24 @@ impl InMemoryDeploymentRepository {
     fn write_releases_config(
         &self,
         depl_path: &PathBuf,
-        releases: &Vec<Release>,
+        release_metadata: &ReleaseMetadata,
     ) -> Result<(), Box<dyn std::error::Error>> {
         let writer = OpenOptions::new()
             .write(true)
             .create(true)
             .open(depl_path.join(RELEASE_FILENAME))?;
-        serde_json::to_writer_pretty(writer, releases)?;
+        serde_json::to_writer_pretty(writer, release_metadata)?;
 
         Ok(())
     }
 
-    fn load_path(&self, path: &PathBuf) -> Result<PathBuf, Box<dyn std::error::Error>> {
+    fn load_path(&self, path: &PathBuf) -> Result<Option<PathBuf>, Box<dyn std::error::Error>> {
         let exists = std::fs::exists(&path)?;
         if !exists {
-            return Err("Path doesn't exist".into());
+            return Ok(None);
         }
 
-        Ok(path.to_path_buf())
+        Ok(Some(path.to_path_buf()))
     }
 
     fn write_path(&self, dest: &PathBuf, src: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
@@ -122,7 +126,7 @@ impl InMemoryDeploymentRepository {
 }
 
 impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository {
-    fn find(&self, name: String) -> Result<Option<domain::Deployment>, Box<dyn std::error::Error>> {
+    fn find(&self, name: &str) -> Result<Option<domain::Deployment>, Box<dyn std::error::Error>> {
         let depl_path = self.root.join(&name);
         let exists = std::fs::exists(&depl_path).unwrap_or(false);
         if !exists {
@@ -133,41 +137,46 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         let network_config = self.load_network_config(&depl_path)?;
         let releases = self.load_releases_config(&depl_path)?;
 
-        let addresses_config = self.load_path(&depl_path.join(ADDRESSES_FILENAME))?;
-        let rollup_config = self.load_path(&depl_path.join(ROLLUP_FILENAME))?;
-        let genesis_config = self.load_path(&depl_path.join(GENESIS_FILENAME))?;
-        let allocs_config: PathBuf = self.load_path(&depl_path.join(ALLOCS_FILENAME))?;
+        let infra_artifacts = self.load_path(&depl_path.join(INFRA_ARTIFACTS_FILENAME))?;
+        let contracts_artifacts = self.load_path(&depl_path.join(CONTRACTS_ARTIFACTS_FILENAME))?;
 
         Ok(Some(Deployment {
-            name,
-            accounts_config,
+            name: name.to_string(),
+            release_name: releases.name,
+            registry_url: releases.registry_url,
             network_config,
-            rollup_config,
-            genesis_config,
-            addresses_config,
-            allocs_config,
-            releases,
+            accounts_config,
+            infra_artifacts,
+            contracts_artifacts,
         }))
     }
 
     fn save(&self, deployment: &Deployment) -> Result<(), Box<dyn std::error::Error>> {
         let depl_path = self.root.join(&deployment.name);
         std::fs::create_dir_all(&depl_path)?;
+        std::fs::create_dir_all(&depl_path.join("artifacts"))?;
+        std::fs::create_dir_all(&depl_path.join("config"))?;
 
         self.write_network_config(&depl_path, &deployment.network_config)?;
         self.write_accounts_config(&depl_path, &deployment.accounts_config)?;
-        self.write_releases_config(&depl_path, &deployment.releases)?;
+        self.write_releases_config(
+            &depl_path,
+            &ReleaseMetadata {
+                name: deployment.release_name.clone(),
+                registry_url: deployment.registry_url.clone(),
+            },
+        )?;
 
-        self.write_path(
-            &depl_path.join(ADDRESSES_FILENAME),
-            &deployment.addresses_config,
-        )?;
-        self.write_path(&depl_path.join(ROLLUP_FILENAME), &deployment.rollup_config)?;
-        self.write_path(
-            &depl_path.join(GENESIS_FILENAME),
-            &deployment.genesis_config,
-        )?;
-        self.write_path(&depl_path.join(ALLOCS_FILENAME), &deployment.allocs_config)?;
+        if let Some(contracts_artifacts) = &deployment.contracts_artifacts {
+            self.write_path(
+                &depl_path.join(CONTRACTS_ARTIFACTS_FILENAME),
+                contracts_artifacts,
+            )?;
+        }
+
+        if let Some(infra_artifacts) = &deployment.infra_artifacts {
+            self.write_path(&depl_path.join(INFRA_ARTIFACTS_FILENAME), infra_artifacts)?;
+        }
 
         Ok(())
     }

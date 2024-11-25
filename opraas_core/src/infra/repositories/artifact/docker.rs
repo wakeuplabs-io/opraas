@@ -23,6 +23,7 @@ impl domain::TArtifactRepository for DockerArtifactRepository {
                 .arg(artifact.dockerfile())
                 .arg(".")
                 .current_dir(artifact.context()),
+            false,
         )?;
 
         Ok(())
@@ -34,6 +35,7 @@ impl domain::TArtifactRepository for DockerArtifactRepository {
                 .arg("images")
                 .arg("-q")
                 .arg(artifact.name()),
+            true,
         )
         .unwrap()
         .is_empty()

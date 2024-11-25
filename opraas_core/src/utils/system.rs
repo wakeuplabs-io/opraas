@@ -1,16 +1,30 @@
-use std::{fs, io, path::PathBuf, process::Command};
+use log::info;
+use std::{
+    fs,
+    io::{self},
+    path::PathBuf,
+    process::{Command, Stdio},
+};
 
+pub fn execute_command(command: &mut Command, silent: bool) -> Result<String, String> {
+    info!("Executing command: {:?}", command);
 
-pub fn execute_command(command: &mut Command) -> Result<String, String> {
-    let output = command.output().map_err(|e| format!("Failed to execute command: {}", e))?;
+    if !silent && log::log_enabled!(log::Level::Debug) {
+        command.stdout(Stdio::inherit());
+        command.stderr(Stdio::inherit());
+    }
 
-    if output.status.success() {
-        let result =   String::from_utf8_lossy(&output.stdout)
-            .to_string();
-        Ok(result)
+    let output = command
+        .output()
+        .map_err(|e| format!("Failed to execute command: {}", e))?;
+
+    let result = String::from_utf8_lossy(&output.stdout).to_string();
+    let status = output.status;
+
+    if status.success() {
+        return Ok(result);
     } else {
-        let error_message = String::from_utf8_lossy(&output.stderr);
-        Err(error_message.to_string())
+        return Err(format!("Command exited with non-zero status: {}", status));
     }
 }
 
@@ -22,7 +36,10 @@ pub fn copy_and_overwrite(src: &PathBuf, dest: &PathBuf) -> io::Result<()> {
     if src.is_file() {
         fs::copy(src, dest)?;
     } else {
-        return Err(io::Error::new(io::ErrorKind::InvalidInput, "Source is not a file."));
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Source is not a file.",
+        ));
     }
 
     Ok(())
