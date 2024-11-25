@@ -1790,6 +1790,7 @@ name = "opraas_core"
 version = "0.1.0"
 dependencies = [
  "async-trait",
+ "colored",
  "log",
  "mockall",
  "pretty_env_logger",

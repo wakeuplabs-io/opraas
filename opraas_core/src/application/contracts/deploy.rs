@@ -1,6 +1,6 @@
 use crate::{
     config::CoreConfig,
-    domain::{self, Deployment, Project, Release},
+    domain::{self, Deployment, Release},
     infra::{
         self,
         release_runner::DockerArtifactRunner,
@@ -26,6 +26,8 @@ pub trait TStackContractsDeployerService {
         contracts_release: &Release,
         config: &CoreConfig,
     ) -> Result<Deployment, Box<dyn std::error::Error>>;
+
+    fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>>;
 }
 
 const IN_NETWORK: &str = "in/deploy-config.json";
@@ -34,9 +36,9 @@ const OUT_ARTIFACTS: &str = "out/artifacts.zip";
 // implementations ===================================================
 
 impl StackContractsDeployerService {
-    pub fn new(project: &Project) -> Self {
+    pub fn new(root: &std::path::PathBuf) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(&project.root)),
+            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
             release_repository: Box::new(DockerReleaseRepository::new()),
             release_runner: Box::new(DockerArtifactRunner::new()),
         }
@@ -100,5 +102,9 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         self.deployment_repository.save(&deployment)?;
 
         Ok(deployment)
+    }
+
+    fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>> {
+        self.deployment_repository.find(name)
     }
 }

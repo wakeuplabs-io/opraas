@@ -70,7 +70,7 @@ impl DevCommand {
 
         let contracts_release =
             release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
-        let contracts_deployer = StackContractsDeployerService::new(&project);
+        let contracts_deployer = StackContractsDeployerService::new(&project.root);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
         // start stack ===========================

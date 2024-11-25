@@ -1,8 +1,7 @@
-use std::process::Command;
-
 use crate::system::{System, TSystem};
 use regex::Regex;
 use semver::Version;
+use std::process::Command;
 
 #[derive(Debug)]
 #[allow(dead_code)]

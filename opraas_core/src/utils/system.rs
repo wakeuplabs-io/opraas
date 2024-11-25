@@ -29,6 +29,10 @@ pub fn execute_command(command: &mut Command, silent: bool) -> Result<String, St
 }
 
 pub fn copy_and_overwrite(src: &PathBuf, dest: &PathBuf) -> io::Result<()> {
+    if src == dest {
+        return Ok(());
+    }
+
     if dest.exists() {
         fs::remove_file(dest)?;
     }

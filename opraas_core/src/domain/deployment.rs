@@ -1,5 +1,10 @@
 use crate::config::{AccountsConfig, NetworkConfig};
-use std::path::PathBuf;
+use colored::Colorize;
+use serde_json::Value;
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 #[derive(Debug, Clone)]
 pub struct Deployment {
@@ -176,5 +181,90 @@ impl Deployment {
         std::fs::write(path, json.as_bytes())?;
 
         Ok(())
+    }
+
+    pub fn display_contracts_artifacts(&self) -> Result<String, Box<dyn std::error::Error>> {
+        let mut output = String::new();
+
+        let temp_dir = tempfile::tempdir()?;
+        let temp_path = temp_dir.path();
+
+        let contracts_artifacts_zip = self
+            .contracts_artifacts
+            .as_ref()
+            .ok_or("Missing contracts artifacts")?;
+        let zip = File::open(contracts_artifacts_zip)?;
+        zip_extract::extract(zip, &temp_path, true).unwrap();
+
+        // display addresses.json
+        let addresses_path = temp_path.join("addresses.json");
+        let addresses_json: Value = serde_json::from_str(&fs::read_to_string(addresses_path)?)?;
+
+        if let Value::Object(map) = addresses_json {
+            output.push_str(&format!(
+                "{}",
+                "\n\nContracts deployment outputs:\n".bold().blue()
+            ));
+
+            for (key, value) in map {
+                output.push_str(&format!("- {}: {}", key, value));
+            }
+
+            output.push_str("\n");
+        } else {
+            return Err("Invalid JSON format".into());
+        }
+
+        // display deploy-config.json
+        let deploy_config_path = temp_path.join("deploy-config.json");
+        let deploy_config_json: Value =
+            serde_json::from_str(&fs::read_to_string(deploy_config_path)?)?;
+
+        if let Value::Object(map) = deploy_config_json {
+            output.push_str(&format!("{}", "\n\nDeploy config:\n".bold().blue()));
+
+            for (key, value) in map {
+                output.push_str(&format!("- {}: {}", key, value));
+            }
+
+            output.push_str("\n");
+        } else {
+            return Err("Invalid JSON format".into());
+        }
+
+        Ok(output)
+    }
+
+    pub fn display_infra_artifacts(&self) -> Result<String, Box<dyn std::error::Error>> {
+        let mut output = String::new();
+
+        let infra_artifacts_json = self
+            .infra_artifacts
+            .as_ref()
+            .ok_or("Missing infra artifacts")?;
+
+        let data = fs::read_to_string(infra_artifacts_json)?;
+        let json_data: Value = serde_json::from_str(&data)?;
+
+        if let Value::Object(map) = json_data {
+            output.push_str(&format!(
+                "{}",
+                "\n\nInfra deployment outputs:\n".bold().blue()
+            ));
+
+            for (key, value) in map {
+                if let Value::Object(inner_map) = value {
+                    if let Some(inner_value) = inner_map.get("value") {
+                        output.push_str(&format!("- {}: {}", key, inner_value));
+                    }
+                }
+            }
+
+            output.push_str("\n");
+        } else {
+            return Err("Invalid JSON format".into());
+        }
+
+        Ok(output)
     }
 }

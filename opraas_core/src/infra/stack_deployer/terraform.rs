@@ -3,7 +3,7 @@ use crate::{
     domain::{Deployment, Stack, TDeploymentRepository},
     system, yaml,
 };
-use std::{collections::HashMap, process::Command};
+use std::{collections::HashMap, fs, process::Command};
 
 pub struct TerraformDeployer {
     deployment_repository: Box<dyn TDeploymentRepository>,
@@ -115,15 +115,14 @@ impl TStackInfraDeployer for TerraformDeployer {
         )?;
 
         let infra_artifacts = tempfile::NamedTempFile::new()?;
-        system::execute_command(
+        let output = system::execute_command(
             Command::new("terraform")
                 .arg("output")
                 .arg("-json")
-                .arg(">")
-                .arg(infra_artifacts.path().to_str().unwrap())
                 .current_dir(stack.aws.to_str().unwrap()),
-            false,
+            true,
         )?;
+        fs::write(infra_artifacts.path(), output)?;
 
         // set terraform artifacts
         deployment.infra_artifacts = Some(infra_artifacts.path().to_path_buf());
