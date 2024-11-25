@@ -33,17 +33,30 @@ struct Args {
 #[derive(Subcommand, Debug, Clone)]
 enum Commands {
     /// Create new project, template config file and folders
-    New { name: String },
+    New { 
+        #[arg(long)]
+        name: String 
+    },
     /// Initialize a new project
-    Init { target: InitTargets },
+    Init { 
+        #[arg(long)]
+        target: InitTargets 
+    },
     /// Compile sources and create docker images for it
-    Build { target: BuildTargets },
+    Build { 
+        #[arg(long)]
+        target: BuildTargets 
+    },
     /// Tags and pushes already built docker images to the registry for usage in the deployment
-    Release { target: ReleaseTargets },
+    Release { 
+        #[arg(long)]
+        target: ReleaseTargets 
+    },
     /// Spin up local dev environment
     Dev {},
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
     Deploy {
+        #[arg(long)]
         name: String,
 
         #[arg(long)]
@@ -51,6 +64,7 @@ enum Commands {
     },
     /// Get details about the current deployment. Target must be one of: contracts, infra
     Inspect {
+        #[arg(long)]
         name: String,
 
         #[arg(long, default_value = "all")]

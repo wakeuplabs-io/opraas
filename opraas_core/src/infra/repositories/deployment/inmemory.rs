@@ -119,7 +119,9 @@ impl InMemoryDeploymentRepository {
     }
 
     fn write_path(&self, dest: &PathBuf, src: &PathBuf) -> Result<(), Box<dyn std::error::Error>> {
-        system::copy_and_overwrite(src, dest)?;
+        if dest != src {
+            system::copy_and_overwrite(src, dest)?;
+        }
 
         Ok(())
     }

@@ -1,11 +1,10 @@
-use std::io::Read;
-
 use crate::{
     config::get_config_path,
-    console::{print_info, print_warning, style_spinner},
+    console::{print_info, style_spinner},
 };
 use clap::ValueEnum;
 use indicatif::ProgressBar;
+use log::info;
 use opraas_core::{
     application::{
         stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
@@ -24,14 +23,19 @@ pub enum DeployTarget {
 
 pub struct DeployCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
+    contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
+    infra_deployer_service: Box<dyn TStackInfraDeployerService>,
 }
 
 // implementations ================================================
 
 impl DeployCommand {
     pub fn new() -> Self {
+        let cwd = std::env::current_dir().unwrap();
         Self {
             dialoguer: Box::new(crate::console::Dialoguer::new()),
+            contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
+            infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
         }
     }
 
@@ -46,9 +50,11 @@ impl DeployCommand {
         // dev is reserved for local deployments
         if name == "dev" {
             return Err("Name cannot be 'dev'".into());
+        } else if name.contains(" ") {
+            return Err("Name cannot contain spaces".into());
         }
 
-        // TODO: check if it already exists. TODO: validate name
+        // TODO: check if it already exists.
 
         let registry_url: String = self
             .dialoguer
@@ -56,54 +62,58 @@ impl DeployCommand {
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let release_factory = ReleaseFactory::new(&project, &config);
 
-        if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
-            if !self.dialoguer.confirm("Do you want to deploy contracts?") {
-                print_warning("Skipping contracts deployment...");
-                return Ok(());
-            }
+        // contracts deployment ===========================================================
 
+        if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
             let contracts_deployer_spinner =
                 style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
 
             let contracts_release =
                 release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
-            StackContractsDeployerService::new(&project.root).deploy(
-                &name,
-                &contracts_release,
-                &config,
-            )?;
+            self.contracts_deployer_service
+                .deploy(&name, &contracts_release, &config)?;
 
             contracts_deployer_spinner.finish_with_message("Contracts deployed...");
         }
 
-        if matches!(target, DeployTarget::Infra | DeployTarget::All) {
-            if !self
-                .dialoguer
-                .confirm("Are you sure you want to deploy infra?")
-            {
-                print_warning("Skipping infra deployment...");
-                return Ok(());
-            }
+        // infra deployment ===========================================================
 
+        if matches!(target, DeployTarget::Infra | DeployTarget::All) {
             let infra_deployer_spinner =
                 style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
-            let deployment = StackInfraDeployerService::new(&project.root)
+            self.infra_deployer_service
                 .deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
 
-            // Print artifacts data if available. TODO: replace with inspect application
-            if let Some(deployment) = deployment.infra_artifacts {
-                let mut file = std::fs::File::open(deployment).unwrap();
-                let mut contents = String::new();
-                file.read_to_string(&mut contents).unwrap();
-
-                print_info("Infra artifacts details");
-                print_info(&contents);
-            }
-
             print_info("\nFor https domain make sure to create an A record pointing to `elb_dnsname` as specified here: https://github.com/amcginlay/venafi-demos/tree/main/demos/01-eks-ingress-nginx-cert-manager#configure-route53");
+        }
+
+        // clear screen and display artifacts ===========================================================
+
+        print!("\x1B[2J\x1B[1;1H");
+
+        if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
+            let deployment = self.contracts_deployer_service.find(&name)?;
+
+            if let Some(deployment) = deployment {
+                info!("Inspecting contracts deployment: {}", deployment.name);
+                deployment.display_contracts_artifacts()?;
+            } else {
+                return Err("Contracts deployment not found".into());
+            }
+        }
+
+        if matches!(target, DeployTarget::Infra | DeployTarget::All) {
+            let deployment = self.infra_deployer_service.find(&name)?;
+
+            if let Some(deployment) = deployment {
+                info!("Inspecting infra deployment: {}", deployment.name);
+                deployment.display_infra_artifacts()?;
+            } else {
+                return Err("Infra deployment not found".into());
+            }
         }
 
         Ok(())
