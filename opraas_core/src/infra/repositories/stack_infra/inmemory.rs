@@ -18,7 +18,7 @@ impl TStackInfraRepository for GitStackInfraRepository {
         if !stack.helm.exists() {
             git::download_zipped_asset(
                 "wakeuplabs-io/op-ruaas",
-                "v0.0.2",
+                "v0.0.3",
                 "infra-helm",
                 stack.helm.to_str().unwrap(),
             )?;
@@ -27,7 +27,7 @@ impl TStackInfraRepository for GitStackInfraRepository {
         if !stack.aws.exists() {
             git::download_zipped_asset(
                 "wakeuplabs-io/op-ruaas",
-                "v0.0.2",
+                "v0.0.3",
                 "infra-aws",
                 stack.aws.to_str().unwrap(),
             )?;

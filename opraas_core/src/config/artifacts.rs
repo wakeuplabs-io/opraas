@@ -2,7 +2,6 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Deserialize, Serialize, Clone)]
 pub struct ArtifactsConfig {
-    pub infra: ArtifactConfig,
     pub node: ArtifactConfig,
     pub geth: ArtifactConfig,
     pub contracts: ArtifactConfig,
@@ -19,10 +18,6 @@ pub struct ArtifactConfig {
 impl ArtifactsConfig {
     pub fn null() -> Self {
         Self {
-            infra: ArtifactConfig {
-                source_repo: String::from("wakeuplabs-io/opraas"),
-                source_tag: String::from("v0.0.2"),
-            },
             node: ArtifactConfig {
                 source_repo: String::from("ethereum-optimism/optimism"),
                 source_tag: String::from("op-node/v1.9.4"),

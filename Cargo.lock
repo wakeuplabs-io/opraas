@@ -1760,7 +1760,7 @@ dependencies = [
 
 [[package]]
 name = "opraas_cli"
-version = "0.1.0"
+version = "0.0.3"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -1787,7 +1787,7 @@ dependencies = [
 
 [[package]]
 name = "opraas_core"
-version = "0.1.0"
+version = "0.0.3"
 dependencies = [
  "async-trait",
  "colored",

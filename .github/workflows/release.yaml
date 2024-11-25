@@ -24,7 +24,7 @@ jobs:
         - name: Create ZIP and TAR files
           shell: bash
           run: |
-            outdir="helm"
+            outdir="infra-helm"
             echo "DIRNAME=$outdir"
 
             zip -r "$outdir.zip" "infra/helm"
@@ -60,7 +60,7 @@ jobs:
         - name: Create ZIP and TAR files
           shell: bash
           run: |
-            outdir="aws"
+            outdir="infra-aws"
             echo "DIRNAME=$outdir"
 
             zip -r "$outdir.zip" "infra/aws"

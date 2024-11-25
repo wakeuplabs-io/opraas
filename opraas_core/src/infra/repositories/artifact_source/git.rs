@@ -6,7 +6,7 @@ use crate::{
 pub struct GitArtifactSourceRepository;
 
 const OP_RUAAS_REPO: &str = "wakeuplabs-io/op-ruaas";
-const OP_RUAAS_VERSION: &str = "v0.0.2";
+const OP_RUAAS_VERSION: &str = "v0.0.3";
 
 impl GitArtifactSourceRepository {
     pub fn new() -> Self {
@@ -30,7 +30,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                 git::download_release_asset(
                     OP_RUAAS_REPO,
                     OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
+                    "infra/docker/batcher.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
@@ -38,7 +38,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                 git::download_release_asset(
                     OP_RUAAS_REPO,
                     OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
+                    "infra/docker/contracts.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
@@ -46,7 +46,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                 git::download_release_asset(
                     OP_RUAAS_REPO,
                     OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
+                    "infra/docker/proposer.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
@@ -54,7 +54,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                 git::download_release_asset(
                     OP_RUAAS_REPO,
                     OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
+                    "infra/docker/geth.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
@@ -62,7 +62,7 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
                 git::download_release_asset(
                     OP_RUAAS_REPO,
                     OP_RUAAS_VERSION,
-                    "infra/docker/Node.dockerfile", // TODO: replace once proper images are available
+                    "infra/docker/node.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
