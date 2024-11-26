@@ -27,10 +27,10 @@ jobs:
             outdir="infra-helm"
             echo "DIRNAME=$outdir"
 
-            zip -r "$outdir.zip" "infra/helm"
+            (cd infra/helm && zip -r "../../$outdir.zip" .)
             echo "ZIP=$outdir.zip" >> $GITHUB_ENV
                 
-            tar -czf "$outdir.tar.gz" "infra/helm"
+            (cd infra/helm && tar -czf "../../$outdir.tar.gz" .)
             echo "TAR=$outdir.tar.gz" >> $GITHUB_ENV
 
         - name: Release
@@ -63,10 +63,10 @@ jobs:
             outdir="infra-aws"
             echo "DIRNAME=$outdir"
 
-            zip -r "$outdir.zip" "infra/aws"
+            (cd infra/aws && tar -czf "../../$outdir.tar.gz" .)
             echo "ZIP=$outdir.zip" >> $GITHUB_ENV
                 
-            tar -czf "$outdir.tar.gz" "infra/aws"
+            tar -czf "$outdir.tar.gz" -C infra/aws .
             echo "TAR=$outdir.tar.gz" >> $GITHUB_ENV
 
         - name: Release

@@ -1,6 +1,10 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
+
 use crate::config::get_config_path;
 use crate::console::{print_info, print_success, print_warning};
-use ::signal::{trap::Trap, Signal};
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
@@ -91,15 +95,16 @@ impl DevCommand {
 
         print_warning("Press Ctrl + C to exit...");
 
-        let trap = Trap::trap(&[Signal::SIGINT]);
-        for sig in trap {
-            match sig {
-                Signal::SIGINT => {
-                    print_warning("Ctrl + C received, exiting...");
-                    return Ok(());
-                }
-                _ => {}
-            }
+        let running = Arc::new(AtomicBool::new(true));
+        let running_clone = Arc::clone(&running);
+
+        ctrlc::set_handler(move || {
+            running_clone.store(false, Ordering::SeqCst); // Set the flag to false
+            print_warning("Ctrl + C received, exiting...");
+        })?;
+
+        while running.load(Ordering::SeqCst) {
+            thread::sleep(Duration::from_secs(1));
         }
 
         Ok(())
