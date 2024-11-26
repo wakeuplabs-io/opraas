@@ -28,6 +28,7 @@ spec:
             - "--verifier.l1-confs=0"
             - "--rollup.config=/app/data/configurations/rollup-config.json"
             - "--l1.rpckind=basic"
+            - "--l1.trustrpc"
             # RPC Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/rpc/cli.go
             - "--rpc.addr=0.0.0.0"
@@ -55,10 +56,10 @@ spec:
             - containerPort: {{ .Values.node.ports.metrics }}
           resources:
             requests:
-              memory: "2Gi" # 4Gi
+              memory: "0.5Gi" # 4Gi
               cpu: "1" # 2 
             limits:
-              memory: "4Gi" # 8Gi
+              memory: "1Gi" # 8Gi
               cpu: "2" # 4
           volumeMounts:
             - name: configurations

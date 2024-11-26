@@ -65,6 +65,10 @@ install-helm:
 	@echo installing helm chart
 	helm install opstack infra/helm
 
+upgrade-helm:
+	@echo installing helm chart
+	helm upgrade opstack infra/helm
+
 uninstall-helm:
 	@echo uninstalling helm chart
 	helm uninstall opstack

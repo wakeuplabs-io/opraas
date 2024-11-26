@@ -18,7 +18,7 @@ geth:
     repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth
     tag: v1.101315.3
   deployment:
-    replicaCount: 2
+    replicaCount: 1
   ports:
     rpc: 8545 # != optimism docs: 9545 
     ws: 8546 # != optimisms docs: 9546
@@ -28,10 +28,9 @@ geth:
 node:
   name: op-node
   image:
-    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-node
-    tag: v1.9.4
+    repository: matzapata/op-node
+    tag: latest
   config:
-    privateKey: ""
     p2pEnabled: false
   ports:
     rpc: 7545 # != optimism docs: 8547

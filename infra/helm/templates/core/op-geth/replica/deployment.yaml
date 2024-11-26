@@ -26,10 +26,10 @@ spec:
             - containerPort: {{ .Values.geth.ports.metrics }}
           resources:
             requests:
-              memory: "4Gi" # 16Gi
+              memory: "0.5Gi" # 16Gi
               cpu: "2" # 4
             limits:
-              memory: "8Gi" # 32Gi optimal
+              memory: "1Gi" # 32Gi optimal
               cpu: "4" # 8 optimal
           volumeMounts:
             - name: datadir

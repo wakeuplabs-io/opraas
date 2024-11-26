@@ -18,6 +18,6 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: {{ .Values.node.name }}-service
+                name: {{ .Values.proxyd.name }}-service
                 port:
-                  number: {{ .Values.node.ports.rpc }}
+                  number: {{ .Values.proxyd.service.port }}

@@ -10,7 +10,8 @@ data:
     ws_method_whitelist = [
       "eth_subscribe",
       "eth_call",
-      "eth_chainId"
+      "eth_chainId",
+      "eth_blocknumber"
     ]
     ws_backend_group = "main"
 
@@ -59,8 +60,8 @@ data:
     [backend_groups.main]
     backends = ["replicas"]
 
-    [authentication]
-    secret = "test"
+    # [authentication]
+    # secret = "test" 
 
     [rpc_method_mappings]
     eth_sendTransaction = "sequencer"         # Send directly to sequencer
@@ -72,3 +73,4 @@ data:
     eth_getBalance = "main"                   # Balance queries across all
     eth_getTransactionByHash = "main"         # Transaction retrieval
     eth_getBlockByNumber = "main"             # Block retrieval
+    eth_blockNumber = "main"                  # Block number
