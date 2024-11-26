@@ -44,7 +44,7 @@ spec:
             claimName: {{ .Values.geth.name }}-replica-pvc-datadir
         - name: configurations
           persistentVolumeClaim:
-            claimName: configurations-pvc
+            claimName: {{ .Values.geth.name }}-replica-pvc-configurations
         - name: configuration-scripts
           configMap:
             name: geth-replica-scripts

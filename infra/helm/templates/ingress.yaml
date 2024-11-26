@@ -14,4 +14,10 @@ spec:
     - host: {{ .Values.domain.host }}
       http:
         paths:
-        
+          - path: {{ .Values.proxyd.ingress.nodePath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.node.name }}-service
+                port:
+                  number: {{ .Values.node.ports.rpc }}

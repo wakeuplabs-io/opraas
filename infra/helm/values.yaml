@@ -69,7 +69,7 @@ proxyd:
     port: 8080
     targetPort: 8080
   ingress:
-    path: /proxyd
+    nodePath: /rpc
   config:
     rpc_url_alchemy: "https://opt-sepolia.g.alchemy.com/v2/..."
     ws_url_alchemy: "wss://opt-sepolia.g.alchemy.com/v2/..."

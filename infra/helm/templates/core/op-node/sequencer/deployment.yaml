@@ -70,8 +70,7 @@ spec:
           volumeMounts:
             - name: configurations
               mountPath: /app/data/configurations
-              readOnly: true
       volumes:
         - name: configurations
           persistentVolumeClaim:
-            claimName: configurations-pvc
+            claimName: {{ .Values.node.name }}-sequencer-pvc-configurations

@@ -1,13 +1,13 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: configurations-pvc
+  name: {{ .Values.node.name }}-replica-pvc-configurations
   labels:
-    app: configurations
+    app: {{ .Values.node.name }}-replica
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 50Mi
-  storageClassName: gp2 # efs-sc
+  storageClassName: gp2

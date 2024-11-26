@@ -11,3 +11,17 @@ spec:
     requests:
       storage: 50Gi # 3Ti optimal
   storageClassName: gp2
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.geth.name }}-replica-pvc-configurations
+  labels:
+    app: {{ .Values.geth.name }}-replica
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+  storageClassName: gp2

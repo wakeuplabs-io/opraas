@@ -53,20 +53,11 @@ data:
     max_rps = 10
     max_ws_conns = 5
 
-    [backends.alchemy]
-    rpc_url = "{{ .Values.proxyd.config.rpc_url_alchemy }}"
-    ws_url = "{{ .Values.proxyd.config.ws_url_alchemy }}"
-    max_rps = 3
-    max_ws_conns = 1
-    consensus_receipts_target = "alchemy_getTransactionReceipts"
-
     [backend_groups]
     [backend_groups.sequencer]
     backends = ["sequencer"]
     [backend_groups.main]
-    backends = ["replicas", "alchemy"]
-    [backend_groups.alchemy]
-    backends = ["alchemy"]
+    backends = ["replicas"]
 
     [authentication]
     secret = "test"
@@ -76,8 +67,6 @@ data:
     eth_sendRawTransaction = "sequencer"      # Transaction submission
     eth_syncing = "sequencer"                 # Sync status
     net_peerCount = "sequencer"               # Node status info
-    eth_blockNumber = "alchemy"               # Use Alchemy for fallback
-    eth_getLogs = "alchemy"                   # Offload log requests to Alchemy
     eth_call = "main"                         # Route to main group
     eth_chainId = "main"                      # Route to main group
     eth_getBalance = "main"                   # Balance queries across all

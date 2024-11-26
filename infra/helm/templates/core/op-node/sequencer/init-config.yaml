@@ -1,14 +1,14 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: configuration-job
+  name: {{ .Values.node.name }}-sequencer-configuration-job
   labels:
-    app: configurations
+    app: {{ .Values.node.name }}-sequencer
 spec:
   template:
     metadata:
       labels:
-        app: configurations
+        app: {{ .Values.node.name }}-sequencer
     spec:
       restartPolicy: OnFailure
       containers:
@@ -34,4 +34,4 @@ spec:
             name: core-config-files
         - name: write-config-volume
           persistentVolumeClaim:
-            claimName: configurations-pvc
+            claimName: {{ .Values.node.name }}-sequencer-pvc-configurations
