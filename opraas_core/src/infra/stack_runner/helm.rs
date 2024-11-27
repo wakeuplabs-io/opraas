@@ -56,7 +56,11 @@ impl TStackRunner for HelmStackRunner {
 
         let pre_requisites = [
             ("ingress-nginx", "ingress-nginx/ingress-nginx", vec![]),
-            ("prometheus", "prometheus-community/kube-prometheus-stack", vec![]),
+            (
+                "prometheus",
+                "prometheus-community/kube-prometheus-stack",
+                vec![],
+            ),
             (
                 "cert-manager",
                 "jetstack/cert-manager",
@@ -66,16 +70,17 @@ impl TStackRunner for HelmStackRunner {
 
         for (name, repo, args) in pre_requisites {
             // Check already installed
-            if system::execute_command(
-                Command::new("helm").args(["list", "-n", name]),
-                true,
-            )?.contains(name) {
+            if system::execute_command(Command::new("helm").args(["list", "-n", name]), true)?
+                .contains(name)
+            {
                 continue;
             }
- 
+
             info!("Installing {} from {}", name, repo);
             system::execute_command(
-                Command::new("helm").args(["install", name, repo]).args(args),
+                Command::new("helm")
+                    .args(["install", name, repo])
+                    .args(args),
                 false,
             )?;
         }
