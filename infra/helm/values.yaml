@@ -20,7 +20,7 @@ geth:
   deployment:
     replicaCount: 1
   ports:
-    rpc: 8545 # != optimism docs: 9545 
+    rpc: 8545 # != optimism docs: 9545
     ws: 8546 # != optimisms docs: 9546
     rpcAuth: 9551
     metrics: 7300
@@ -79,7 +79,7 @@ proxyd:
       tag: latest
 
 explorer:
-  enabled: false
+  enabled: true
 
 monitoring:
   enabled: false
@@ -89,7 +89,7 @@ kube-prometheus-stack:
     ingress:
       enabled: true
       ingressClassName: nginx
-      paths: 
+      paths:
         - /grafana
       hosts:
         - "localhost"
@@ -102,37 +102,34 @@ kube-prometheus-stack:
       mountPropagation: HostToContainer
 
 blockscoutStack:
+  postgres:
+    dbName: bs
+    user: bs-db-user
+    password: bs-db-password
+    image:
+      repository: postgres
+      tag: latest
+
+blockscout-stack:
   blockscout:
-    extraEnv:
-      - name: ECTO_USE_SSL
-        value: "false"
-      - name: DATABASE_URL
-        valueFrom:
-          secretKeyRef:
-            name: blockscout-secret
-            key: DATABASE_URL
-      - name: RPC_ADDR
-        value: "http://op-node-replica-service"
-      - name: RPC_PORT
-        value: 7545
-    
+    ingress:
+      enabled: true
+      className: nginx
+      hostname: localhost
+    env:
+      ECTO_USE_SSL: "false"
+      ETHEREUM_JSONRPC_VARIANT: "geth"
+      ETHEREUM_JSONRPC_HTTP_URL: "http://op-geth-replica-service:8545"
+      ETHEREUM_JSONRPC_WS_URL: "ws://op-geth-replica-service:8546"
+      NETWORK: "Optimism"
+      CHAIN_ID: "10"
+      DATABASE_URL: "ecto://bs-db-user:bs-db-password@blockscout-postgres-service:5432/bs" # secret would be nicer
   frontend:
     ingress:
       enabled: true
       className: nginx
-      paths: 
-        - path: /explorer
       hostname: localhost
-    extraEnv:
-      - name: NEXT_PUBLIC_APP_HOST
-        value: localhost
-      - name: NEXT_PUBLIC_API_HOST
-        value: localhost
-
-  postgres:
-    dbName: blockscout
-    user: blockscout-db-user
-    password: blockscout-db-password
-    image:
-      repository: postgres
-      tag: latest
+      paths:
+        # - path: /explorer # fails because it doesn't change web app base url, couldn't fix yet
+        - path: /
+          pathType: Prefix
