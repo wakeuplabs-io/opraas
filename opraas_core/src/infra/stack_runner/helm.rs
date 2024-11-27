@@ -25,13 +25,19 @@ impl TStackRunner for HelmStackRunner {
         let deployment = stack.deployment.as_ref().unwrap();
         let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
 
-        // install repo dependencies
-        
+        // Update repo dependencies
+
         let repo_dependencies = [
-            ("ingress-nginx", "https://kubernetes.github.io/ingress-nginx"),
+            (
+                "ingress-nginx",
+                "https://kubernetes.github.io/ingress-nginx",
+            ),
             ("cert-manager", "https://charts.jetstack.io/"),
             ("blockscout", "https://blockscout.github.io/helm-charts"),
-            ("prometheus-community", "https://prometheus-community.github.io/helm-charts")
+            (
+                "prometheus-community",
+                "https://prometheus-community.github.io/helm-charts",
+            ),
         ];
 
         for (repo, url) in repo_dependencies {
@@ -46,61 +52,38 @@ impl TStackRunner for HelmStackRunner {
         }
         system::execute_command(Command::new("helm").arg("repo").arg("update"), false)?;
 
-        // install ingress nginx if not available
-        let ingress_nginx_installed = system::execute_command(
-            Command::new("helm").args(["list", "-n", "ingress-nginx"]),
-            true,
-        )?.contains("ingress-nginx");
-        if !ingress_nginx_installed {
-            info!("Installing ingress-nginx...");
+        // Install pre-requisites, without these helm won't be capable of understanding out chart
 
-            system::execute_command(
-                Command::new("helm").args([
-                    "install",
-                    "ingress-nginx",
-                    "ingress-nginx/ingress-nginx",
-                    "--namespace",
-                    "ingress-nginx",
-                    "--create-namespace",
-                ]),
+        let pre_requisites = [
+            ("ingress-nginx", "ingress-nginx/ingress-nginx", vec![]),
+            ("prometheus", "prometheus-community/kube-prometheus-stack", vec![]),
+            (
+                "cert-manager",
+                "jetstack/cert-manager",
+                vec!["--version", "v1.10.0", "--set", "installCRDs=true"],
+            ),
+        ];
+
+        for (name, repo, args) in pre_requisites {
+            // Check already installed
+            if system::execute_command(
+                Command::new("helm").args(["list", "-n", name]),
                 true,
-            )?;
-        }
-
-        // install cert-manager if not available
-        let cert_manager_installed = system::execute_command(
-            Command::new("helm").args(["list", "-n", "cert-manager"]),
-            true,
-        )?.contains("cert-manager");
-        if !cert_manager_installed {
-            info!("Installing cert-manager...");
-
+            )?.contains(name) {
+                continue;
+            }
+ 
+            info!("Installing {} from {}", name, repo);
             system::execute_command(
-                Command::new("helm").args([
-                    "install",
-                    "cert-manager",
-                    "jetstack/cert-manager",
-                    "--namespace",
-                    "cert-manager",
-                    "--create-namespace",
-                    "--version",
-                    "v1.10.0",
-                    "--set",
-                    "installCRDs=true",
-                ]),
-                true,
+                Command::new("helm").args(["install", name, repo]).args(args),
+                false,
             )?;
         }
 
         // build dependencies
-        system::execute_command(
-            Command::new("helm")
-                .arg("dependency")
-                .arg("build"),
-            false,
-        )?;
+        system::execute_command(Command::new("helm").arg("dependency").arg("build"), false)?;
 
-        // create values file
+        // create values file overwriting with deployment particular values
         let mut updates: HashMap<String, String> = HashMap::new();
         updates.insert(
             "node.config.privateKey".to_string(),
