@@ -70,9 +70,7 @@ impl TStackRunner for HelmStackRunner {
 
         for (name, repo, args) in pre_requisites {
             // Check already installed
-            if system::execute_command(Command::new("helm").args(["list", "-n", name]), true)?
-                .contains(name)
-            {
+            if system::execute_command(Command::new("helm").args(["list", "-n", name]), true)?.contains(name) {
                 continue;
             }
 
