@@ -1,6 +1,6 @@
 {
     "name": "opraas",
-    "version": "0.0.1",
+    "version": "0.0.3",
     "description": "Spin up Optimsim rollups with ease",
     "bin": {
         "opraas": "./lib/run.js"

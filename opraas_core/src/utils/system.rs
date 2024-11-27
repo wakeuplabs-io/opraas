@@ -1,32 +1,50 @@
-use std::process::Command;
-use mockall::automock;
+use log::info;
+use std::{
+    fs,
+    io::{self},
+    path::PathBuf,
+    process::{Command, Stdio},
+};
 
-pub struct System;
+pub fn execute_command(command: &mut Command, silent: bool) -> Result<String, String> {
+    info!("Executing command: {:?}", command);
 
-impl System {
-    pub fn new() -> Self {
-        Self
-    }   
-}
-
-#[automock]
-pub trait TSystem: Send + Sync {
-    fn execute_command(&self, command: &mut Command) -> Result<String, String>;
-}
-
-
-impl TSystem for System {
-    fn execute_command(&self, command: &mut Command) -> Result<String, String> {
-        let output = command.output().map_err(|e| format!("Failed to execute command: {}", e))?;
-    
-        if output.status.success() {
-            // Convert the output to a String
-            let result =   String::from_utf8_lossy(&output.stdout)
-                .to_string();
-            Ok(result)
-        } else {
-            let error_message = String::from_utf8_lossy(&output.stderr);
-            Err(error_message.to_string())
-        }
+    if !silent && log::log_enabled!(log::Level::Debug) {
+        command.stdout(Stdio::inherit());
+        command.stderr(Stdio::inherit());
     }
+
+    let output = command
+        .output()
+        .map_err(|e| format!("Failed to execute command: {}", e))?;
+
+    let result = String::from_utf8_lossy(&output.stdout).to_string();
+    let status = output.status;
+
+    if status.success() {
+        return Ok(result);
+    } else {
+        return Err(format!("Command exited with non-zero status: {}", status));
+    }
+}
+
+pub fn copy_and_overwrite(src: &PathBuf, dest: &PathBuf) -> io::Result<()> {
+    if src == dest {
+        return Ok(());
+    }
+
+    if dest.exists() {
+        fs::remove_file(dest)?;
+    }
+
+    if src.is_file() {
+        fs::copy(src, dest)?;
+    } else {
+        return Err(io::Error::new(
+            io::ErrorKind::InvalidInput,
+            "Source is not a file.",
+        ));
+    }
+
+    Ok(())
 }

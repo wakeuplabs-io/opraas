@@ -22,6 +22,10 @@ pub struct AccountsConfig {
     pub deployer_address: String,
     #[serde(default = "defaults::deployer_private_key", skip_serializing)]
     pub deployer_private_key: String,
+    #[serde(default = "defaults::challenger_address")]
+    pub challenger_address: String,
+    #[serde(default = "defaults::challenger_private_key", skip_serializing)]
+    pub challenger_private_key: String,
 }
 
 mod defaults {
@@ -58,21 +62,36 @@ mod defaults {
     pub fn deployer_private_key() -> String {
         env::var("DEPLOYER_PRIVATE_KEY").expect("DEPLOYER_PRIVATE_KEY must be set")
     }
+
+    pub fn challenger_address() -> String {
+        env::var("CHALLENGER_ADDRESS").expect("CHALLENGER_ADDRESS must be set")
+    }
+    pub fn challenger_private_key() -> String {
+        env::var("CHALLENGER_PRIVATE_KEY").expect("CHALLENGER_PRIVATE_KEY must be set")
+    }
 }
 
 impl AccountsConfig {
-   pub fn null() -> Self {
+    pub fn null() -> Self {
         Self {
-            admin_address: "0x0".to_string(),
-            admin_private_key: "0x0".to_string(),
-            batcher_address: "0x0".to_string(),
-            batcher_private_key: "0x0".to_string(),
-            proposer_address: "0x0".to_string(),
-            proposer_private_key: "0x0".to_string(),
-            sequencer_address: "0x0".to_string(),
-            sequencer_private_key: "0x0".to_string(),
-            deployer_address: "0x0".to_string(),
-            deployer_private_key: "0x0".to_string(),
+            admin_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
+            admin_private_key: "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
+                .to_string(),
+            batcher_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
+            batcher_private_key:
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
+            proposer_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
+            proposer_private_key:
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
+            sequencer_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
+            sequencer_private_key:
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
+            deployer_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
+            deployer_private_key:
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
+            challenger_address: "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266".to_string(),
+            challenger_private_key:
+                "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80".to_string(),
         }
     }
 }

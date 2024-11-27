@@ -1,4 +1,4 @@
-use assert_cmd::Command;
+use std::process::Command;
 
 pub struct Git {
     system: Box<dyn crate::system::TSystem>,
@@ -23,12 +23,15 @@ pub trait TGit {
 
 impl TGit for Git {
     fn has_uncommitted_changes(&self, git_path: &str) -> bool {
-        let output = self.system.execute_command(
-            Command::new("git")
-                .arg("status")
-                .arg("--porcelain")
-                .current_dir(git_path),
-        ).unwrap();
+        let output = self
+            .system
+            .execute_command(
+                Command::new("git")
+                    .arg("status")
+                    .arg("--porcelain")
+                    .current_dir(git_path),
+            )
+            .unwrap();
 
         !output.is_empty()
     }

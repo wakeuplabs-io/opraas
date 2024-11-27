@@ -1,9 +1,10 @@
 use crate::system::{System, TSystem};
-use assert_cmd::Command;
 use regex::Regex;
 use semver::Version;
+use std::process::Command;
 
 #[derive(Debug)]
+#[allow(dead_code)]
 pub enum Comparison {
     Equal,
     GreaterThanOrEqual,

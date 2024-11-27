@@ -1,6 +1,6 @@
 [package]
 name = "opraas_core"
-version = "0.1.0"
+version = "0.0.3"
 edition = "2021"
 
 [dependencies]
@@ -17,3 +17,9 @@ async-trait = "0.1.83"
 reqwest = { version = "0.10.8", features = ["blocking"] }
 zip-extract = "0.2.1"
 mockall = "0.13.0"
+tempfile = "3.14.0"
+rand = "0.8.5"
+serde_yaml = "0.9.34"
+regex = "1.11.1"
+colored = "2.1.0"
+
