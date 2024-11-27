@@ -40,11 +40,7 @@ impl DeployCommand {
         }
     }
 
-    pub fn run(
-        &self,
-        target: DeployTarget,
-        name: String,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(&self, target: DeployTarget, name: String) -> Result<(), Box<dyn std::error::Error>> {
         let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
         let project = Project::new_from_root(std::env::current_dir().unwrap());
 
@@ -66,11 +62,9 @@ impl DeployCommand {
         // contracts deployment ===========================================================
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
-            let contracts_deployer_spinner =
-                style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
+            let contracts_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
 
-            let contracts_release =
-                release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
+            let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
             self.contracts_deployer_service
                 .deploy(&name, &contracts_release, &config)?;
 
@@ -80,8 +74,7 @@ impl DeployCommand {
         // infra deployment ===========================================================
 
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
-            let infra_deployer_spinner =
-                style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
+            let infra_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
             self.infra_deployer_service
                 .deploy(&Stack::load(&project, &name))?;

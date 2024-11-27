@@ -59,12 +59,7 @@ pub trait TArtifactRepository {
 // implementations ==========================================
 
 impl ArtifactData {
-    pub fn new(
-        name: &str,
-        context: &PathBuf,
-        dockerfile: &PathBuf,
-        config: &ArtifactConfig,
-    ) -> Self {
+    pub fn new(name: &str, context: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
         Self {
             name: name.to_string(),
             context: context.to_path_buf(),
@@ -76,31 +71,18 @@ impl ArtifactData {
 }
 
 impl Artifact {
-    pub fn new(
-        kind: ArtifactKind,
-        source: &PathBuf,
-        dockerfile: &PathBuf,
-        config: &ArtifactConfig,
-    ) -> Self {
+    pub fn new(kind: ArtifactKind, source: &PathBuf, dockerfile: &PathBuf, config: &ArtifactConfig) -> Self {
         match kind {
-            ArtifactKind::Batcher => {
-                Artifact::Batcher(ArtifactData::new("op-batcher", source, dockerfile, config))
-            }
-            ArtifactKind::Node => {
-                Artifact::Node(ArtifactData::new("op-node", source, dockerfile, config))
-            }
+            ArtifactKind::Batcher => Artifact::Batcher(ArtifactData::new("op-batcher", source, dockerfile, config)),
+            ArtifactKind::Node => Artifact::Node(ArtifactData::new("op-node", source, dockerfile, config)),
             ArtifactKind::Contracts => Artifact::Contracts(ArtifactData::new(
                 "op-contracts",
                 source,
                 dockerfile,
                 config,
             )),
-            ArtifactKind::Proposer => {
-                Artifact::Proposer(ArtifactData::new("op-proposer", source, dockerfile, config))
-            }
-            ArtifactKind::Geth => {
-                Artifact::Geth(ArtifactData::new("op-geth", source, dockerfile, config))
-            }
+            ArtifactKind::Proposer => Artifact::Proposer(ArtifactData::new("op-proposer", source, dockerfile, config)),
+            ArtifactKind::Geth => Artifact::Geth(ArtifactData::new("op-geth", source, dockerfile, config)),
         }
     }
 

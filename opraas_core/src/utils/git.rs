@@ -5,11 +5,7 @@ use std::process::Command;
 
 use super::system;
 
-pub fn clone(
-    source_repo: &str,
-    source_tag: &str,
-    dst_path: &str,
-) -> Result<(), Box<dyn std::error::Error>> {
+pub fn clone(source_repo: &str, source_tag: &str, dst_path: &str) -> Result<(), Box<dyn std::error::Error>> {
     system::execute_command(
         Command::new("git")
             .arg("clone")

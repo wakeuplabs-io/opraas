@@ -19,12 +19,7 @@ impl DockerTestnetNode {
 }
 
 impl TTestnetNode for DockerTestnetNode {
-    fn start(
-        &self,
-        chain_id: u32,
-        fork_url: &str,
-        port: u64,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn start(&self, chain_id: u32, fork_url: &str, port: u64) -> Result<(), Box<dyn std::error::Error>> {
         execute_command(Command::new("docker").args(["pull", DOCKER_IMAGE]), false)?;
 
         execute_command(

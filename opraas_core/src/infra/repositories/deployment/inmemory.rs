@@ -37,10 +37,7 @@ impl InMemoryDeploymentRepository {
         }
     }
 
-    fn load_network_config(
-        &self,
-        depl_path: &PathBuf,
-    ) -> Result<NetworkConfig, Box<dyn std::error::Error>> {
+    fn load_network_config(&self, depl_path: &PathBuf) -> Result<NetworkConfig, Box<dyn std::error::Error>> {
         let reader = File::open(depl_path.join(NETWORK_FILENAME))?;
         let config: NetworkConfig = serde_json::from_reader(reader)?;
 
@@ -61,10 +58,7 @@ impl InMemoryDeploymentRepository {
         Ok(())
     }
 
-    fn load_accounts_config(
-        &self,
-        depl_path: &PathBuf,
-    ) -> Result<AccountsConfig, Box<dyn std::error::Error>> {
+    fn load_accounts_config(&self, depl_path: &PathBuf) -> Result<AccountsConfig, Box<dyn std::error::Error>> {
         let reader = File::open(depl_path.join(ACCOUNTS_FILENAME))?;
         let config: AccountsConfig = serde_json::from_reader(reader)?;
 
@@ -85,10 +79,7 @@ impl InMemoryDeploymentRepository {
         Ok(())
     }
 
-    fn load_releases_config(
-        &self,
-        depl_path: &PathBuf,
-    ) -> Result<ReleaseMetadata, Box<dyn std::error::Error>> {
+    fn load_releases_config(&self, depl_path: &PathBuf) -> Result<ReleaseMetadata, Box<dyn std::error::Error>> {
         let reader = File::open(depl_path.join(RELEASE_FILENAME))?;
         let config: ReleaseMetadata = serde_json::from_reader(reader)?;
 

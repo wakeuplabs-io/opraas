@@ -84,9 +84,7 @@ impl BuildCommand {
         for handle in handles {
             match handle.join() {
                 Ok(Ok(_)) => {}
-                Ok(Err(e)) => {
-                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)))
-                }
+                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))),
                 Err(_) => {
                     return Err(Box::new(std::io::Error::new(
                         std::io::ErrorKind::Other,
@@ -96,8 +94,7 @@ impl BuildCommand {
             }
         }
 
-        build_spinner
-            .finish_with_message(format!("🎉 Built in {}", HumanDuration(started.elapsed())));
+        build_spinner.finish_with_message(format!("🎉 Built in {}", HumanDuration(started.elapsed())));
 
         // print instructions
 

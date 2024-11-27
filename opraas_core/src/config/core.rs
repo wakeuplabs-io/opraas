@@ -9,19 +9,14 @@ pub struct CoreConfig {
 }
 
 impl CoreConfig {
-    pub fn new_from_toml<P: AsRef<std::path::Path>>(
-        p: &P,
-    ) -> Result<Self, Box<dyn std::error::Error>> {
+    pub fn new_from_toml<P: AsRef<std::path::Path>>(p: &P) -> Result<Self, Box<dyn std::error::Error>> {
         let config_content = std::fs::read_to_string(p)?;
         let config: CoreConfig = toml::from_str(&config_content)?;
 
         Ok(config)
     }
 
-    pub fn to_toml<P: AsRef<std::path::Path>>(
-        &self,
-        p: &P,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn to_toml<P: AsRef<std::path::Path>>(&self, p: &P) -> Result<(), Box<dyn std::error::Error>> {
         let config_content = toml::to_string(&self).unwrap();
         std::fs::write(p, config_content)?;
 

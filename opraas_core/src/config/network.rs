@@ -90,19 +90,18 @@ impl NetworkConfig {
             eip1559_elasticity: 10,
             l2_genesis_regolith_time_offset: "0x0".to_string(),
             system_config_start_block: 0,
-            required_protocol_version:
-                "0x0000000000000000000000000000000000000000000000000000000000000000".to_string(),
-            recommended_protocol_version:
-                "0x0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+            required_protocol_version: "0x0000000000000000000000000000000000000000000000000000000000000000".to_string(),
+            recommended_protocol_version: "0x0000000000000000000000000000000000000000000000000000000000000000"
+                .to_string(),
             fund_dev_accounts: false,
-            fault_game_absolute_prestate:
-                "0x03c7ae758795765c6664a5d39bf63841c71ff191e9189522bad8ebff5d4eca98".to_string(),
+            fault_game_absolute_prestate: "0x03c7ae758795765c6664a5d39bf63841c71ff191e9189522bad8ebff5d4eca98"
+                .to_string(),
             fault_game_max_depth: 30,
             fault_game_clock_extension: 0,
             fault_game_max_clock_duration: 1200,
             fault_game_genesis_block: 0,
-            fault_game_genesis_output_root:
-                "0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF".to_string(),
+            fault_game_genesis_output_root: "0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF"
+                .to_string(),
             fault_game_split_depth: 14,
             fault_game_withdrawal_delay: 604800,
             preimage_oracle_min_proposal_size: 10000,
@@ -111,8 +110,7 @@ impl NetworkConfig {
             gas_price_oracle_scalar: 1000000,
             eip1559_denominator_canyon: 250,
             l2_genesis_canyon_time_offset: "0x40".to_string(),
-            l1_starting_block_tag:
-                "0x9e6f90926f2f96c342298a504cb82d66fb43f8c8aa60768d78ea4648b4908ee4".to_string(),
+            l1_starting_block_tag: "0x9e6f90926f2f96c342298a504cb82d66fb43f8c8aa60768d78ea4648b4908ee4".to_string(),
             l2_output_oracle_starting_timestamp: -1,
             l1_use_clique: true,
             l1_genesis_block_timestamp: "0x673c1c29".to_string(),

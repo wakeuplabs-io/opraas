@@ -122,18 +122,15 @@ impl Deployment {
             enable_governance = self.network_config.enable_governance,
             governance_token_symbol = self.network_config.governance_token_symbol,
             governance_token_name = self.network_config.governance_token_name,
-            preimage_oracle_min_proposal_size =
-                self.network_config.preimage_oracle_min_proposal_size,
+            preimage_oracle_min_proposal_size = self.network_config.preimage_oracle_min_proposal_size,
             preimage_oracle_challenge_period = self.network_config.preimage_oracle_challenge_period,
             l2_block_time = self.network_config.l2_block_time,
             max_sequencer_drift = self.network_config.max_sequencer_drift,
             sequencer_window_size = self.network_config.sequencer_window_size,
             channel_timeout = self.network_config.channel_timeout,
             finalization_period_seconds = self.network_config.finalization_period_seconds,
-            l2_output_oracle_submission_interval =
-                self.network_config.l2_output_oracle_submission_interval,
-            l2_output_oracle_starting_block_number =
-                self.network_config.l2_output_oracle_starting_block_number,
+            l2_output_oracle_submission_interval = self.network_config.l2_output_oracle_submission_interval,
+            l2_output_oracle_starting_block_number = self.network_config.l2_output_oracle_starting_block_number,
             l2_genesis_block_gas_limit = self.network_config.l2_genesis_block_gas_limit,
             fault_game_clock_extension = self.network_config.fault_game_clock_extension,
             fault_game_max_clock_duration = self.network_config.fault_game_max_clock_duration,
@@ -141,21 +138,16 @@ impl Deployment {
             fault_game_genesis_output_root = self.network_config.fault_game_genesis_output_root,
             fault_game_split_depth = self.network_config.fault_game_split_depth,
             fault_game_withdrawal_delay = self.network_config.fault_game_withdrawal_delay,
-            base_fee_vault_minimum_withdrawal_amount =
-                self.network_config.base_fee_vault_minimum_withdrawal_amount,
-            l1_fee_vault_minimum_withdrawal_amount =
-                self.network_config.l1_fee_vault_minimum_withdrawal_amount,
+            base_fee_vault_minimum_withdrawal_amount = self.network_config.base_fee_vault_minimum_withdrawal_amount,
+            l1_fee_vault_minimum_withdrawal_amount = self.network_config.l1_fee_vault_minimum_withdrawal_amount,
             sequencer_fee_vault_minimum_withdrawal_amount = self
                 .network_config
                 .sequencer_fee_vault_minimum_withdrawal_amount,
-            base_fee_vault_withdrawal_network =
-                self.network_config.base_fee_vault_withdrawal_network,
+            base_fee_vault_withdrawal_network = self.network_config.base_fee_vault_withdrawal_network,
             l1_fee_vault_withdrawal_network = self.network_config.l1_fee_vault_withdrawal_network,
-            sequencer_fee_vault_withdrawal_network =
-                self.network_config.sequencer_fee_vault_withdrawal_network,
+            sequencer_fee_vault_withdrawal_network = self.network_config.sequencer_fee_vault_withdrawal_network,
             fund_dev_accounts = self.network_config.fund_dev_accounts,
-            l2_genesis_block_base_fee_per_gas =
-                self.network_config.l2_genesis_block_base_fee_per_gas,
+            l2_genesis_block_base_fee_per_gas = self.network_config.l2_genesis_block_base_fee_per_gas,
             gas_price_oracle_overhead = self.network_config.gas_price_oracle_overhead,
             gas_price_oracle_scalar = self.network_config.gas_price_oracle_scalar,
             eip1559_denominator = self.network_config.eip1559_denominator,
@@ -169,8 +161,7 @@ impl Deployment {
             required_protocol_version = self.network_config.required_protocol_version,
             recommended_protocol_version = self.network_config.recommended_protocol_version,
             l1_starting_block_tag = self.network_config.l1_starting_block_tag,
-            l2_output_oracle_starting_timestamp =
-                self.network_config.l2_output_oracle_starting_timestamp,
+            l2_output_oracle_starting_timestamp = self.network_config.l2_output_oracle_starting_timestamp,
             l1_use_clique = self.network_config.l1_use_clique,
             clique_signer_address = self.accounts_config.admin_address,
             l1_genesis_block_timestamp = self.network_config.l1_genesis_block_timestamp,
@@ -217,8 +208,7 @@ impl Deployment {
 
         // display deploy-config.json
         let deploy_config_path = temp_path.join("deploy-config.json");
-        let deploy_config_json: Value =
-            serde_json::from_str(&fs::read_to_string(deploy_config_path)?)?;
+        let deploy_config_json: Value = serde_json::from_str(&fs::read_to_string(deploy_config_path)?)?;
 
         if let Value::Object(map) = deploy_config_json {
             output.push_str(&format!("{}", "\n\nDeploy config:\n".bold().blue()));

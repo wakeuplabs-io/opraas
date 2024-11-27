@@ -40,9 +40,9 @@ impl SystemRequirementsChecker {
 impl TSystemRequirementsChecker for SystemRequirementsChecker {
     fn check(self, requirements: Vec<Requirement>) -> Result<(), String> {
         for requirement in requirements.iter() {
-            let output = self.system.execute_command(
-                &mut Command::new(requirement.program).arg(requirement.version_arg),
-            )?;
+            let output = self
+                .system
+                .execute_command(&mut Command::new(requirement.program).arg(requirement.version_arg))?;
             let re = Regex::new(r"(\d+\.\d+\.\d+)").unwrap();
 
             let version = Version::parse(
