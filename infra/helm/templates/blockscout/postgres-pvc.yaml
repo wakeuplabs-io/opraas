@@ -9,5 +9,7 @@ spec:
   resources:
     requests:
       storage: 10Gi
-  storageClassName: gp2
+  {{- if ne .Values.global.storageClassName "" }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
 {{- end }}

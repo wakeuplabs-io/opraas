@@ -3,14 +3,15 @@ domain:
   email: email@email.com
 
 global:
+  storageClassName: gp2 # For local testing set to ""
   image:
     pullPolicy: IfNotPresent
 
 chain:
-  id: 10 # figure out how to take it from files, but files are ziped
-  l1Rpc: "<L1 eth RPC URL>"
-  artifacts: "config/artifacts.zip"
-  addresses: "config/addresses.json"
+  id: 1201101712 # Override
+  l1Rpc: "<L1 eth RPC URL>" # Override
+  artifacts: "config/artifacts.zip" # Override
+  addresses: "config/addresses.json" # Override
 
 geth:
   name: op-geth

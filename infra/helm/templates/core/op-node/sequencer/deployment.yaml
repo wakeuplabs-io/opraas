@@ -60,13 +60,6 @@ spec:
             - containerPort: {{ .Values.node.ports.rpc }}
             - containerPort: {{ .Values.node.ports.p2p }}
             - containerPort: {{ .Values.node.ports.metrics }}
-          resources:
-            requests:
-              memory: "1Gi" # 4Gi
-              cpu: "1" # 2 
-            limits:
-              memory: "2Gi" # 8Gi
-              cpu: "2" # 4
           volumeMounts:
             - name: configurations
               mountPath: /app/data/configurations

@@ -31,13 +31,6 @@ spec:
               mountPath: /app/data/configurations
             - name: configuration-scripts
               mountPath: /app/data/scripts
-          resources:
-            requests:
-              memory: "1Gi" # 64Gi optimal
-              cpu: "4" # 16 optimal
-            limits:
-              memory: "2Gi" # 128Gi optimal
-              cpu: "8" # 32 optimal
       volumes:
         - name: datadir
           persistentVolumeClaim:
