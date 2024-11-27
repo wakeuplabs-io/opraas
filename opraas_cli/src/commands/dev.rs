@@ -4,7 +4,9 @@ use std::thread;
 use std::time::Duration;
 
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success, print_warning};
+use crate::console::{print_info, print_success, print_warning, style_spinner};
+use assert_cmd::Command;
+use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
@@ -37,6 +39,26 @@ impl DevCommand {
         print_info("Dev command will run a local fork node, deploy contracts to it and then install the infra in your local network.");
         print_info("You can use a release you build with build and release command or a third-party release");
 
+        // confirm kubernetes context point to local
+
+        let current_context_cmd = Command::new("kubectl")
+            .arg("config")
+            .arg("current-context")
+            .output()?;
+        let current_context = String::from_utf8_lossy(&current_context_cmd.stdout);
+
+        if !self.dialoguer.confirm(&format!(
+            "Confirm that your kubernetes context is pointing to local: {}",
+            current_context
+        )) {
+            print_warning("Aborting...");
+            print_info("We need you to switch your kubernetes context to local");
+            print_info("You can change your kubernetes context with kubectl config use-context");
+            return Ok(());
+        }
+
+        // request release name and repository to test
+
         let registry_url: String = self
             .dialoguer
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
@@ -45,7 +67,7 @@ impl DevCommand {
 
         // start local network ===========================
 
-        print_info("⏳ Starting l1 fork...");
+        let fork_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
 
         self.fork_node
             .start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
@@ -68,20 +90,32 @@ impl DevCommand {
         config.accounts.challenger_private_key = wallet_private_key.to_string();
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
 
+        fork_spinner.finish_with_message("✅ L1 fork started");
+
         // Deploy contracts ===========================
 
-        print_info("⏳ Deploying contracts to local network...");
+        let contracts_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            "⏳ Deploying contracts to local network...",
+        );
 
         let contracts_release =
             release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
+        contracts_spinner.finish_with_message("✅ Contracts deployed");
+
         // start stack ===========================
 
-        print_info("⏳ Starting stack...");
+        let infra_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            "⏳ Installing infra in local kubernetes...",
+        );
 
         self.stack_runner.start(&Stack::load(&project, "dev"))?;
+
+        infra_spinner.finish_with_message("✅ Infra installed");
 
         // inform results and wait for exit ===========================
 

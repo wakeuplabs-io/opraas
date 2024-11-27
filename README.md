@@ -35,18 +35,18 @@ Options:
 
 ```bash
 # 1. create your project
-opruaas_cli --name my-chain new && cd my-chain
+opruaas new my-chain && cd my-chain
 
 # 2. Fill up config.toml and .env
 
 # 3. Pull sources with init (target can be all|batcher|node|geth|contracts)
-opruaas_cli --target contracts init
+opruaas --quiet init contracts
 
 # 4. Build images with 
-opruaas_cli --target contracts build 
+opruaas build contracts
 
 # 5. Finally when ready release. It's important you have docker already configured with enough permissions to push to the repo you want to release to
-opruaas_cli --target contracts release 
+opruaas release contracts
 ```
 
 ### Test releases with dev
@@ -54,14 +54,14 @@ opruaas_cli --target contracts release
 ```bash
 # 1. Just run dev command... We'll prompt you about which release to use
 # We'll fork the l1 you have in .env so make sure to have a valid rpc. As per wallets we'll replace your values with mock wallets already funded.
-opruaas_cli dev
+opruaas dev
 ```
 
 ### Deploy contracts/infra/all
 
 ```bash
 # 1. Just run dev command... We'll prompt you about which release to use
-opruaas_cli --target all --name my-prod-deployment deploy 
+opruaas deploy all --name my-prod-depl
 ```
 
 ### Npm distribution 

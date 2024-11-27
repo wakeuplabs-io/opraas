@@ -34,41 +34,35 @@ struct Args {
 enum Commands {
     /// Create new project, template config file and folders
     New {
-        #[arg(long)]
         name: String,
     },
     /// Initialize a new project
     Init {
-        #[arg(long)]
         target: InitTargets,
     },
     /// Compile sources and create docker images for it
     Build {
-        #[arg(long)]
         target: BuildTargets,
     },
     /// Tags and pushes already built docker images to the registry for usage in the deployment
     Release {
-        #[arg(long)]
         target: ReleaseTargets,
     },
     /// Spin up local dev environment
     Dev {},
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
     Deploy {
-        #[arg(long)]
-        name: String,
+        target: DeployTarget,
 
         #[arg(long)]
-        target: DeployTarget,
+        name: String,
     },
     /// Get details about the current deployment. Target must be one of: contracts, infra
     Inspect {
-        #[arg(long)]
-        name: String,
-
-        #[arg(long, default_value = "all")]
         target: InspectTarget,
+
+        #[arg(long)]
+        deployment: String,
     },
     // /// Monitor your chain. Target must be one of: onchain, offchain
     // Monitor { target: MonitorTarget },
@@ -140,7 +134,7 @@ async fn main() {
         Commands::Release { target } => ReleaseCommand::new(target).run(),
         Commands::Dev {} => DevCommand::new().run(),
         Commands::Deploy { target, name } => DeployCommand::new().run(target, name),
-        Commands::Inspect { target, name } => InspectCommand::new().run(target, name),
+        Commands::Inspect { target, deployment } => InspectCommand::new().run(target, deployment),
         // Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
     } {
         print_error(&format!("\n\nError: {}\n\n", e));

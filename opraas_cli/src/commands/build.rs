@@ -1,8 +1,9 @@
 use crate::{
     config::get_config_path,
-    console::{print_error, print_info, print_success},
+    console::{print_error, style_spinner},
 };
-use indicatif::{HumanDuration, MultiProgress};
+use colored::*;
+use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::build::{ArtifactBuilderService, TArtifactBuilderService},
     config::CoreConfig,
@@ -47,18 +48,28 @@ impl BuildCommand {
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let started = Instant::now();
 
+        let build_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            &format!(
+                "⏳ Building {}...",
+                self.artifacts
+                    .iter()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        );
+
         // Iterate over the artifacts and build
-        let m = MultiProgress::new();
         let handles: Vec<_> = self
             .artifacts
             .iter()
             .map(|&ref artifact| {
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
-                print_info(&format!("⏳ Building {}", artifact));
 
                 thread::spawn(move || -> Result<(), String> {
                     match ArtifactBuilderService::new().build(&artifact) {
-                        Ok(_) => print_success(&format!("{} ready...", &artifact)),
+                        Ok(_) => {}
                         Err(e) => {
                             print_error(&format!("❌ Error building {}", artifact));
                             return Err(e.to_string());
@@ -84,9 +95,32 @@ impl BuildCommand {
                 }
             }
         }
-        m.clear()?;
-        print_success(&format!("🎉 Built in {}", HumanDuration(started.elapsed())));
-        print_info("Test your build with `opraas dev` and whenever you're ready release `opraas release <name>` and deploy it with `opraas deploy <name>`");
+
+        build_spinner
+            .finish_with_message(format!("🎉 Built in {}", HumanDuration(started.elapsed())));
+
+        // print instructions
+
+        let bin_name = env!("CARGO_PKG_NAME");
+
+        println!("\n{}\n", "What's Next?".bright_white().bold());
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "release [contracts|node|etc...]".blue()
+        );
+        println!("    Publishes artifacts to registry for consumption in dev and deploy.\n");
+
+        println!("  {} {}", bin_name.blue(), "dev".blue());
+        println!("    Try your artifacts locally without spending any resources.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "deploy [contracts|infra|all] --name <deployment_name>".blue()
+        );
+        println!("    Use your artifacts to create contracts deployments or whole infra.\n");
 
         Ok(())
     }

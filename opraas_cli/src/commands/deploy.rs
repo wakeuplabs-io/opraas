@@ -3,6 +3,7 @@ use crate::{
     console::{print_info, style_spinner},
 };
 use clap::ValueEnum;
+use colored::*;
 use indicatif::ProgressBar;
 use log::info;
 use opraas_core::{
@@ -115,6 +116,31 @@ impl DeployCommand {
                 return Err("Infra deployment not found".into());
             }
         }
+
+        // print instructions
+
+        let bin_name = env!("CARGO_PKG_NAME");
+
+        println!("\n{}\n", "What's Next?".bright_white().bold());
+
+        println!(
+            "You can find your deployment artifacts at ./deployments/{}",
+            name
+        );
+        println!("We recommend you keep these files and your keys secure as they're needed to run your deployment.\n");
+
+        println!("Some useful commands for you now:\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "inspect [contracts|infra|all] --name <deployment_name>".blue()
+        );
+        println!("    Display the artifacts for each deployment.\n");
+
+        println!(
+           "{}", "NOTE: At the moment there's no way to remove a deployment, you'll need to manually go to `infra/aws` and run `terraform destroy`. For upgrades you'll also need to run them directly in helm.".yellow()
+        );
 
         Ok(())
     }

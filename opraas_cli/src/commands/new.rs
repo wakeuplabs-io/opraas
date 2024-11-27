@@ -1,6 +1,9 @@
-use crate::console::{print_info, print_success};
+use colored::*;
+use indicatif::ProgressBar;
 use opraas_core::application::{CreateProjectService, TCreateProjectService};
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
+
+use crate::console::style_spinner;
 
 pub struct NewCommand {
     create_project_service: Box<dyn TCreateProjectService>,
@@ -16,12 +19,67 @@ impl NewCommand {
     }
 
     pub fn run(&self, name: String) -> Result<(), Box<dyn std::error::Error>> {
-        let root = PathBuf::from(&name);
+        let mut root = PathBuf::from(&name);
+        if !root.is_absolute() {
+            root = env::current_dir()?.join(root)
+        }
+
+        // create project ============================================
+
+        let create_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            &format!("⏳ Creating {} at {}...", name, root.display()),
+        );
 
         self.create_project_service.create(&root)?;
 
-        print_success(&format!("✅ Project created at ./{}", name));
-        print_info("🚀 Check the config file and run `opraas setup` to setup the project");
+        create_spinner.finish_with_message(format!(
+            "✅ Success! Created {} at {}\n",
+            name,
+            root.display()
+        ));
+
+        // print instructions ========================================
+
+        let bin_name = env!("CARGO_PKG_NAME");
+
+        println!("\n{}\n", "What's Next?".bright_white().bold());
+        println!("Inside that directory, you can run several commands:\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "init [contracts|node|etc...]".blue()
+        );
+        println!("    Initiates artifacts for local builds.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "build [contracts|node|etc...]".blue()
+        );
+        println!("    Builds docker images from artifacts.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "release [contracts|node|etc...]".blue()
+        );
+        println!("    Publishes docker images to be used in dev or prod.\n");
+
+        println!("  {} {}", env!("CARGO_PKG_NAME"), "dev".blue());
+        println!("    Runs a local dev environment.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "deploy [contracts|infra|all] --name <deployment_name>".blue()
+        );
+        println!("    Deploys contracts to l1 and infra to kubernetes through terraform.\n");
+
+        println!("We suggest that you begin by typing:\n");
+        println!("  {} {}", "cd".blue(), name.blue());
+        println!("  {} {}\n", bin_name.blue(), "dev".blue());
 
         Ok(())
     }

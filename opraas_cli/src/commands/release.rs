@@ -1,10 +1,11 @@
 use crate::{
     config::get_config_path,
-    console::{print_error, print_info, print_success, print_warning, Dialoguer, TDialoguer},
+    console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
     git::TGit,
 };
 use clap::ValueEnum;
-use indicatif::{HumanDuration, MultiProgress};
+use colored::*;
+use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
@@ -73,9 +74,21 @@ impl ReleaseCommand {
                 .tag_release(&cwd.to_str().unwrap(), &release_name)?;
         }
 
-        // Iterate over the artifacts and build
+        // Iterate over the artifacts and release =========================
+
+        let release_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            &format!(
+                "⏳ Releasing {}...",
+                self.artifacts
+                    .iter()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        );
+
         let started = Instant::now();
-        let m = MultiProgress::new();
         let handles: Vec<_> = self
             .artifacts
             .iter()
@@ -84,15 +97,13 @@ impl ReleaseCommand {
                 let registry_url = registry_url.clone();
                 let artifact = Arc::clone(artifact);
 
-                print_info(&format!("⏳ Releasing {}", artifact));
-
                 thread::spawn(move || -> Result<(), String> {
                     match ArtifactReleaserService::new().release(
                         &artifact,
                         &release_name,
                         &registry_url,
                     ) {
-                        Ok(_) => println!("{} done...", &artifact),
+                        Ok(_) => {}
                         Err(e) => {
                             print_error(&format!("❌ Error releasing {}", artifact));
                             return Err(e.to_string());
@@ -118,12 +129,27 @@ impl ReleaseCommand {
                 }
             }
         }
-        m.clear()?;
-        print_success(&format!(
+
+        release_spinner.finish_with_message(format!(
             "🎉 Released in {}",
             HumanDuration(started.elapsed())
         ));
-        print_info("Yay! Your chain is ready to be deployed!");
+
+        // print instructions  =========================
+
+        let bin_name = env!("CARGO_PKG_NAME");
+
+        println!("\n{}\n", "What's Next?".bright_white().bold());
+
+        println!("  {} {}", bin_name.blue(), "dev".blue());
+        println!("    Try your artifacts locally without spending any resources.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "deploy [contracts|infra|all] --name <deployment_name>".blue()
+        );
+        println!("    Use your artifacts to create contracts deployments or whole infra.\n");
 
         Ok(())
     }

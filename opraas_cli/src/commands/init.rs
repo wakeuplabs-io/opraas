@@ -1,7 +1,8 @@
+use colored::*;
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success};
+use crate::console::{print_error, style_spinner};
 use clap::ValueEnum;
-use indicatif::{HumanDuration, MultiProgress};
+use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{artifact::Artifact, project::Project};
@@ -45,10 +46,19 @@ impl InitCommand {
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
         let started = Instant::now();
 
-        print_info("📦 Downloading and preparing artifacts...");
+        let init_spinner = style_spinner(
+            ProgressBar::new_spinner(),
+            &format!(
+                "⏳ Initializing {}...",
+                self.artifacts
+                    .iter()
+                    .map(|e| e.to_string())
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            ),
+        );
 
         // Iterate over the artifacts and download
-        let m = MultiProgress::new();
         let handles: Vec<_> = self
             .artifacts
             .iter()
@@ -57,9 +67,9 @@ impl InitCommand {
 
                 thread::spawn(move || {
                     match ArtifactInitializer::new().initialize(&artifact) {
-                        Ok(_) => println!("✅ {} done", &artifact),
+                        Ok(_) => {}
                         Err(e) => {
-                            println!("❌ Error setting up {}", artifact);
+                            print_error(&format!("❌ Error initializing {}", artifact));
                             return Err(e.to_string());
                         }
                     }
@@ -83,9 +93,39 @@ impl InitCommand {
                 }
             }
         }
-        m.clear()?;
 
-        print_success(&format!("🎉 Done in {}", HumanDuration(started.elapsed())));
+        init_spinner
+            .finish_with_message(format!("✅ Done in {}", HumanDuration(started.elapsed())));
+
+        // print instructions ========================================
+
+        let bin_name = env!("CARGO_PKG_NAME");
+
+        println!("\n{}\n", "What's Next?".bright_white().bold());
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "build [contracts|node|etc...]".blue()
+        );
+        println!("    Builds docker images from artifacts.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "release [contracts|node|etc...]".blue()
+        );
+        println!("    Publishes docker images to be used in dev or prod.\n");
+
+        println!("  {} {}", env!("CARGO_PKG_NAME"), "dev".blue());
+        println!("    Runs a local dev environment.\n");
+
+        println!(
+            "  {} {}",
+            bin_name.blue(),
+            "deploy [contracts|infra|all] --name <deployment_name>".blue()
+        );
+        println!("    Deploys contracts to l1 and infra to kubernetes through terraform.\n");
 
         Ok(())
     }

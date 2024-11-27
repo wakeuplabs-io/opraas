@@ -40,6 +40,7 @@ ENV OUT_ADDRESSES=/shared/out/addresses.json
 ENV OUT_ALLOCS=/shared/out/allocs-l2.json
 ENV OUT_GENESIS=/shared/out/genesis.json
 ENV OUT_ROLLUP_CONFIG=/shared/out/rollup-config.json
+ENV OUT_JWT_SECRET=/shared/out/jwt-secret.txt
 
 # DO NOT override. Required by contracts
 ENV DEPLOYMENT_OUTFILE=/app/packages/contracts-bedrock/deployments/addresses.json
@@ -74,4 +75,8 @@ CMD echo "Updating deploy config..." && \
       --l1-deployments ${OUT_ADDRESSES} \
       --outfile.l2 ${OUT_GENESIS} \
       --outfile.rollup ${OUT_ROLLUP_CONFIG} && \
+  jq 'del(.config.optimism)' ${OUT_GENESIS} > temp.json && mv temp.json ${OUT_GENESIS} && \
+  echo "Generating jwt-secret.txt" && \
+  openssl rand -base64 32 > ${OUT_JWT_SECRET} && \
+  echo "Generating artifacts.zip" && \
   zip -j /shared/out/artifacts.zip ${OUT_ADDRESSES} ${OUT_ALLOCS} ${OUT_GENESIS} ${OUT_ROLLUP_CONFIG} ${OUT_DEPLOY_CONFIG}
