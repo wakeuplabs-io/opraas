@@ -25,26 +25,34 @@ impl TStackRunner for HelmStackRunner {
         let deployment = stack.deployment.as_ref().unwrap();
         let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
 
-        // install ingress nginx if not available
-        let check_output = system::execute_command(
-            Command::new("helm").args(["list", "-n", "ingress-nginx"]),
-            true,
-        )?;
-        if !check_output.contains("ingress-nginx") {
-            info!("Installing ingress-nginx...");
+        // install repo dependencies
+        
+        let repo_dependencies = [
+            ("ingress-nginx", "https://kubernetes.github.io/ingress-nginx"),
+            ("cert-manager", "https://charts.jetstack.io/"),
+            ("blockscout", "https://blockscout.github.io/helm-charts"),
+            ("prometheus-community", "https://prometheus-community.github.io/helm-charts")
+        ];
 
+        for (repo, url) in repo_dependencies {
             system::execute_command(
                 Command::new("helm")
                     .arg("repo")
                     .arg("add")
-                    .arg("ingress-nginx")
-                    .arg("https://kubernetes.github.io/ingress-nginx")
-                    .arg("&&")
-                    .arg("helm")
-                    .arg("repo")
-                    .arg("update"),
+                    .arg(repo)
+                    .arg(url),
                 false,
             )?;
+        }
+        system::execute_command(Command::new("helm").arg("repo").arg("update"), false)?;
+
+        // install ingress nginx if not available
+        let ingress_nginx_installed = system::execute_command(
+            Command::new("helm").args(["list", "-n", "ingress-nginx"]),
+            true,
+        )?.contains("ingress-nginx");
+        if !ingress_nginx_installed {
+            info!("Installing ingress-nginx...");
 
             system::execute_command(
                 Command::new("helm").args([
@@ -60,25 +68,12 @@ impl TStackRunner for HelmStackRunner {
         }
 
         // install cert-manager if not available
-        let check_output = system::execute_command(
+        let cert_manager_installed = system::execute_command(
             Command::new("helm").args(["list", "-n", "cert-manager"]),
             true,
-        )?;
-        if !check_output.contains("cert-manager") {
+        )?.contains("cert-manager");
+        if !cert_manager_installed {
             info!("Installing cert-manager...");
-
-            system::execute_command(
-                Command::new("helm")
-                    .arg("repo")
-                    .arg("add")
-                    .arg("jetstack")
-                    .arg("https://charts.jetstack.io")
-                    .arg("&&")
-                    .arg("helm")
-                    .arg("repo")
-                    .arg("update"),
-                false,
-            )?;
 
             system::execute_command(
                 Command::new("helm").args([
@@ -96,6 +91,14 @@ impl TStackRunner for HelmStackRunner {
                 true,
             )?;
         }
+
+        // build dependencies
+        system::execute_command(
+            Command::new("helm")
+                .arg("dependency")
+                .arg("build"),
+            false,
+        )?;
 
         // create values file
         let mut updates: HashMap<String, String> = HashMap::new();

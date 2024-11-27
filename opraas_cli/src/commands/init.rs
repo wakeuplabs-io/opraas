@@ -1,7 +1,7 @@
-use colored::*;
 use crate::config::get_config_path;
 use crate::console::{print_error, style_spinner};
 use clap::ValueEnum;
+use colored::*;
 use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
