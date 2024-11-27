@@ -4,9 +4,7 @@ use crate::{
     infra::{
         self,
         release_runner::DockerArtifactRunner,
-        repositories::{
-            deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository,
-        },
+        repositories::{deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository},
     },
 };
 use rand::Rng;

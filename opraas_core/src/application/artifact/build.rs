@@ -17,9 +17,7 @@ pub trait TArtifactBuilderService {
 impl ArtifactBuilderService {
     pub fn new() -> Self {
         Self {
-            artifact_repository: Box::new(
-                infra::repositories::artifact::DockerArtifactRepository::new(),
-            ),
+            artifact_repository: Box::new(infra::repositories::artifact::DockerArtifactRepository::new()),
             artifact_source_repository: Box::new(
                 infra::repositories::artifact_source::GitArtifactSourceRepository::new(),
             ),

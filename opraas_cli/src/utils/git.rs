@@ -14,11 +14,7 @@ impl Git {
 
 pub trait TGit {
     fn has_uncommitted_changes(&self, git_path: &str) -> bool;
-    fn tag_release(
-        &self,
-        git_path: &str,
-        release_tag: &str,
-    ) -> Result<(), Box<dyn std::error::Error>>;
+    fn tag_release(&self, git_path: &str, release_tag: &str) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 impl TGit for Git {
@@ -36,11 +32,7 @@ impl TGit for Git {
         !output.is_empty()
     }
 
-    fn tag_release(
-        &self,
-        git_path: &str,
-        release_tag: &str,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    fn tag_release(&self, git_path: &str, release_tag: &str) -> Result<(), Box<dyn std::error::Error>> {
         self.system.execute_command(
             Command::new("git")
                 .arg("tag")

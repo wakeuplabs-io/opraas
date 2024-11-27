@@ -2,9 +2,7 @@ use crate::{
     domain::{self, Deployment, Stack},
     infra::{
         self,
-        repositories::{
-            deployment::InMemoryDeploymentRepository, stack_infra::GitStackInfraRepository,
-        },
+        repositories::{deployment::InMemoryDeploymentRepository, stack_infra::GitStackInfraRepository},
         stack_deployer::TerraformDeployer,
     },
 };

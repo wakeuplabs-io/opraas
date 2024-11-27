@@ -1,7 +1,7 @@
-use colored::*;
 use crate::config::get_config_path;
 use crate::console::{print_error, style_spinner};
 use clap::ValueEnum;
+use colored::*;
 use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
@@ -82,9 +82,7 @@ impl InitCommand {
         for handle in handles {
             match handle.join() {
                 Ok(Ok(_)) => {}
-                Ok(Err(e)) => {
-                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)))
-                }
+                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))),
                 Err(_) => {
                     return Err(Box::new(std::io::Error::new(
                         std::io::ErrorKind::Other,
@@ -94,8 +92,7 @@ impl InitCommand {
             }
         }
 
-        init_spinner
-            .finish_with_message(format!("✅ Done in {}", HumanDuration(started.elapsed())));
+        init_spinner.finish_with_message(format!("✅ Done in {}", HumanDuration(started.elapsed())));
 
         // print instructions ========================================
 

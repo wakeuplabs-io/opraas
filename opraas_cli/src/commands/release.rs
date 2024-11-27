@@ -98,11 +98,7 @@ impl ReleaseCommand {
                 let artifact = Arc::clone(artifact);
 
                 thread::spawn(move || -> Result<(), String> {
-                    match ArtifactReleaserService::new().release(
-                        &artifact,
-                        &release_name,
-                        &registry_url,
-                    ) {
+                    match ArtifactReleaserService::new().release(&artifact, &release_name, &registry_url) {
                         Ok(_) => {}
                         Err(e) => {
                             print_error(&format!("❌ Error releasing {}", artifact));
@@ -118,9 +114,7 @@ impl ReleaseCommand {
         for handle in handles {
             match handle.join() {
                 Ok(Ok(_)) => {}
-                Ok(Err(e)) => {
-                    return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e)))
-                }
+                Ok(Err(e)) => return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, e))),
                 Err(_) => {
                     return Err(Box::new(std::io::Error::new(
                         std::io::ErrorKind::Other,

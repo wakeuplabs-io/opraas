@@ -28,11 +28,7 @@ impl InspectCommand {
         }
     }
 
-    pub fn run(
-        &self,
-        target: InspectTarget,
-        deployment_name: String,
-    ) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(&self, target: InspectTarget, deployment_name: String) -> Result<(), Box<dyn std::error::Error>> {
         info!(
             "Inspecting deployment: {}, target: {:?}",
             deployment_name, target
