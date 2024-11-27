@@ -1,14 +1,16 @@
 # Research & Discovery
 
-# Summary
+# Cloud Raas
+
+## Summary
 
 This document describes our entire process of research, problem tackling and decision making.
 
-# Purpose
+## Purpose
 
 The goal of this project is to enable users to easily deploy and manage their own rollups through cloud providers. The service will include a Command Line Interface (CLI) and a web-based development console for management. By eliminating vendor lock-in, we empower users to fully own their rollups and switch cloud providers with minimal effort.
 
-# Problem statement + Context
+## Problem statement + Context
 
 Optimism's long-term vision is focused on dApps being able to span as many rollup chains as needed, as easy and as fast as it can be.
 
@@ -18,7 +20,7 @@ We want to give full power to developers looking forward to make use of the Supe
 
 Current tools excel on some features and lack others, all of them contribute on gathering ideas, but none of them tackles the problem end to end, which is what this project's mission is about.
 
-# Alternatives considered
+## Alternatives considered
 
 ### 0xFableOrg/roll-op
 
@@ -78,13 +80,14 @@ Source:
 
 - https://docs.optimism.io/builders/chain-operators/tools/op-deployer
 
-# Proposed solutions
+## Proposed solutions
 
 We have decided to develop our own CLI and infrastructure tooling to create a more flexible deployment process and address some of the inconveniences we encountered while testing existing solutions. Given the challenges in getting current solutions to work easily and the relatively short time required to replicate them, we aim for our development to also meet new requirements, including a user interface and scalable deployment.
 
+
 ![full-picture](./assets/full-picture.png)
 
-# Decisions and drivers
+## Decisions and drivers
 
 ### General
 
@@ -97,27 +100,14 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 - CLI for local self-service
 - The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
 - We'll distribute the binaries through github releases and make them widely available with an npm package.
-- To allow for a more flexible build process we'll allow the user to specify the steps in the config file in the shape of:
-
-  ```toml
-  [sources.op_node]
-  release_tag = "op-node/v1.3.1"
-  build = ["make op-node"]
-
-  [sources.op_contracts]
-  release_tag = "op-contracts/v1.6.0"
-  build = ["pnpm install", "pnpm build", "cd packages/bedrock-contracts", "forge install", "..."]
-  ```
-
-  Note this also gives flexibility for patches or cherry picks on top of releases like roll-op does.
-
-- Artifacts will be downloaded from github releases.
-- Build processes will all happen within docker images to reduce setup to just docker.
+- To allow for a more flexible build process we'll avoid hardcoding the build process like most current solutions do and instead we'll just pull docker files into the infra directory as shown below. This will allow us to support most cases while staying relevant in case the user decides to go custom. Also this reduces our dependencies to basically Docker.
+- Sources will be downloaded from github releases.
 
 Commands provided:
 
-- `setup`: It'll set up the initial project structure. First it'll ask the user information about the chain to deploy, desired l2ChainId, artifacts versions to use and etc. Then it'll create a started config file for it and set up the `src` and `infra` folder as shown below.
-- `build <artifact>`: Compiles each of the artifacts and generates the corresponding docker image.
+- `new`: It'll create a new folder with a template config for the user to review and run a setup on. In particular `.env`, `config.toml`, `README.md` and `.gitignore` will be created
+- `setup`: It'll download sources and infra based on what the user specified in the config
+- `build <artifact>`: Compiles each of the artifacts and generates a corresponding docker image.
 - `dev`: It'll spin up a local `anvil` testnet node forking the l1 chain, deploy contracts to it using the user configuration and start all the nodes for the user to test his chain locally.
 - `deploy <contracts | infra>`:
   - `contracts`: Deploys contracts to l1 and generates `genesis.json` and `rollup.json`
@@ -144,15 +134,18 @@ deployments/
 infra/
 	aws/
 	gcp/
+  docker/
 	helm/
 src/
 	op_contracts/
 	op_node/
 	op_geth/
 	op_batcher/
-	blockscout/
+	explorer/
+README.md
 config.toml
-.env.local
+.gitignore
+.env
 ```
 
 ### Infrastructure
@@ -188,10 +181,85 @@ As per networking this implies the only services exposed will be `proxyd` and th
 
 The dev console will focus on generating a full config for the user to download and deploy in one command with the cli. We'll ask users input for filling up the kick off config and generate a zip for them to download and deploy. To achieve this the zip will contain a full config.toml file and the cli binaries so that `./opraas dev` or `./opraas deploy` is all they need.
 
-# Risk and uncertainties
+## Risk and uncertainties
 
 1. It must be sufficiently extensible to handle new features.
 2. Upgrades management
 3. Contemplate testing environments.
 4. Avoid overloading user with environment setup complexities.
 5. Testnet tokens availability and proper config setup
+
+# (Optional) Decentralized marketplace
+
+Some users may still not want to run the infrastructure themselves, this is for them. An attempt to get closer to this one button click rollup without giving away decentralization.
+
+## Proposed solution
+
+We propose the establishment of a marketplace contract where users looking to deploy a blockchain using the Optimism stack can submit requests, and vendors with the necessary infrastructure can fulfill those requests.
+
+## Decisions and drivers
+
+We will develop a suite of smart contracts to effectively manage the relationship between vendors and clients, fostering a positive and sustainable interaction. Additionally, we will build a frontend application to facilitate user interaction with these contracts.
+
+### General
+
+Example marketplace interaction
+
+```mermaid
+sequenceDiagram
+    Vendor->>+Marketplace: Create offering, sla, svc addresses
+	Marketplace->>-Vendor: OfferingId
+    Client->>+L1: Deploy opstack
+    L1->>-Client: L1 contracts
+	Client->>L1: Whitelist Vendor wallets
+    Client->>+Marketplace: Accept offering (publish l1 depls)
+    Marketplace->>-Client: RequestId
+    Vendor->>+Infra: Deploy infra services
+    Infra->>-Vendor: Public endpoints
+    Vendor->>Marketplace: Publish endpoints and start service
+    loop As per sla until termination
+        Vendor->>+Marketplace: Call reputation
+        Marketplace->>+Oracle: Check infra
+        Oracle->>+Infra: Prometheus
+        Infra->>-Oracle: Ok ...
+        Oracle->>-Marketplace: requestId, OK
+        Marketplace->>-Vendor: Ok (update balance and reputation)
+    end
+```
+
+Example termination
+
+```mermaid
+sequenceDiagram
+    alt Vendor terminates
+    Vendor->>Marketplace: Terminate service
+    else client terminates
+    Client->>L1Proxy: Replace batcher, proposer and challenger addresses
+    Client->>Marketplace: Terminate service
+   end
+```
+
+### Marketplace contract
+
+The marketplace contract will include the following features:
+
+- **Micro-Payments**: The contract will support micro-payments in various tokens for services provided.
+- **Order Submission and Locking**: Vendors will submit offerings by submitting unique batcher, proposer as well as SLA terms, (frequency of oracle checks, cost per term, etc). Clients will accept these offers by submitting the addresses to their deployments and configuring the vendor wallets in them. The vendor can then proceed with the deployment and post the relevant endpoints on-chain to initiate the payments.
+- **Contract Termination**: Either party can terminate the contract at any time. As per [security/privileged-roles](https://docs.optimism.io/chain/security/privileged-roles) the chain owner can revoke the vendor's permissions by updating addresses via L1Admin and L2Admin. After this a new transaction with the marketplace is required.
+- **Reputation System**: A reputation system will be established based on the number of active contracts, contract duration, and oracle calls that monitor service endpoints. Payments will be subject to oracle calls.
+- **Service Level Agreement (SLA)**: Customers and vendors will agree on an SLA at the start of the engagement, specifying the frequency and type of metrics the vendor will report through oracles. The initial setup will cover basic metrics but can expand to more detailed proofs as needed. We’ll use [Chainlink](https://docs.chain.link/any-api/introduction) for oracle integration.
+
+### Dapp
+
+The marketplace will take place as another page in the Cloud Raas website described above. The main functionality will be to facilitate the interaction with the contract:
+
+- Vendors create offerings.
+- Clients accept offers and submit data required.
+- Vendor and Client monitor their relationship, balances, health status, endpoints and etc.
+- The deployment of l1 contracts can be facilitated by the website but it's still a task the Client should do, as well as keeping his Admin keys secure.
+
+## Risks and uncertainties
+
+- Given the Cloud Raas cli that makes it super easy to deploy new chains with optimism stack the marketplace will try to cover those who don't want any involvement with infrastructure running.
+- There may be security concerns regarding key manager as we don't have any other way around giving away keys for services like batcher, proposer, etc. We aim for honesty and rely on the power of reputation and L1Proxy and L2Proxy admin roles power to mitigate damages.
+- Providing a proper proof of execution of services may be challenging, we aim to cover a broad case but malicious actors may still have work arounds.
