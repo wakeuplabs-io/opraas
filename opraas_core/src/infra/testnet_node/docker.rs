@@ -6,7 +6,7 @@ use std::{process::Command, thread, time};
 
 pub struct DockerTestnetNode {}
 
-const DOCKER_IMAGE: &str = "matzapata/fork-node";
+const DOCKER_IMAGE: &str = "wakeuplabs/fork-node";
 const CONTAINER_NAME: &str = "fork-node";
 const MAX_TIMEOUT: u64 = 30;
 
