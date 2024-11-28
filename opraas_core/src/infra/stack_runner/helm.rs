@@ -74,7 +74,7 @@ impl HelmStackRunner {
             info!("Installing {} from {}", name, repo);
             system::execute_command(
                 Command::new("helm")
-                    .args(["install", name, repo])
+                    .args(["install", name, repo, "-n", name])
                     .args(args),
                 false,
             )?;

@@ -3,7 +3,10 @@ kind: Ingress
 metadata:
   name: ingress
   annotations:
+    {{- if ne .Values.domain.host "localhost" }}
     cert-manager.io/issuer: "letsencrypt"  # TLS requirement - enables cert-manager
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
   tls:

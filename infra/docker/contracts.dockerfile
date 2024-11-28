@@ -1,4 +1,6 @@
-FROM --platform=linux/arm64 debian:bookworm-slim
+ARG BUILDPLATFORM=linux/amd64
+
+FROM --platform=$BUILDPLATFORM debian:bookworm-slim
 
 # install necessary dependencies
 RUN apt-get update && apt-get install -y \
@@ -18,7 +20,7 @@ RUN foundryup --version nightly-143abd6a768eeb52a5785240b763d72a56987b4a
 
 # Install Go
 ENV GO_VERSION=1.22.6
-RUN curl -L https://go.dev/dl/go${GO_VERSION}.linux-arm64.tar.gz | tar -C /usr/local -xz
+RUN curl -L https://go.dev/dl/go${GO_VERSION}.linux-amd64.tar.gz | tar -C /usr/local -xz
 
 # Add Go to the PATH
 ENV PATH="/usr/local/go/bin:$PATH"

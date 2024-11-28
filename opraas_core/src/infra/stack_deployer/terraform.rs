@@ -3,7 +3,7 @@ use crate::{
     domain::{Deployment, Stack, TDeploymentRepository},
     system, yaml,
 };
-use std::{collections::HashMap, fs, process::Command};
+use std::{collections::HashMap, fs::{self, File}, process::Command};
 
 pub struct TerraformDeployer {
     deployment_repository: Box<dyn TDeploymentRepository>,
@@ -89,12 +89,30 @@ impl TerraformDeployer {
 impl TStackInfraDeployer for TerraformDeployer {
     fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>> {
         let mut deployment = stack.deployment.as_ref().unwrap().clone();
+        let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
 
         // create values file
         let values = tempfile::NamedTempFile::new()?;
         self.create_values_file(stack, values.path().to_str().unwrap())?;
 
-        // init, plan and deploy infra
+        // copy addresses.json and artifacts.zip to helm/config so it can be loaded by it
+        let config_dir = stack.helm.join("config");
+        fs::create_dir_all(&config_dir)?;
+
+        let unzipped_artifacts = tempfile::TempDir::new()?;
+        zip_extract::extract(
+            File::open(contracts_artifacts)?,
+            &unzipped_artifacts.path(),
+            true,
+        )?;
+
+        fs::copy(contracts_artifacts, config_dir.join("artifacts.zip"))?;
+        fs::copy(
+            unzipped_artifacts.path().join("addresses.json"),
+            config_dir.join("addresses.json"),
+        )?;
+
+        // deploy using terraform 
 
         system::execute_command(
             Command::new("terraform")
