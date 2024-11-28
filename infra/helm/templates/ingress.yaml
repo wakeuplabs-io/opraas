@@ -6,10 +6,12 @@ metadata:
     cert-manager.io/issuer: "letsencrypt"  # TLS requirement - enables cert-manager
 spec:
   ingressClassName: nginx
+  {{- if ne .Values.domain.host "localhost" }}
   tls:
     - hosts:
         - {{ .Values.domain.host }}
       secretName: {{ .Values.domain.host | replace "." "-" }}-tls  # TLS requirement - certificate stored here
+  {{- end }}
   rules:
     - host: {{ .Values.domain.host }}
       http:

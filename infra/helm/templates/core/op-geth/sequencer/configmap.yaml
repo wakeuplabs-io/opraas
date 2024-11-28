@@ -6,14 +6,19 @@ data:
   entrypoint.sh: |
     sleep 3
     
-    /usr/local/bin/geth \
-      --verbosity=3 \
-      --datadir=/app/data/datadir \
-      --state.scheme=hash \
-      init /app/data/configurations/genesis.json
+    if [ ! -d "{{ .Values.geth.datadir }}" ]; then
+      echo "Initializing geth using /app/data/configurations/genesis-l2.json genesis"
+      /usr/local/bin/geth \
+        --verbosity=3 \
+        --datadir={{ .Values.geth.datadir }} \
+        --state.scheme=hash \
+        init /app/data/configurations/genesis-l2.json
+    else 
+      echo "Skipping initialization, geth datadir is not empty"
+    fi
 
     /usr/local/bin/geth \
-      --datadir=/app/data/datadir \
+      --datadir={{ .Values.geth.datadir }} \
       --verbosity=3 \
       --networkid={{ .Values.chain.id }} \
       --syncmode=full \
