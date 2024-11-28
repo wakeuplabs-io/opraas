@@ -19,74 +19,84 @@ impl TerraformDeployer {
             ),
         }
     }
+
+
+    fn create_values_file(&self, stack: &Stack, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let mut updates: HashMap<&str, String> = HashMap::new();
+        let depl = stack.deployment.as_ref().unwrap();
+
+        // global ================================================
+
+        updates.insert("global.storageClassName", "".to_string());
+
+        // private keys ================================================
+
+        updates.insert(
+            "node.config.privateKey",
+            depl.accounts_config.sequencer_private_key.clone(),
+        );
+        updates.insert(
+            "batcher.config.privateKey",
+            depl.accounts_config.batcher_private_key.clone(),
+        );
+        updates.insert(
+            "proposer.config.privateKey",
+            depl.accounts_config.proposer_private_key.clone(),
+        );
+
+        // artifacts images =============================================
+
+        updates.insert("node.image.tag", depl.release_name.clone());
+        updates.insert(
+            "node.image.repository",
+            format!("{}/{}", depl.registry_url, "op-node"),
+        );
+
+        updates.insert("batcher.image.tag", depl.release_name.clone());
+        updates.insert(
+            "batcher.image.repository",
+            format!("{}/{}", depl.registry_url, "op-batcher"),
+        );
+
+        updates.insert("proposer.image.tag", depl.release_name.clone());
+        updates.insert(
+            "proposer.image.repository",
+            format!("{}/{}", depl.registry_url, "op-proposer"),
+        );
+
+        updates.insert("geth.image.tag", depl.release_name.clone());
+        updates.insert(
+            "geth.image.repository",
+            format!("{}/{}", depl.registry_url, "op-geth"),
+        );
+
+        // chain settings ================================================
+
+        updates.insert("chain.id", depl.network_config.l2_chain_id.to_string());
+        updates.insert("chain.l1Rpc", depl.network_config.l1_rpc_url.clone());
+
+        // ================================================
+
+        yaml::rewrite_yaml_to(
+            stack.helm.join("values.yaml").to_str().unwrap(),
+            path,
+            &updates,
+        )?;
+
+        Ok(())
+    }
+
 }
 
 impl TStackInfraDeployer for TerraformDeployer {
     fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>> {
         let mut deployment = stack.deployment.as_ref().unwrap().clone();
-        let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
 
         // create values file
-        let mut updates: HashMap<String, String> = HashMap::new();
-        updates.insert(
-            "node.config.privateKey".to_string(),
-            deployment.accounts_config.sequencer_private_key.clone(),
-        );
-        updates.insert(
-            "batcher.config.privateKey".to_string(),
-            deployment.accounts_config.batcher_private_key.clone(),
-        );
-        updates.insert(
-            "proposer.config.privateKey".to_string(),
-            deployment.accounts_config.proposer_private_key.clone(),
-        );
-        updates.insert(
-            "node.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-node"),
-        );
-        updates.insert(
-            "node.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "batcher.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-batcher"),
-        );
-        updates.insert(
-            "batcher.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "proposer.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-proposer"),
-        );
-        updates.insert(
-            "proposer.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "geth.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-geth"),
-        );
-        updates.insert(
-            "geth.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "chain.artifacts".to_string(),
-            contracts_artifacts.to_str().unwrap().to_string(),
-        );
-        updates.insert(
-            "chain.l1Rpc".to_string(),
-            deployment.network_config.l1_rpc_url.clone(),
-        );
-
         let values = tempfile::NamedTempFile::new()?;
-        yaml::rewrite_yaml_to(
-            stack.helm.join("values.yaml").to_str().unwrap(),
-            values.path().to_str().unwrap(),
-            &updates,
-        )?;
+        self.create_values_file(stack, values.path().to_str().unwrap())?;
+
+        // init, plan and deploy infra
 
         system::execute_command(
             Command::new("terraform")
@@ -114,6 +124,8 @@ impl TStackInfraDeployer for TerraformDeployer {
             false,
         )?;
 
+        // write artifacts to repository
+
         let infra_artifacts = tempfile::NamedTempFile::new()?;
         let output = system::execute_command(
             Command::new("terraform")
@@ -124,7 +136,6 @@ impl TStackInfraDeployer for TerraformDeployer {
         )?;
         fs::write(infra_artifacts.path(), output)?;
 
-        // set terraform artifacts
         deployment.infra_artifacts = Some(infra_artifacts.path().to_path_buf());
         self.deployment_repository.save(&deployment)?;
 
