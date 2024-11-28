@@ -20,7 +20,6 @@ impl TerraformDeployer {
         }
     }
 
-
     fn create_values_file(&self, stack: &Stack, path: &str) -> Result<(), Box<dyn std::error::Error>> {
         let mut updates: HashMap<&str, String> = HashMap::new();
         let depl = stack.deployment.as_ref().unwrap();
@@ -85,7 +84,6 @@ impl TerraformDeployer {
 
         Ok(())
     }
-
 }
 
 impl TStackInfraDeployer for TerraformDeployer {

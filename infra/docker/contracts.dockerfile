@@ -56,27 +56,31 @@ ENV DEPLOYER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae78
 ENV GAS_MULTIPLIER="130"
 ENV SLOW_ARG="--slow"
 
-CMD echo "Updating deploy config..." && \
-  cp ${IN_DEPLOY_CONFIG} ${DEPLOY_CONFIG_PATH} && \
-  l1GenesisBlockTimestamp=$(printf '0x%x' $(date +%s)) && jq --arg ts "$l1GenesisBlockTimestamp" '.l1GenesisBlockTimestamp = $ts' ${DEPLOY_CONFIG_PATH} > tmp.json && mv tmp.json ${DEPLOY_CONFIG_PATH} && \
-  l1StartingBlockTag=$(cast block latest --rpc-url "$ETH_RPC_URL" --json | jq -r ".hash") && jq --arg ts "$l1StartingBlockTag" '.l1StartingBlockTag = $ts' ${DEPLOY_CONFIG_PATH} > tmp.json && mv tmp.json ${DEPLOY_CONFIG_PATH} && \
-  echo "{}" > ${DEPLOYMENT_OUTFILE} && \
-  echo "Deploying L2 contracts to L1..." && \
-  cd /app/packages/contracts-bedrock && forge script scripts/deploy/Deploy.s.sol:Deploy --sig 'runWithStateDump()' --sender "${DEPLOYER_ADDRESS}" --private-key "${DEPLOYER_PRIVATE_KEY}" --gas-estimate-multiplier ${GAS_MULTIPLIER} --rpc-url "${ETH_RPC_URL}" --broadcast ${SLOW_ARG} && \
-  cp ${DEPLOYMENT_OUTFILE} ${OUT_ADDRESSES} && \
-  cp ${DEPLOY_CONFIG_PATH} ${OUT_DEPLOY_CONFIG} && \
-  echo 'Generating L2 genesis allocs' && \
-  cd /app/packages/contracts-bedrock && forge script scripts/L2Genesis.s.sol:L2Genesis --sig 'runWithAllUpgrades()' && mv ${STATE_DUMP_PATH} ${OUT_ALLOCS} && \
-  echo 'Generating l2 genesis and rollup configs' && \
-  /app/op-node/bin/op-node genesis l2 \
-      --l1-rpc ${ETH_RPC_URL} \
-      --deploy-config ${OUT_DEPLOY_CONFIG} \
-      --l2-allocs ${OUT_ALLOCS} \
-      --l1-deployments ${OUT_ADDRESSES} \
-      --outfile.l2 ${OUT_GENESIS} \
-      --outfile.rollup ${OUT_ROLLUP_CONFIG} && \
-  jq 'del(.config.optimism)' ${OUT_GENESIS} > temp.json && mv temp.json ${OUT_GENESIS} && \
-  echo "Generating jwt-secret.txt" && \
-  openssl rand -base64 32 > ${OUT_JWT_SECRET} && \
-  echo "Generating artifacts.zip" && \
-  zip -j /shared/out/artifacts.zip ${OUT_ADDRESSES} ${OUT_ALLOCS} ${OUT_GENESIS} ${OUT_ROLLUP_CONFIG} ${OUT_DEPLOY_CONFIG}
+CMD echo "Deploying L2 contracts to L1..." && \
+    cp ${IN_DEPLOY_CONFIG} ${DEPLOY_CONFIG_PATH} && \
+    l1GenesisBlockTimestamp=$(printf '0x%x' $(date +%s)) && jq --arg ts "$l1GenesisBlockTimestamp" '.l1GenesisBlockTimestamp = $ts' ${DEPLOY_CONFIG_PATH} > tmp.json && mv tmp.json ${DEPLOY_CONFIG_PATH} && \
+    l1StartingBlockTag=$(cast block latest --rpc-url "$ETH_RPC_URL" --json | jq -r ".hash") && jq --arg ts "$l1StartingBlockTag" '.l1StartingBlockTag = $ts' ${DEPLOY_CONFIG_PATH} > tmp.json && mv tmp.json ${DEPLOY_CONFIG_PATH} && \
+    echo "{}" > ${DEPLOYMENT_OUTFILE} && \
+    cd /app/packages/contracts-bedrock && forge script scripts/deploy/Deploy.s.sol:Deploy --sig 'runWithStateDump()' --sender "${DEPLOYER_ADDRESS}" --private-key "${DEPLOYER_PRIVATE_KEY}" --gas-estimate-multiplier ${GAS_MULTIPLIER} --rpc-url "${ETH_RPC_URL}" --broadcast ${SLOW_ARG} && \
+    cp ${DEPLOY_CONFIG_PATH} ${OUT_DEPLOY_CONFIG} && \
+    cp ${DEPLOYMENT_OUTFILE} ${OUT_ADDRESSES} && \
+
+    echo 'Generating L2 genesis allocs' && \
+    cd /app/packages/contracts-bedrock && forge script scripts/L2Genesis.s.sol:L2Genesis --sig 'runWithAllUpgrades()' && mv ${STATE_DUMP_PATH} ${OUT_ALLOCS} && \
+    
+    echo 'Generating l2 genesis and rollup configs' && \
+    /app/op-node/bin/op-node genesis l2 \
+        --l1-rpc ${ETH_RPC_URL} \
+        --deploy-config ${OUT_DEPLOY_CONFIG} \
+        --l2-allocs ${OUT_ALLOCS} \
+        --l1-deployments ${OUT_ADDRESSES} \
+        --outfile.l2 ${OUT_GENESIS} \
+        --outfile.rollup ${OUT_ROLLUP_CONFIG} && \
+    jq 'del(.config.optimism)' ${OUT_GENESIS} > temp.json && mv temp.json ${OUT_GENESIS} && \
+    jq 'del(.channel_timeout_granite)' ${OUT_ROLLUP_CONFIG} > temp.json && mv temp.json ${OUT_ROLLUP_CONFIG} && \
+    
+    echo "Generating jwt-secret.txt" && \
+    openssl rand -hex 32 > ${OUT_JWT_SECRET} && \
+    
+    echo "Generating artifacts.zip" && \
+    zip -j /shared/out/artifacts.zip ${OUT_ADDRESSES} ${OUT_ALLOCS} ${OUT_GENESIS} ${OUT_ROLLUP_CONFIG} ${OUT_DEPLOY_CONFIG} ${OUT_JWT_SECRET}

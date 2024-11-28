@@ -26,6 +26,7 @@ impl TTestnetNode for DockerTestnetNode {
             Command::new("docker").args([
                 "run",
                 "-d",
+                "--rm",
                 "-p",
                 &format!("{}:8545", port),
                 "--name",

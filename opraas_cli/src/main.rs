@@ -27,7 +27,7 @@ struct Args {
 
     /// Suppress logging output
     #[arg(short, long, default_value_t = false)]
-    quiet: bool,
+    verbose: bool,
 }
 
 #[derive(Subcommand, Debug, Clone)]
@@ -67,10 +67,10 @@ async fn main() {
     // parse args
     let args = Args::parse();
 
-    let log_level = if args.quiet {
-        LevelFilter::Off
-    } else {
+    let log_level = if args.verbose {
         LevelFilter::Debug
+    } else {
+        LevelFilter::Off
     };
 
     env_logger::Builder::from_default_env()

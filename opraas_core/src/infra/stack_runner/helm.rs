@@ -81,7 +81,7 @@ impl HelmStackRunner {
         }
 
         // build dependencies
-        
+
         system::execute_command(
             Command::new("helm")
                 .arg("dependency")
@@ -162,7 +162,7 @@ impl HelmStackRunner {
         info!("Waiting for release to be ready",);
 
         loop {
-            if !system::execute_command(
+            let pods = system::execute_command(
                 Command::new("kubectl")
                     .arg("get")
                     .arg("pods")
@@ -170,9 +170,9 @@ impl HelmStackRunner {
                     .arg(&self.namespace)
                     .arg("--no-headers"),
                 true,
-            )?
-            .contains("Pending")
-            {
+            )?;
+
+            if !pods.contains("Pending") && !pods.contains("CrashLoopBackOff") && !pods.contains("Err") {
                 break;
             }
 
@@ -196,19 +196,20 @@ impl TStackRunner for HelmStackRunner {
         self.create_values_file(stack, values.path().to_str().unwrap())?;
 
         // copy addresses.json and artifacts.zip to helm/config so it can be loaded by it
-        let config_dir = tempfile::TempDir::new_in(stack.helm.join("config"))?;
+        let config_dir = stack.helm.join("config");
+        fs::create_dir_all(&config_dir)?;
 
-        let unzipped_artifacts = tempfile::tempdir().unwrap();
+        let unzipped_artifacts = tempfile::TempDir::new()?;
         zip_extract::extract(
             File::open(contracts_artifacts)?,
             &unzipped_artifacts.path(),
             true,
         )?;
 
-        fs::copy(contracts_artifacts, config_dir.path().join("artifacts.zip"))?;
+        fs::copy(contracts_artifacts, config_dir.join("artifacts.zip"))?;
         fs::copy(
             unzipped_artifacts.path().join("addresses.json"),
-            config_dir.path().join("addresses.json"),
+            config_dir.join("addresses.json"),
         )?;
 
         // install core infrastructure

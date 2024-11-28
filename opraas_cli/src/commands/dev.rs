@@ -2,9 +2,8 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
 use std::time::Duration;
-
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success, print_warning, style_spinner};
+use crate::console::{print_info, print_warning, style_spinner};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
@@ -63,6 +62,16 @@ impl DevCommand {
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let release_factory = ReleaseFactory::new(&project, &config);
 
+        // register a ctrl+c handler for cleanup on exit
+
+        let running = Arc::new(AtomicBool::new(true));
+        let running_clone = Arc::clone(&running);
+
+        ctrlc::set_handler(move || {
+            running_clone.store(false, Ordering::SeqCst); // Set the flag to false
+            print_warning("Ctrl + C received, exiting...");
+        })?;
+
         // start local network ===========================
 
         let fork_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
@@ -86,8 +95,9 @@ impl DevCommand {
         config.accounts.challenger_address = wallet_address.to_string();
         config.accounts.challenger_private_key = wallet_private_key.to_string();
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
+        config.network.fund_dev_accounts = true;
 
-        fork_spinner.finish_with_message("✅ L1 fork started");
+        fork_spinner.finish_with_message("L1 fork ready...");
 
         // Deploy contracts ===========================
 
@@ -100,7 +110,7 @@ impl DevCommand {
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
-        contracts_spinner.finish_with_message("✅ Contracts deployed");
+        contracts_spinner.finish_with_message("Contracts deployed...");
 
         // start stack ===========================
 
@@ -111,28 +121,21 @@ impl DevCommand {
 
         self.stack_runner.start(&Stack::load(&project, "dev"))?;
 
-        infra_spinner.finish_with_message("✅ Infra installed");
+        infra_spinner.finish_with_message("Infra installed...");
 
         // inform results and wait for exit ===========================
 
-        print_success("🚀 All ready...");
-
         print_info("\n\n================================================\n\n");
+
         print_info("L1 fork available at http://127.1.1:8545");
         print_info("L2 rpc available at http://localhost:80/rpc");
         print_info("Explorer available at http://localhost:80/explorer");
+
         print_info("\n\n================================================\n\n");
 
         print_warning("Press Ctrl + C to exit...");
 
-        let running = Arc::new(AtomicBool::new(true));
-        let running_clone = Arc::clone(&running);
-
-        ctrlc::set_handler(move || {
-            running_clone.store(false, Ordering::SeqCst); // Set the flag to false
-            print_warning("Ctrl + C received, exiting...");
-        })?;
-
+        // wait for exit
         while running.load(Ordering::SeqCst) {
             thread::sleep(Duration::from_secs(1));
         }

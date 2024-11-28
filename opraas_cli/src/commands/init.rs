@@ -92,7 +92,7 @@ impl InitCommand {
             }
         }
 
-        init_spinner.finish_with_message(format!("✅ Done in {}", HumanDuration(started.elapsed())));
+        init_spinner.finish_with_message(format!("Done in {}", HumanDuration(started.elapsed())));
 
         // print instructions ========================================
 
