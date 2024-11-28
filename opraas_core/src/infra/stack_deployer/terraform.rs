@@ -26,7 +26,7 @@ impl TerraformDeployer {
 
         // global ================================================
 
-        updates.insert("global.storageClassName", "".to_string());
+        updates.insert("global.storageClassName", "gp2".to_string());
 
         // private keys ================================================
 

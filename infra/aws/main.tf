@@ -66,8 +66,8 @@ module "eks" {
       name           = "node-group-1"
       instance_types = ["t3.xlarge"]
       min_size       = 1
-      max_size       = 3
-      desired_size   = 3
+      max_size       = 10
+      desired_size   = 10
     }
   }
 }
