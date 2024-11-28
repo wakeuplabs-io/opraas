@@ -3,25 +3,26 @@ domain:
   email: email@email.com
 
 global:
+  storageClassName: gp2 # Override with "" for default (recommended in local environment)
   image:
     pullPolicy: IfNotPresent
 
 chain:
-  id: "1201101712" # figure out how to take it from files, but files are ziped
-  l1Rpc: "<L1 eth RPC URL>"
+  id: "1201101712" # Override
+  l1Rpc: "<L1 eth RPC URL>" # Override
   artifacts: "config/artifacts.zip"
   addresses: "config/addresses.json"
 
 geth:
   name: op-geth
   image:
-    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-geth
-    tag: v1.101315.3
+    repository: wakeuplabs/op-batcher
+    tag: v0.0.4
   deployment:
     replicaCount: 1
   ports:
-    rpc: 8545 # != optimism docs: 9545
-    ws: 8546 # != optimisms docs: 9546
+    rpc: 8545 
+    ws: 8546
     rpcAuth: 9551
     metrics: 7300
   datadir: /app/data/datadir/data
@@ -29,35 +30,35 @@ geth:
 node:
   name: op-node
   image:
-    repository: matzapata/op-node
-    tag: latest
+    repository: wakeuplabs/op-node
+    tag: v0.0.4
   config:
     p2pEnabled: false
   ports:
-    rpc: 7545 # != optimism docs: 8547
+    rpc: 7545
     p2p: 9222
     metrics: 7300
 
 batcher:
   name: op-batcher
   image:
-    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-batcher
-    tag: v1.9.4
+    repository: wakeuplabs/op-batcher
+    tag: v0.0.4
   config:
     privateKey: ""
   ports:
-    rpc: 6545 # != optimism docs: 8548
+    rpc: 6545 
     metrics: 7300
 
 proposer:
   name: op-proposer
   image:
-    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/op-proposer
-    tag: v1.9.4
+    repository: wakeuplabs/op-proposer
+    tag: v0.0.4
   config:
     privateKey: ""
   ports:
-    rpc: 5545 # != optimism docs: 8560
+    rpc: 5545 
     metrics: 7300
 
 proxyd:

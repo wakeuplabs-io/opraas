@@ -49,6 +49,7 @@ impl InMemoryDeploymentRepository {
         depl_path: &PathBuf,
         value: &NetworkConfig,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let _ = std::fs::remove_file(depl_path.join(NETWORK_FILENAME));
         let writer = OpenOptions::new()
             .write(true)
             .create(true)
@@ -70,6 +71,7 @@ impl InMemoryDeploymentRepository {
         depl_path: &PathBuf,
         value: &AccountsConfig,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let _ = std::fs::remove_file(depl_path.join(ACCOUNTS_FILENAME));
         let writer = OpenOptions::new()
             .write(true)
             .create(true)
@@ -91,6 +93,7 @@ impl InMemoryDeploymentRepository {
         depl_path: &PathBuf,
         release_metadata: &ReleaseMetadata,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        let _ = std::fs::remove_file(depl_path.join(RELEASE_FILENAME));
         let writer = OpenOptions::new()
             .write(true)
             .create(true)

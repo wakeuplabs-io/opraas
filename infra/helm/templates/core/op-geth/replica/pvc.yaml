@@ -9,8 +9,10 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 50Gi # 3Ti optimal
-  storageClassName: gp2
+      storage: 5Gi # 3Ti optimal
+  {{- if ne .Values.global.storageClassName "" }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
 ---
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -24,4 +26,4 @@ spec:
   resources:
     requests:
       storage: 50Mi
-  storageClassName: gp2
+  # storageClassName: gp2

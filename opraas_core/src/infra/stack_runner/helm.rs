@@ -2,7 +2,11 @@ use log::info;
 
 use super::stack_runner::TStackRunner;
 use crate::{domain::Stack, system, yaml};
-use std::{collections::HashMap, process::Command};
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    process::Command,
+};
 
 pub struct HelmStackRunner {
     release_name: String,
@@ -18,15 +22,8 @@ impl HelmStackRunner {
             namespace: namespace.to_string(),
         }
     }
-}
 
-impl TStackRunner for HelmStackRunner {
-    fn run(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
-        let deployment = stack.deployment.as_ref().unwrap();
-        let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
-
-        // Update repo dependencies
-
+    fn build_dependencies(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
         let repo_dependencies = [
             (
                 "ingress-nginx",
@@ -52,7 +49,7 @@ impl TStackRunner for HelmStackRunner {
         }
         system::execute_command(Command::new("helm").arg("repo").arg("update"), false)?;
 
-        // Install pre-requisites, without these helm won't be capable of understanding out chart
+        // install pre-requisites, without these helm won't be capable of understanding out chart
 
         let pre_requisites = [
             ("ingress-nginx", "ingress-nginx/ingress-nginx", vec![]),
@@ -69,7 +66,7 @@ impl TStackRunner for HelmStackRunner {
         ];
 
         for (name, repo, args) in pre_requisites {
-            // Check already installed
+            // if already installed skip
             if system::execute_command(Command::new("helm").args(["list", "-n", name]), true)?.contains(name) {
                 continue;
             }
@@ -77,76 +74,145 @@ impl TStackRunner for HelmStackRunner {
             info!("Installing {} from {}", name, repo);
             system::execute_command(
                 Command::new("helm")
-                    .args(["install", name, repo])
+                    .args(["install", name, repo, "-n", name])
                     .args(args),
                 false,
             )?;
         }
 
         // build dependencies
-        system::execute_command(Command::new("helm").arg("dependency").arg("build"), false)?;
 
-        // create values file overwriting with deployment particular values
-        let mut updates: HashMap<String, String> = HashMap::new();
+        system::execute_command(
+            Command::new("helm")
+                .arg("dependency")
+                .arg("build")
+                .current_dir(&stack.helm),
+            false,
+        )?;
+
+        Ok(())
+    }
+
+    fn create_values_file(&self, stack: &Stack, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let mut updates: HashMap<&str, String> = HashMap::new();
+        let depl = stack.deployment.as_ref().unwrap();
+
+        // global ================================================
+
+        updates.insert("global.storageClassName", "".to_string());
+
+        // private keys ================================================
+
         updates.insert(
-            "node.config.privateKey".to_string(),
-            deployment.accounts_config.sequencer_private_key.clone(),
+            "node.config.privateKey",
+            depl.accounts_config.sequencer_private_key.clone(),
         );
         updates.insert(
-            "batcher.config.privateKey".to_string(),
-            deployment.accounts_config.batcher_private_key.clone(),
+            "batcher.config.privateKey",
+            depl.accounts_config.batcher_private_key.clone(),
         );
         updates.insert(
-            "proposer.config.privateKey".to_string(),
-            deployment.accounts_config.proposer_private_key.clone(),
-        );
-        updates.insert(
-            "node.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-node"),
-        );
-        updates.insert(
-            "node.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "batcher.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-batcher"),
-        );
-        updates.insert(
-            "batcher.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "proposer.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-proposer"),
-        );
-        updates.insert(
-            "proposer.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "geth.image.repository".to_string(),
-            format!("{}/{}", deployment.registry_url, "op-geth"),
-        );
-        updates.insert(
-            "geth.image.tag".to_string(),
-            deployment.release_name.clone(),
-        );
-        updates.insert(
-            "chain.artifacts".to_string(),
-            contracts_artifacts.to_str().unwrap().to_string(),
-        );
-        updates.insert(
-            "chain.l1Rpc".to_string(),
-            deployment.network_config.l1_rpc_url.clone(),
+            "proposer.config.privateKey",
+            depl.accounts_config.proposer_private_key.clone(),
         );
 
-        let values = tempfile::NamedTempFile::new()?;
+        // artifacts images =============================================
+
+        updates.insert("node.image.tag", depl.release_name.clone());
+        updates.insert(
+            "node.image.repository",
+            format!("{}/{}", depl.registry_url, "op-node"),
+        );
+
+        updates.insert("batcher.image.tag", depl.release_name.clone());
+        updates.insert(
+            "batcher.image.repository",
+            format!("{}/{}", depl.registry_url, "op-batcher"),
+        );
+
+        updates.insert("proposer.image.tag", depl.release_name.clone());
+        updates.insert(
+            "proposer.image.repository",
+            format!("{}/{}", depl.registry_url, "op-proposer"),
+        );
+
+        updates.insert("geth.image.tag", depl.release_name.clone());
+        updates.insert(
+            "geth.image.repository",
+            format!("{}/{}", depl.registry_url, "op-geth"),
+        );
+
+        // chain settings ================================================
+
+        updates.insert("chain.id", depl.network_config.l2_chain_id.to_string());
+        updates.insert("chain.l1Rpc", depl.network_config.l1_rpc_url.clone());
+
+        // ================================================
+
         yaml::rewrite_yaml_to(
             stack.helm.join("values.yaml").to_str().unwrap(),
-            values.path().to_str().unwrap(),
+            path,
             &updates,
         )?;
+
+        Ok(())
+    }
+
+    fn wait_for_release(&self) -> Result<(), Box<dyn std::error::Error>> {
+        info!("Waiting for release to be ready",);
+
+        loop {
+            let pods = system::execute_command(
+                Command::new("kubectl")
+                    .arg("get")
+                    .arg("pods")
+                    .arg("-n")
+                    .arg(&self.namespace)
+                    .arg("--no-headers"),
+                true,
+            )?;
+
+            if !pods.contains("Pending") && !pods.contains("CrashLoopBackOff") && !pods.contains("Err") {
+                break;
+            }
+
+            std::thread::sleep(std::time::Duration::from_secs(2));
+        }
+
+        Ok(())
+    }
+}
+
+impl TStackRunner for HelmStackRunner {
+    fn run(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>> {
+        let deployment = stack.deployment.as_ref().unwrap();
+        let contracts_artifacts = deployment.contracts_artifacts.as_ref().unwrap();
+
+        // add repos, install pre-requisites and build dependencies
+        self.build_dependencies(stack)?;
+
+        // create values file from stack
+        let values = tempfile::NamedTempFile::new()?;
+        self.create_values_file(stack, values.path().to_str().unwrap())?;
+
+        // copy addresses.json and artifacts.zip to helm/config so it can be loaded by it
+        let config_dir = stack.helm.join("config");
+        fs::create_dir_all(&config_dir)?;
+
+        let unzipped_artifacts = tempfile::TempDir::new()?;
+        zip_extract::extract(
+            File::open(contracts_artifacts)?,
+            &unzipped_artifacts.path(),
+            true,
+        )?;
+
+        fs::copy(contracts_artifacts, config_dir.join("artifacts.zip"))?;
+        fs::copy(
+            unzipped_artifacts.path().join("addresses.json"),
+            config_dir.join("addresses.json"),
+        )?;
+
+        // install core infrastructure
 
         system::execute_command(
             Command::new("helm")
@@ -160,6 +226,8 @@ impl TStackRunner for HelmStackRunner {
                 .arg(stack.helm.to_str().unwrap()),
             false,
         )?;
+
+        self.wait_for_release()?;
 
         Ok(())
     }

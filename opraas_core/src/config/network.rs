@@ -66,7 +66,7 @@ impl NetworkConfig {
         Self {
             l1_rpc_url: "http://127.0.0.1:8545".to_string(),
             l1_chain_id: 1,
-            l2_chain_id: 101,
+            l2_chain_id: 1201101712,
             max_sequencer_drift: 600,
             sequencer_window_size: 3600,
             channel_timeout: 300,

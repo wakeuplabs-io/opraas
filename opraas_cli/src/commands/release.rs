@@ -60,10 +60,10 @@ impl ReleaseCommand {
         print_info("We'll tag your local builds and push them to your repository.");
         print_warning("Make sure you're docker user has push access to the repository");
 
-        let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let registry_url: String = self
             .dialoguer
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
+        let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
 
         // Offer option to tag release in git
         if self
