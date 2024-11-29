@@ -63,11 +63,12 @@ jobs:
             outdir="infra-aws"
             echo "DIRNAME=$outdir"
 
-            (cd infra/aws && tar -czf "../../$outdir.tar.gz" .)
+            (cd infra/aws && zip -r "../../$outdir.zip" .)
             echo "ZIP=$outdir.zip" >> $GITHUB_ENV
                 
-            tar -czf "$outdir.tar.gz" -C infra/aws .
+            (cd infra/aws && tar -czf "../../$outdir.tar.gz" .)
             echo "TAR=$outdir.tar.gz" >> $GITHUB_ENV
+
 
         - name: Release
           uses: softprops/action-gh-release@v1
