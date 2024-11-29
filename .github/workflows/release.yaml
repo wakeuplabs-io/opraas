@@ -176,6 +176,9 @@ jobs:
           working-directory: ./npm 
           run: npm install
 
+        - name: Login to npm
+          run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
         - name: Publish to npm
           working-directory: ./npm 
           run: npm publish --access public
