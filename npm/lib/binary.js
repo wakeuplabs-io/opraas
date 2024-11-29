@@ -8,7 +8,10 @@ const error = msg => {
     process.exit(1);
 };
 
-const { version, name, repository } = require("../package.json");
+// binary definition
+const repository = "https://github.com/wakeuplabs-io/op-ruaas"
+const version = "0.0.4"
+const name = "opruaas"
 
 const supportedPlatforms = [
     {
@@ -24,11 +27,17 @@ const supportedPlatforms = [
         BINARY_NAME: "opraas_cli"
     },
     {
-        TYPE: "Apple",
+        TYPE: "Darwin",
         ARCHITECTURE: "x64",
         RUST_TARGET: "x86_64-apple-darwin",
         BINARY_NAME: "opraas_cli"
-    },
+      },
+      {
+        TYPE: "Darwin",
+        ARCHITECTURE: "arm64",
+        RUST_TARGET: "x86_64-apple-darwin",
+        BINARY_NAME: "opraas_cli"
+      }
 ];
 
 const getPlatformMetadata = () => {
@@ -54,11 +63,9 @@ const getPlatformMetadata = () => {
 const getBinary = () => {
     const platformMetadata = getPlatformMetadata();
     // the url for this binary is constructed from values in `package.json`
-    // https://github.com/wakeuplabs-io/op-ruaas/releases/download/v1.0.0/opraas-v1.0.0-x86_64-apple-darwin.tar.gz
-    const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platformMetadata.RUST_TARGET}.${platformMetadata.BINARY_NAME.includes("exe") ? "zip" : "tar.gz"}`;
-    return new Binary(platformMetadata.BINARY_NAME, url, version, {
-        installDirectory: join(__dirname, "..", "bin"),
-    });
+    // https://github.com/wakeuplabs-io/op-ruaas/releases/download/v1.0.0/opruaas-v1.0.0-x86_64-apple-darwin.tar.gz
+    const url = `${repository}/releases/download/v${version}/${name}-v${version}-${platformMetadata.RUST_TARGET}.${platformMetadata.BINARY_NAME.includes("exe") ? "zip" : "tar.gz"}`;
+    return new Binary(platformMetadata.BINARY_NAME, url, version);
 };
 
 const run = () => {
