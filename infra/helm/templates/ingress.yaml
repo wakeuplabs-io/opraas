@@ -3,21 +3,26 @@ kind: Ingress
 metadata:
   name: ingress
   annotations:
-    cert-manager.io/issuer: "letsencrypt" # TLS requirement - enables cert-manager
+    {{- if ne .Values.domain.host "localhost" }}
+    cert-manager.io/issuer: "letsencrypt"  # TLS requirement - enables cert-manager
+    {{- end }}
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
 spec:
   ingressClassName: nginx
-  tls:                                    
-  - hosts:                                
-    - {{ .Values.domain.host }}                  
-    secretName: {{ .Values.domain.host | replace "." "-" }}-tls  # TLS requirement - certificate stored here
+  {{- if ne .Values.domain.host "localhost" }}
+  tls:
+    - hosts:
+        - {{ .Values.domain.host }}
+      secretName: {{ .Values.domain.host | replace "." "-" }}-tls  # TLS requirement - certificate stored here
+  {{- end }}
   rules:
-  - host: {{ .Values.domain.host }}
-    http:
-      paths:
-      - path: {{ .Values.demo.ingress.path }}
-        pathType: Prefix
-        backend:
-          service:
-            name: {{ .Values.demo.service.name }}
-            port:
-              number: {{ .Values.demo.service.port }}
+    - host: {{ .Values.domain.host }}
+      http:
+        paths:
+          - path: {{ .Values.proxyd.ingress.nodePath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.proxyd.name }}-service
+                port:
+                  number: {{ .Values.proxyd.service.port }}

@@ -6,5 +6,7 @@
 /releases
 .env
 /node_modules
+*.tgz
 /demo
 /alias.sh
+/infra/helm/config

@@ -66,8 +66,8 @@ module "eks" {
       name           = "node-group-1"
       instance_types = ["t3.xlarge"]
       min_size       = 1
-      max_size       = 3
-      desired_size   = 3
+      max_size       = 10
+      desired_size   = 10
     }
   }
 }
@@ -127,6 +127,16 @@ resource "helm_release" "cert_manager" {
   }
 }
 
+resource "helm_release" "prometheus" {
+  name       = "prometheus"
+  repository = "https://prometheus-community.github.io/helm-charts"
+  chart      = "prometheus-community/kube-prometheus-stack"
+  namespace  = "prometheus"
+  timeout    = 600
+
+  create_namespace = true
+}
+
 resource "helm_release" "opraas" {
   name      = "opraas"
   chart     = "../helm"
@@ -135,12 +145,15 @@ resource "helm_release" "opraas" {
 
   create_namespace = true
 
+  dependency_update = true
+
   values = [
      file(var.values_file_path)
   ]
 
   depends_on = [
     helm_release.ingress_nginx,
-    helm_release.cert_manager
+    helm_release.cert_manager,
+    helm_release.prometheus
   ]
 }

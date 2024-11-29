@@ -1,10 +1,5 @@
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
-
 use crate::config::get_config_path;
-use crate::console::{print_info, print_success, print_warning, style_spinner};
+use crate::console::{print_info, print_warning, style_spinner};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
@@ -12,6 +7,10 @@ use opraas_core::application::{StackContractsDeployerService, TStackContractsDep
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory, Stack};
 use opraas_core::infra::{testnet_node::docker::DockerTestnetNode, testnet_node::testnet_node::TTestnetNode};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
@@ -86,8 +85,9 @@ impl DevCommand {
         config.accounts.challenger_address = wallet_address.to_string();
         config.accounts.challenger_private_key = wallet_private_key.to_string();
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
+        config.network.fund_dev_accounts = true;
 
-        fork_spinner.finish_with_message("✅ L1 fork started");
+        fork_spinner.finish_with_message("L1 fork ready...");
 
         // Deploy contracts ===========================
 
@@ -100,7 +100,7 @@ impl DevCommand {
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
         contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
-        contracts_spinner.finish_with_message("✅ Contracts deployed");
+        contracts_spinner.finish_with_message("Contracts deployed...");
 
         // start stack ===========================
 
@@ -111,16 +111,16 @@ impl DevCommand {
 
         self.stack_runner.start(&Stack::load(&project, "dev"))?;
 
-        infra_spinner.finish_with_message("✅ Infra installed");
+        infra_spinner.finish_with_message("Infra installed...");
 
         // inform results and wait for exit ===========================
 
-        print_success("🚀 All ready...");
-
         print_info("\n\n================================================\n\n");
+
         print_info("L1 fork available at http://127.1.1:8545");
         print_info("L2 rpc available at http://localhost:80/rpc");
-        print_info("Explorer available at http://localhost:80/explorer");
+        print_info("Explorer available at http://localhost:80");
+
         print_info("\n\n================================================\n\n");
 
         print_warning("Press Ctrl + C to exit...");
@@ -133,6 +133,7 @@ impl DevCommand {
             print_warning("Ctrl + C received, exiting...");
         })?;
 
+        // wait for exit
         while running.load(Ordering::SeqCst) {
             thread::sleep(Duration::from_secs(1));
         }

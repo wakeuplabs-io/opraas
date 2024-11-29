@@ -53,3 +53,22 @@ release-cli: bump-versions
 	@echo "Ready, review changes and push tag with git push origin $(VERSION)"
 
 
+zip-config-artifacts: 
+	@echo deleting old zip
+	rm -f infra/helm/config/artifacts.zip
+	@echo zipping config artifacts on /infra/helm/config directory
+	zip -j infra/helm/config/artifacts.zip infra/helm/config/*
+	@echo removing zipped files
+	find infra/helm/config -maxdepth 1 ! -name "addresses.json" ! -name "artifacts.zip" -type f -exec rm -v {} \;
+
+install-helm:
+	@echo installing helm chart
+	helm install opraas infra/helm -n opraas --create-namespace
+
+upgrade-helm:
+	@echo installing helm chart
+	helm upgrade opraas infra/helm -n opraas
+
+uninstall-helm:
+	@echo uninstalling helm chart
+	helm uninstall opraas -n opraas

@@ -1,5 +1,5 @@
 ARG TARGET_BASE_IMAGE=alpine:3.20
-ARG BUILDPLATFORM=arm64
+ARG BUILDPLATFORM=linux/amd64
 
 FROM --platform=$BUILDPLATFORM golang:1.22.7-alpine3.20 AS builder
 
