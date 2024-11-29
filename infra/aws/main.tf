@@ -130,7 +130,7 @@ resource "helm_release" "cert_manager" {
 resource "helm_release" "prometheus" {
   name       = "prometheus"
   repository = "https://prometheus-community.github.io/helm-charts"
-  chart      = "prometheus-community/kube-prometheus-stack"
+  chart      = "kube-prometheus-stack"
   namespace  = "prometheus"
   timeout    = 600
 
