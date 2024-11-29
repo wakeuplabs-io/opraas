@@ -1802,7 +1802,7 @@ dependencies = [
 
 [[package]]
 name = "opraas_core"
-version = "0.0.3"
+version = "0.0.5"
 dependencies = [
  "async-trait",
  "colored",

@@ -126,7 +126,7 @@ jobs:
           shell: bash
           run: |
             # Define binary name and output directory
-            binary_name="opraas_cli" # Replace with your actual binary name
+            binary_name="opruaas"
             output_dir="${binary_name}-${{ env.VERSION }}-${{ matrix.target }}"
   
             # Create directory and move the binary
@@ -155,6 +155,11 @@ jobs:
             prerelease: false
 
     npm_release:
+        needs: 
+          - cli_release
+          - aws_release
+          - helm_release
+
         runs-on: ubuntu-latest
 
         steps:

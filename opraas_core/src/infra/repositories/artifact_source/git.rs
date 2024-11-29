@@ -1,12 +1,10 @@
 use crate::{
-    domain::{self, artifact::Artifact},
-    git,
+    config::artifacts::{INFRA_SOURCE_REPO, INFRA_SOURCE_REPO_VERSION}, domain::{self, artifact::Artifact}, git
 };
 
 pub struct GitArtifactSourceRepository;
 
-const OP_RUAAS_REPO: &str = "wakeuplabs-io/op-ruaas";
-const OP_RUAAS_VERSION: &str = "v0.0.3";
+
 
 impl GitArtifactSourceRepository {
     pub fn new() -> Self {
@@ -28,40 +26,40 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
         match artifact {
             Artifact::Batcher(..) => {
                 git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
+                    INFRA_SOURCE_REPO,
+                    INFRA_SOURCE_REPO_VERSION,
                     "infra/docker/batcher.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
             Artifact::Contracts(..) => {
                 git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
+                    INFRA_SOURCE_REPO,
+                    INFRA_SOURCE_REPO_VERSION,
                     "infra/docker/contracts.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
             Artifact::Proposer(..) => {
                 git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
+                    INFRA_SOURCE_REPO,
+                    INFRA_SOURCE_REPO_VERSION,
                     "infra/docker/proposer.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
             Artifact::Geth(..) => {
                 git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
+                    INFRA_SOURCE_REPO,
+                    INFRA_SOURCE_REPO_VERSION,
                     "infra/docker/geth.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;
             }
             Artifact::Node(..) => {
                 git::download_release_asset(
-                    OP_RUAAS_REPO,
-                    OP_RUAAS_VERSION,
+                    INFRA_SOURCE_REPO,
+                    INFRA_SOURCE_REPO_VERSION,
                     "infra/docker/node.dockerfile",
                     artifact.dockerfile().as_path().to_str().unwrap(),
                 )?;

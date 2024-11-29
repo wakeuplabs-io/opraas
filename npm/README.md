@@ -1,20 +1,8 @@
-
-# OP-RUAAS - Optimism Rollup as a service
-
-Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
-
-## Makefile commands
-
-- `make run ....` -> compile and run cli on the fly
-- `make format`
-- `make lint`
-- `make release-{windows/apple/linux}` -> Creates binaries and zip releases within releases folder.
-
 ## Opruaas cli
 
 ### Commands
 
-Usage: opruuas [OPTIONS] <COMMAND>
+Usage: `npx opruaas [OPTIONS] <COMMAND>`
 
 Commands:
 -  `new`      Create new project, template config file and folders
@@ -35,18 +23,18 @@ Options:
 
 ```bash
 # 1. create your project
-opruaas new my-chain && cd my-chain
+npx opruaas new my-chain && cd my-chain
 
 # 2. Fill up config.toml and .env
 
 # 3. Pull sources with init (target can be all|batcher|node|geth|contracts)
-opruaas --quiet init contracts
+npx opruaas --quiet init contracts
 
 # 4. Build images with 
-opruaas build contracts
+npx opruaas build contracts
 
 # 5. Finally when ready release. It's important you have docker already configured with enough permissions to push to the repo you want to release to
-opruaas release contracts
+npx opruaas release contracts
 ```
 
 ### Test releases with dev
@@ -54,23 +42,12 @@ opruaas release contracts
 ```bash
 # 1. Just run dev command... We'll prompt you about which release to use
 # We'll fork the l1 you have in .env so make sure to have a valid rpc. As per wallets we'll replace your values with mock wallets already funded.
-opruaas dev
+npx opruaas dev
 ```
 
 ### Deploy contracts/infra/all
 
 ```bash
 # 1. Just run dev command... We'll prompt you about which release to use
-opruaas deploy all --name my-prod-depl
+npx opruaas deploy all --name my-prod-depl
 ```
-
-### Npm distribution 
-
-1. Within makefile update `RELEASE_VERSION`
-2. Run `make release-{windows/apple/linux}`
-3. Upload assets to github release named `v{RELEASE_VERSION}`
-4. Bump npm package version to match the release
-5. `npm run publish --access public`
-
-
-
