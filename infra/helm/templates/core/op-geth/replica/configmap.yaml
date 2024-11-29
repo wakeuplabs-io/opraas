@@ -7,12 +7,12 @@ data:
     sleep 3
 
     if [ ! -d "{{ .Values.geth.datadir }}" ]; then
-      echo "Initializing geth using /app/data/configurations/genesis-l2.json genesis"
+      echo "Initializing geth using /app/data/configurations/genesis.json genesis"
       /usr/local/bin/geth \
         --verbosity=3 \
         --datadir={{ .Values.geth.datadir }} \
         --state.scheme=hash \
-        init /app/data/configurations/genesis-l2.json
+        init /app/data/configurations/genesis.json
     else 
       echo "Skipping initialization, geth datadir is not empty"
     fi

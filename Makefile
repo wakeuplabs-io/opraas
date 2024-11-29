@@ -63,12 +63,12 @@ zip-config-artifacts:
 
 install-helm:
 	@echo installing helm chart
-	helm install opstack infra/helm
+	helm install opraas infra/helm -n opraas --create-namespace
 
 upgrade-helm:
 	@echo installing helm chart
-	helm upgrade opstack infra/helm
+	helm upgrade opraas infra/helm -n opraas
 
 uninstall-helm:
 	@echo uninstalling helm chart
-	helm uninstall opstack
+	helm uninstall opraas -n opraas

@@ -1,5 +1,5 @@
 domain:
-  host: localhost # demo.example.com
+  host: opraas.wakeuplabs.link # demo.example.com
   email: email@email.com
 
 global:
@@ -8,7 +8,7 @@ global:
     pullPolicy: IfNotPresent
 
 chain:
-  id: "1201101712" # Override
+  id: "1201" # Override
   l1Rpc: "<L1 eth RPC URL>" # Override
   artifacts: "config/artifacts.zip"
   addresses: "config/addresses.json"
@@ -16,7 +16,7 @@ chain:
 geth:
   name: op-geth
   image:
-    repository: wakeuplabs/op-batcher
+    repository: wakeuplabs/op-geth
     tag: v0.0.4
   deployment:
     replicaCount: 1
@@ -91,7 +91,7 @@ kube-prometheus-stack:
       paths:
         - /grafana
       hosts:
-        - "localhost"
+        - "opraas.wakeuplabs.link"
   prometheus:
     serviceAccount:
       name: "" # prometheus
@@ -114,14 +114,15 @@ blockscout-stack:
     ingress:
       enabled: true
       className: nginx
-      hostname: localhost
+      hostname: opraas.wakeuplabs.link
+
     env:
       ECTO_USE_SSL: "false"
       ETHEREUM_JSONRPC_VARIANT: "geth"
       ETHEREUM_JSONRPC_HTTP_URL: "http://op-geth-replica-service:8545"
       ETHEREUM_JSONRPC_WS_URL: "ws://op-geth-replica-service:8546"
       NETWORK: "Optimism"
-      CHAIN_ID: "1201101712"
+      CHAIN_ID: "1201"
     extraEnv:
       - name: DATABASE_URL
         valueFrom:
@@ -132,7 +133,6 @@ blockscout-stack:
     ingress:
       enabled: true
       className: nginx
-      hostname: localhost
-      # paths:
-      #   - path: /explorer # fails because it doesn't change web app base url
-      #     pathType: Prefix
+      hostname: opraas.wakeuplabs.link
+    env:
+      NEXT_PUBLIC_API_PROTOCOL: "https" # Change to http if using localhost
