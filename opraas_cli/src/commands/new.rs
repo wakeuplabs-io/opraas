@@ -61,7 +61,7 @@ impl NewCommand {
         );
         println!("    Publishes docker images to be used in dev or prod.\n");
 
-        println!("  {} {}", env!("CARGO_PKG_NAME"), "dev".blue());
+        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
         println!("    Runs a local dev environment.\n");
 
         println!(
