@@ -157,32 +157,3 @@ resource "helm_release" "opraas" {
     helm_release.prometheus
   ]
 }
-
-# ======================================================================
-# Route 53 DNS
-# ======================================================================
-
-# Re-check if it works
-
-data "aws_route53_zone" "wakeuplabs_link" { 
-  name = "wakeuplabs.link" 
-} 
- 
-data "kubernetes_ingress" "opraas_ingress" { 
-  metadata { 
-    name      = "ingress" 
-    namespace = "opraas" 
-  } 
- 
-  depends_on = [helm_release.opraas] 
-} 
- 
-resource "aws_route53_record" "opraas_ingress_dns" { 
-  zone_id = data.aws_route53_zone.wakeuplabs_link.zone_id 
-  name    = "opraas.wakeuplabs.link" 
-  type    = "CNAME" 
-  ttl     = 300 
-
-  records = [data.kubernetes_ingress.opraas_ingress.status[0].load_balancer[0].ingress[0].hostname] 
-}
-

@@ -1,5 +1,5 @@
 domain:
-  host: opraas.wakeuplabs.link # demo.example.com
+  host: localhost # demo.example.com
   email: email@email.com
 
 global:
@@ -8,8 +8,8 @@ global:
     pullPolicy: IfNotPresent
 
 chain:
-  id: "1201" # Override
-  l1Rpc: "<L1 eth RPC URL>" # Override
+  id: "override" 
+  l1Rpc: "override"
   artifacts: "config/artifacts.zip"
   addresses: "config/addresses.json"
 
@@ -91,7 +91,7 @@ kube-prometheus-stack:
       paths:
         - /grafana
       hosts:
-        - "opraas.wakeuplabs.link"
+        - "localhost"
   prometheus:
     serviceAccount:
       name: "" # prometheus
@@ -114,7 +114,7 @@ blockscout-stack:
     ingress:
       enabled: true
       className: nginx
-      hostname: opraas.wakeuplabs.link
+      hostname: localhost
 
     env:
       ECTO_USE_SSL: "false"
@@ -133,6 +133,6 @@ blockscout-stack:
     ingress:
       enabled: true
       className: nginx
-      hostname: opraas.wakeuplabs.link
+      hostname: localhost
     env:
       NEXT_PUBLIC_API_PROTOCOL: "https" # Change to http if using localhost
