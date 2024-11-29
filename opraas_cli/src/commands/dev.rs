@@ -1,3 +1,7 @@
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 use crate::config::get_config_path;
 use crate::console::{print_info, print_warning, style_spinner};
 use assert_cmd::Command;
@@ -7,10 +11,6 @@ use opraas_core::application::{StackContractsDeployerService, TStackContractsDep
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory, Stack};
 use opraas_core::infra::{testnet_node::docker::DockerTestnetNode, testnet_node::testnet_node::TTestnetNode};
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
 
 pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
@@ -30,8 +30,8 @@ impl DevCommand {
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
+        let mut config = CoreConfig::new_from_toml(&get_config_path())?;
+        let project = Project::new_from_root(std::env::current_dir()?);
 
         print_info("Dev command will run a local fork node, deploy contracts to it and then install the infra in your local network.");
         print_info("You can use a release you build with build and release command or a third-party release");
@@ -98,7 +98,7 @@ impl DevCommand {
 
         let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
-        contracts_deployer.deploy("dev", &contracts_release, &config)?;
+        let contracts_deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
         contracts_spinner.finish_with_message("Contracts deployed...");
 
@@ -109,7 +109,11 @@ impl DevCommand {
             "⏳ Installing infra in local kubernetes...",
         );
 
-        self.stack_runner.start(&Stack::load(&project, "dev"))?;
+        self.stack_runner.start(&Stack::new(
+            project.infra.helm.clone(),
+             project.infra.aws.clone(),
+            Some(contracts_deployment)
+        ))?;
 
         infra_spinner.finish_with_message("Infra installed...");
 
@@ -125,13 +129,13 @@ impl DevCommand {
 
         print_warning("Press Ctrl + C to exit...");
 
-        let running = Arc::new(AtomicBool::new(true));
-        let running_clone = Arc::clone(&running);
-
-        ctrlc::set_handler(move || {
-            running_clone.store(false, Ordering::SeqCst); // Set the flag to false
-            print_warning("Ctrl + C received, exiting...");
-        })?;
+          let running = Arc::new(AtomicBool::new(true));
+          let running_clone = Arc::clone(&running);
+  
+          ctrlc::set_handler(move || {
+              running_clone.store(false, Ordering::SeqCst); // Set the flag to false
+              print_warning("Ctrl + C received, exiting...");
+          })?;
 
         // wait for exit
         while running.load(Ordering::SeqCst) {

@@ -97,7 +97,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
             return Err("Contracts artifact not found".into());
         }
         deployment.contracts_artifacts = Some(artifact_path);
-        self.deployment_repository.save(&deployment)?;
+        self.deployment_repository.save(&mut deployment)?;
 
         Ok(deployment)
     }

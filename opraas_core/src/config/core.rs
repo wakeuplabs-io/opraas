@@ -10,6 +10,10 @@ pub struct CoreConfig {
 
 impl CoreConfig {
     pub fn new_from_toml<P: AsRef<std::path::Path>>(p: &P) -> Result<Self, Box<dyn std::error::Error>> {
+        if !p.as_ref().exists() {
+            return Err("Config file not found".into());
+        }
+
         let config_content = std::fs::read_to_string(p)?;
         let config: CoreConfig = toml::from_str(&config_content)?;
 

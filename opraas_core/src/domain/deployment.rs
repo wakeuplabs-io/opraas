@@ -18,7 +18,7 @@ pub struct Deployment {
 }
 
 pub trait TDeploymentRepository {
-    fn save(&self, deployment: &Deployment) -> Result<(), Box<dyn std::error::Error>>;
+    fn save(&self, deployment: &mut Deployment) -> Result<(), Box<dyn std::error::Error>>;
     fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>>;
 }
 

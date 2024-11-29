@@ -153,7 +153,7 @@ impl TStackInfraDeployer for TerraformDeployer {
         fs::write(infra_artifacts.path(), output)?;
 
         deployment.infra_artifacts = Some(infra_artifacts.path().to_path_buf());
-        self.deployment_repository.save(&deployment)?;
+        self.deployment_repository.save(&mut deployment)?;
 
         Ok(deployment)
     }

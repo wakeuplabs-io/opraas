@@ -147,7 +147,7 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
         }))
     }
 
-    fn save(&self, deployment: &Deployment) -> Result<(), Box<dyn std::error::Error>> {
+    fn save(&self, deployment: &mut Deployment) -> Result<(), Box<dyn std::error::Error>> {
         let depl_path = self.root.join(&deployment.name);
         std::fs::create_dir_all(&depl_path)?;
         std::fs::create_dir_all(&depl_path.join("artifacts"))?;
@@ -168,10 +168,12 @@ impl domain::deployment::TDeploymentRepository for InMemoryDeploymentRepository 
                 &depl_path.join(CONTRACTS_ARTIFACTS_FILENAME),
                 contracts_artifacts,
             )?;
+            deployment.contracts_artifacts = Some(depl_path.join(CONTRACTS_ARTIFACTS_FILENAME));
         }
 
         if let Some(infra_artifacts) = &deployment.infra_artifacts {
             self.write_path(&depl_path.join(INFRA_ARTIFACTS_FILENAME), infra_artifacts)?;
+            deployment.infra_artifacts = Some(depl_path.join(INFRA_ARTIFACTS_FILENAME));
         }
 
         Ok(())
