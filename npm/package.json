@@ -1,7 +1,7 @@
 {
-    "name": "opruaas",
+    "name": "@wakeuplabs/opruaas",
     "version": "0.0.1",
-    "description": "Spin up Optimsim rollups with ease",
+    "description": "Spin up Optimism rollups with ease",
     "bin": {
         "opruaas": "./lib/run.js"
     },
