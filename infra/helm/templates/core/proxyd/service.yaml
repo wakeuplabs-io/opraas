@@ -7,5 +7,9 @@ spec:
   selector:
     app: {{ .Values.proxyd.name }}
   ports:
-    - port: {{ .Values.proxyd.service.port }}
-      targetPort: {{ .Values.proxyd.service.targetPort }}
+    - name: rpc
+      port: {{ .Values.proxyd.ports.rpc }}
+      targetPort: {{ .Values.proxyd.ports.rpc }}
+    - name: ws
+      port: {{ .Values.proxyd.ports.ws }}
+      targetPort: {{ .Values.proxyd.ports.ws }}

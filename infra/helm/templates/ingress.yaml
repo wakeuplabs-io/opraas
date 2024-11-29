@@ -19,10 +19,17 @@ spec:
     - host: {{ .Values.domain.host }}
       http:
         paths:
-          - path: {{ .Values.proxyd.ingress.nodePath }}
+          - path: {{ .Values.proxyd.ingress.rpcPath }}
             pathType: Prefix
             backend:
               service:
                 name: {{ .Values.proxyd.name }}-service
                 port:
-                  number: {{ .Values.proxyd.service.port }}
+                  number: {{ .Values.proxyd.ports.rpc }}
+          - path: {{ .Values.proxyd.ingress.wsPath }}
+            pathType: Prefix
+            backend:
+              service:
+                name: {{ .Values.proxyd.name }}-service
+                port:
+                  number: {{ .Values.proxyd.ports.ws }}
