@@ -1,4 +1,4 @@
-use crate::config::get_config_path;
+use crate::config::{get_config_path, BIN_NAME};
 use crate::console::{print_error, style_spinner};
 use clap::ValueEnum;
 use colored::*;
@@ -96,30 +96,28 @@ impl InitCommand {
 
         // print instructions ========================================
 
-        let bin_name = env!("CARGO_PKG_NAME");
-
         println!("\n{}\n", "What's Next?".bright_white().bold());
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "build [contracts|node|etc...]".blue()
         );
         println!("    Builds docker images from artifacts.\n");
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "release [contracts|node|etc...]".blue()
         );
         println!("    Publishes docker images to be used in dev or prod.\n");
 
-        println!("  {} {}", env!("CARGO_PKG_NAME"), "dev".blue());
+        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
         println!("    Runs a local dev environment.\n");
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
         println!("    Deploys contracts to l1 and infra to kubernetes through terraform.\n");

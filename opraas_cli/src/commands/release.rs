@@ -1,5 +1,5 @@
 use crate::{
-    config::get_config_path,
+    config::{get_config_path, BIN_NAME},
     console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
     git::TGit,
 };
@@ -131,16 +131,14 @@ impl ReleaseCommand {
 
         // print instructions  =========================
 
-        let bin_name = env!("CARGO_PKG_NAME");
-
         println!("\n{}\n", "What's Next?".bright_white().bold());
 
-        println!("  {} {}", bin_name.blue(), "dev".blue());
+        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
         println!("    Try your artifacts locally without spending any resources.\n");
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
         println!("    Use your artifacts to create contracts deployments or whole infra.\n");

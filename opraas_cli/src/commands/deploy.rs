@@ -1,5 +1,5 @@
 use crate::{
-    config::get_config_path,
+    config::{get_config_path, BIN_NAME},
     console::{print_info, style_spinner},
 };
 use clap::ValueEnum;
@@ -112,8 +112,6 @@ impl DeployCommand {
 
         // print instructions
 
-        let bin_name = env!("CARGO_PKG_NAME");
-
         println!("\n{}\n", "What's Next?".bright_white().bold());
 
         println!(
@@ -126,7 +124,7 @@ impl DeployCommand {
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "inspect [contracts|infra|all] --name <deployment_name>".blue()
         );
         println!("    Display the artifacts for each deployment.\n");

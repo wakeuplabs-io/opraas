@@ -3,7 +3,7 @@ use indicatif::ProgressBar;
 use opraas_core::application::{CreateProjectService, TCreateProjectService};
 use std::{env, path::PathBuf};
 
-use crate::console::style_spinner;
+use crate::{config::BIN_NAME, console::style_spinner};
 
 pub struct NewCommand {
     create_project_service: Box<dyn TCreateProjectService>,
@@ -37,28 +37,26 @@ impl NewCommand {
 
         // print instructions ========================================
 
-        let bin_name = env!("CARGO_PKG_NAME");
-
         println!("\n{}\n", "What's Next?".bright_white().bold());
         println!("Inside that directory, you can run several commands:\n");
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "init [contracts|node|etc...]".blue()
         );
         println!("    Initiates artifacts for local builds.\n");
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "build [contracts|node|etc...]".blue()
         );
         println!("    Builds docker images from artifacts.\n");
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "release [contracts|node|etc...]".blue()
         );
         println!("    Publishes docker images to be used in dev or prod.\n");
@@ -68,14 +66,14 @@ impl NewCommand {
 
         println!(
             "  {} {}",
-            bin_name.blue(),
+            BIN_NAME.blue(),
             "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
         println!("    Deploys contracts to l1 and infra to kubernetes through terraform.\n");
 
         println!("We suggest that you begin by typing:\n");
         println!("  {} {}", "cd".blue(), name.blue());
-        println!("  {} {}\n", bin_name.blue(), "dev".blue());
+        println!("  {} {}\n", BIN_NAME.blue(), "dev".blue());
 
         Ok(())
     }

@@ -1,6 +1,5 @@
 const { Binary } = require("binary-install");
 const os = require("os");
-const { join } = require("path");
 const cTable = require("console.table");
 
 const error = msg => {
