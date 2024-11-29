@@ -125,7 +125,7 @@ impl ReleaseCommand {
         }
 
         release_spinner.finish_with_message(format!(
-            "🎉 Released in {}",
+            "✔️ Released in {}",
             HumanDuration(started.elapsed())
         ));
 

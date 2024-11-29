@@ -68,7 +68,7 @@ impl DeployCommand {
             self.contracts_deployer_service
                 .deploy(&name, &contracts_release, &config)?;
 
-            contracts_deployer_spinner.finish_with_message("Contracts deployed...");
+            contracts_deployer_spinner.finish_with_message("✔️ Contracts deployed...");
         }
 
         // infra deployment ===========================================================
@@ -79,7 +79,7 @@ impl DeployCommand {
             self.infra_deployer_service
                 .deploy(&Stack::load(&project, &name))?;
 
-            infra_deployer_spinner.finish_with_message("Infra deployed, your chain is live!");
+            infra_deployer_spinner.finish_with_message("✔️ Infra deployed, your chain is live!");
 
             print_info("\nFor https domain make sure to create an A record pointing to `elb_dnsname` as specified here: https://github.com/amcginlay/venafi-demos/tree/main/demos/01-eks-ingress-nginx-cert-manager#configure-route53");
         }

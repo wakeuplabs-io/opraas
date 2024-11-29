@@ -9,7 +9,7 @@ const error = msg => {
 
 // binary definition
 const repository = "https://github.com/wakeuplabs-io/op-ruaas"
-const version = "0.0.4"
+const version = "0.0.5"
 const name = "opruaas"
 
 const supportedPlatforms = [

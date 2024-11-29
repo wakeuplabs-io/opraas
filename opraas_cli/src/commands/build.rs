@@ -94,7 +94,7 @@ impl BuildCommand {
             }
         }
 
-        build_spinner.finish_with_message(format!("🎉 Built in {}", HumanDuration(started.elapsed())));
+        build_spinner.finish_with_message(format!("✔️ Built in {}", HumanDuration(started.elapsed())));
 
         // print instructions
 

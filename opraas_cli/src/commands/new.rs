@@ -33,7 +33,7 @@ impl NewCommand {
 
         self.create_project_service.create(&root)?;
 
-        create_spinner.finish_with_message(format!("Success! Created {} at {}\n", name, root.display()));
+        create_spinner.finish_with_message(format!("✔️ Success! Created {} at {}\n", name, root.display()));
 
         // print instructions ========================================
 

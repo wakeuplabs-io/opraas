@@ -87,7 +87,7 @@ impl DevCommand {
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
         config.network.fund_dev_accounts = true;
 
-        fork_spinner.finish_with_message("L1 fork ready...");
+        fork_spinner.finish_with_message("✔️ L1 fork ready...");
 
         // Deploy contracts ===========================
 
@@ -100,7 +100,7 @@ impl DevCommand {
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
         let contracts_deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
 
-        contracts_spinner.finish_with_message("Contracts deployed...");
+        contracts_spinner.finish_with_message("✔️ Contracts deployed...");
 
         // start stack ===========================
 
@@ -115,7 +115,7 @@ impl DevCommand {
             Some(contracts_deployment)
         ))?;
 
-        infra_spinner.finish_with_message("Infra installed...");
+        infra_spinner.finish_with_message("✔️ Infra installed...");
 
         // inform results and wait for exit ===========================
 
