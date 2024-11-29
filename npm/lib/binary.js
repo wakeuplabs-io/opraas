@@ -54,7 +54,7 @@ const getPlatformMetadata = () => {
 const getBinary = () => {
     const platformMetadata = getPlatformMetadata();
     // the url for this binary is constructed from values in `package.json`
-    // https://github.com/wakeuplabs-io/opraas/releases/download/v1.0.0/opraas-v1.0.0-x86_64-apple-darwin.tar.gz
+    // https://github.com/wakeuplabs-io/op-ruaas/releases/download/v1.0.0/opraas-v1.0.0-x86_64-apple-darwin.tar.gz
     const url = `${repository.url}/releases/download/v${version}/${name}-v${version}-${platformMetadata.RUST_TARGET}.${platformMetadata.BINARY_NAME.includes("exe") ? "zip" : "tar.gz"}`;
     return new Binary(platformMetadata.BINARY_NAME, url, version, {
         installDirectory: join(__dirname, "..", "bin"),
