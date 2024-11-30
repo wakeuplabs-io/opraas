@@ -37,9 +37,9 @@ data:
 
     [server]
     rpc_host = "0.0.0.0"
-    rpc_port = 8080
+    rpc_port = {{ .Values.proxyd.ports.rpc }}
     ws_host = "0.0.0.0"
-    ws_port = 8085
+    ws_port = {{ .Values.proxyd.ports.ws }}
     max_body_size_bytes = 10485760
     max_concurrent_rpcs = 1000
     log_level = "info"

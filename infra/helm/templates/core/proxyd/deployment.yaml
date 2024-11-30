@@ -19,7 +19,8 @@ spec:
           image: {{ .Values.proxyd.image.repository }}:{{ .Values.proxyd.image.tag }}
           imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
-            - containerPort: {{ .Values.proxyd.service.port }}
+            - containerPort: {{ .Values.proxyd.ports.rpc }}
+            - containerPort: {{ .Values.proxyd.ports.ws }}
           volumeMounts:
             - name: config
               mountPath: /etc/proxyd
