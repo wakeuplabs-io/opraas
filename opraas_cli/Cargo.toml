@@ -3,6 +3,10 @@ name = "opraas_cli"
 version = "0.0.3"
 edition = "2021"
 
+[[bin]]
+name = "opruaas" 
+path = "src/main.rs"
+
 [dependencies]
 async-trait = "0.1.83"
 clap = { version = "4.5.20", features = ["derive"] }

@@ -127,7 +127,7 @@ jobs:
           shell: bash
           run: |
             # Define binary name and output directory
-            binary_name="opraas_cli"
+            binary_name="opruaas"
             output_dir="${binary_name}-${{ env.VERSION }}-${{ matrix.target }}"
   
             # Create directory and move the binary

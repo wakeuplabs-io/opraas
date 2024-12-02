@@ -1,6 +1,7 @@
 use crate::system::{System, TSystem};
 use regex::Regex;
 use semver::Version;
+use core::fmt;
 use std::process::Command;
 
 #[derive(Debug)]
@@ -11,6 +12,18 @@ pub enum Comparison {
     LessThanOrEqual,
     GreaterThan,
     LessThan,
+}
+
+impl fmt::Display for Comparison {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Comparison::Equal => write!(f, "=="),
+            Comparison::GreaterThanOrEqual => write!(f, ">="),
+            Comparison::LessThanOrEqual => write!(f, "<="),
+            Comparison::GreaterThan => write!(f, ">"),
+            Comparison::LessThan => write!(f, "<"),
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -42,7 +55,13 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
         for requirement in requirements.iter() {
             let output = self
                 .system
-                .execute_command(&mut Command::new(requirement.program).arg(requirement.version_arg))?;
+                .execute_command(&mut Command::new(requirement.program).arg(requirement.version_arg))
+                .map_err(|_| {
+                    format!(
+                        "Could not find {}. Please install version {} {}",
+                        requirement.program, requirement.required_comparator, requirement.required_version
+                    )
+                })?;
             let re = Regex::new(r"(\d+\.\d+\.\d+)").unwrap();
 
             let version = Version::parse(

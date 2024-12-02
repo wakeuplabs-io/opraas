@@ -20,7 +20,9 @@ use dotenv::dotenv;
 use semver::Version;
 
 #[derive(Parser)]
-#[command(author, version, about, long_about = None)]
+#[clap(name = "opruaas")] 
+#[clap(version = "0.0.3")]
+#[clap(about = "Easily deploy and manage rollups with the Optimism stack.", long_about = None)]
 struct Args {
     #[command(subcommand)]
     cmd: Commands,
@@ -110,6 +112,18 @@ async fn main() {
                 program: "helm",
                 version_arg: "version",
                 required_version: Version::parse("3.0.0").unwrap(),
+                required_comparator: Comparison::GreaterThanOrEqual,
+            },
+            Requirement {
+                program: "terraform",
+                version_arg: "-v",
+                required_version: Version::parse("v1.9.8").unwrap(),
+                required_comparator: Comparison::GreaterThanOrEqual,
+            },
+            Requirement {
+                program: "git",
+                version_arg: "-v",
+                required_version: Version::parse("2.0.0").unwrap(),
                 required_comparator: Comparison::GreaterThanOrEqual,
             },
         ])

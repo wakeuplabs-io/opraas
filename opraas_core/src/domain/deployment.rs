@@ -214,7 +214,7 @@ impl Deployment {
             output.push_str(&format!("{}", "\n\nDeploy config:\n".bold().blue()));
 
             for (key, value) in map {
-                output.push_str(&format!("- {}: {}", key, value));
+                output.push_str(&format!("- {}: {}\n", key, value));
             }
 
             output.push_str("\n");
@@ -245,7 +245,7 @@ impl Deployment {
             for (key, value) in map {
                 if let Value::Object(inner_map) = value {
                     if let Some(inner_value) = inner_map.get("value") {
-                        output.push_str(&format!("- {}: {}", key, inner_value));
+                        output.push_str(&format!("- {}: {}\n", key, inner_value));
                     }
                 }
             }
