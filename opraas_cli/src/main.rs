@@ -122,7 +122,7 @@ async fn main() {
             },
             Requirement {
                 program: "git",
-                version_arg: "-v",
+                version_arg: "--version",
                 required_version: Version::parse("2.0.0").unwrap(),
                 required_comparator: Comparison::GreaterThanOrEqual,
             },
