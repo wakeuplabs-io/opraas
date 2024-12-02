@@ -117,7 +117,7 @@ async fn main() {
             Requirement {
                 program: "terraform",
                 version_arg: "-v",
-                required_version: Version::parse("v1.9.8").unwrap(),
+                required_version: Version::parse("1.9.8").unwrap(),
                 required_comparator: Comparison::GreaterThanOrEqual,
             },
             Requirement {
