@@ -14,9 +14,9 @@ The goal of this project is to enable users to easily deploy and manage their ow
 
 Optimism's long-term vision is focused on dApps being able to span as many rollup chains as needed, as easy and as fast as it can be.
 
-So far, Optimism has developed awesome tools to reduce the limitations and knowledge required, but it seems it's still not as easy, since there are providers getting in the middle which end up restricting the users on the matter.
+So far, Optimism has developed awesome tools to reduce the limitations and knowledge required, but it seems it's still not as easy, since there are providers getting in the middle which end up taking away ownership and customization power from users.
 
-We want to give full power to developers looking forward to make use of the Superchain capabilities, and having an open tool to put up and operate a chain inside Optimism is another step closer to our goal.
+We want to give full power to developers looking forward to make use of the Superchain capabilities, and having an open tool to put up and operate a chain.
 
 Current tools excel on some features and lack others, all of them contribute on gathering ideas, but none of them tackles the problem end to end, which is what this project's mission is about.
 
@@ -26,7 +26,7 @@ Current tools excel on some features and lack others, all of them contribute on 
 
 Pros:
 
-- Functional implementation; it’s the only one we’ve been able to run locally so far.
+- Functional implementation; it’s the only one we’ve been able to run locally without any debugging.
 - Implements BlockScout as a block explorer out of the box.
 
 Cons:
@@ -267,11 +267,11 @@ The marketplace will take place as another page in the Ruaas website described a
 
 - Given the cli that makes it super easy to deploy new chains with optimism stack the marketplace will try to cover those who don't want any involvement with infrastructure running.
 - There may be security concerns regarding key manager as we don't have any other way around giving away keys for services like batcher, proposer, etc. We aim for honesty and rely on the power of reputation and L1Proxy and L2Proxy admin roles power to mitigate damages.
-- Providing a proper proof of execution of services may be challenging, we aim to cover a broad case but malicious actors may still have work arounds.
+- Providing a proper proof of execution of services may be challenging, we aim to cover a broad case but malicious actors may still have work around.
 
 ## Roadmaps
 
-At this point we want
+At this point we want to analyze the possibility of going after the decentralized marketplace. How many resources it may take, and what we could we achieve if we decide to focus on the cli tooling.
 
 Stipulated times:
 
@@ -280,6 +280,7 @@ Stipulated times:
 
 If decentralized marketplace is not pursued we can instead:
 
-- Generate tutorials, explanations of chain configs
+- Generate tutorials, dive deep in chain parameters, provide example configurations for other chains including testnets like Holensky where eth is more available.
 - Add more extras like data availability, paymaster setup, bridge ui, etc
-- Add more cloud providers, for instance GCP and Azure
+- Add more cloud providers, for instance GCP and Azure.
+-
