@@ -1,6 +1,6 @@
 # Research & Discovery
 
-# Cloud Raas
+# Ruaas cli
 
 ## Summary
 
@@ -84,7 +84,6 @@ Source:
 
 We have decided to develop our own CLI and infrastructure tooling to create a more flexible deployment process and address some of the inconveniences we encountered while testing existing solutions. Given the challenges in getting current solutions to work easily and the relatively short time required to replicate them, we aim for our development to also meet new requirements, including a user interface and scalable deployment.
 
-
 ![full-picture](./assets/full-picture.png)
 
 ## Decisions and drivers
@@ -93,29 +92,29 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 
 - A CLI that can handle deployments will be developed.
 - A Web UI to quickly and easily spin off projects will be created.
-- We chose Rust for its performance, cost efficiency, and growing popularity, ensuring reliable and scalable solutions.
+- We chose Rust for its performance, cost efficiency, and growing community support, ensuring reliable and scalable solutions.
 
 ### CLI
 
 - CLI for local self-service
 - The CLI will be an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows us to maintain testable code while also enabling multiple client implementations, including the server itself.
-- We'll distribute the binaries through github releases and make them widely available with an npm package.
+- We'll distribute the binaries through github releases and make them widely available with an npm package that will consume from the first one.
 - To allow for a more flexible build process we'll avoid hardcoding the build process like most current solutions do and instead we'll just pull docker files into the infra directory as shown below. This will allow us to support most cases while staying relevant in case the user decides to go custom. Also this reduces our dependencies to basically Docker.
 - Sources will be downloaded from github releases.
 
 Commands provided:
 
 - `new`: It'll create a new folder with a template config for the user to review and run a setup on. In particular `.env`, `config.toml`, `README.md` and `.gitignore` will be created
-- `setup`: It'll download sources and infra based on what the user specified in the config
+- `init`: It'll download sources and infra based on what the user specified in the config
 - `build <artifact>`: Compiles each of the artifacts and generates a corresponding docker image.
-- `dev`: It'll spin up a local `anvil` testnet node forking the l1 chain, deploy contracts to it using the user configuration and start all the nodes for the user to test his chain locally.
-- `deploy <contracts | infra>`:
+- `dev`: It'll spin up a local testnet node forking the l1 chain, deploy contracts to it using the user configuration and install the infrastructure helm in a local testing kubernetes.
+- `deploy <contracts | infra | all>`:
   - `contracts`: Deploys contracts to l1 and generates `genesis.json` and `rollup.json`
-  - `infra`: Publishes images to the user repository, updates the values.yaml from the helm, confirms with the user and applies the terraform config.
-  - If no option is provided we'll first deploy the contracts and follow up with the infra.
+  - `infra`: Updates the default values.yaml file from the helm with latest config file and deploys the infrastructure to the cloud provider through terraform (initially aws).
+  - `all` Deploys contracts and follows with infra
   - With a full config available, we can run also do a setup and a build from this command. This will be the starting point when coming from the ui.
 - `inspect <contracts | infra>`:
-  - `contracts`: Lists deployed contracts
+  - `contracts`: Lists deployed contracts and other relevant information
   - `infra`: Showcases terraform outputs, indicating relevant urls and statuses. Among others here user will be pointed to monitoring tools.
 - `monitor <onchain | offchain>`:
   - `onchain`: Will be a wrappers around [monitorism](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#monitorism) and [dispute-mon](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#dispute-mon) customized to the user chain.
@@ -129,19 +128,25 @@ Generated project structure
 deployments/
 	deployment-name/
 		artifacts/
-		rollup.json
-		genesis.json
+      contracts_artifacts.zip
+      infra_artifacts.zip
+    config/
+      network.json
+      addresses.json
+      ...
 infra/
-	aws/
-	gcp/
+  terraform/
+    aws/
+    gcp/
+    others...
   docker/
 	helm/
 src/
-	op_contracts/
-	op_node/
-	op_geth/
-	op_batcher/
-	explorer/
+	contracts/
+	node/
+	batcher/
+  proposer/
+  etc...
 README.md
 config.toml
 .gitignore
@@ -179,7 +184,7 @@ As per networking this implies the only services exposed will be `proxyd` and th
 
 ### Web dev console
 
-The dev console will focus on generating a full config for the user to download and deploy in one command with the cli. We'll ask users input for filling up the kick off config and generate a zip for them to download and deploy. To achieve this the zip will contain a full config.toml file and the cli binaries so that `./opraas dev` or `./opraas deploy` is all they need.
+The dev console will focus on generating a full config for the user to download and deploy in one command with the cli. We'll ask users input for filling up the kick off config and generate a zip for them to download and deploy. To achieve this the zip will contain a full config.toml file and the cli binaries so that `npx opruaas dev` or `npx opruaas deploy` is all they need.
 
 ## Risk and uncertainties
 
@@ -251,7 +256,7 @@ The marketplace contract will include the following features:
 
 ### Dapp
 
-The marketplace will take place as another page in the Cloud Raas website described above. The main functionality will be to facilitate the interaction with the contract:
+The marketplace will take place as another page in the Ruaas website described above. The main functionality will be to facilitate the interaction with the contract:
 
 - Vendors create offerings.
 - Clients accept offers and submit data required.
@@ -260,6 +265,21 @@ The marketplace will take place as another page in the Cloud Raas website descri
 
 ## Risks and uncertainties
 
-- Given the Cloud Raas cli that makes it super easy to deploy new chains with optimism stack the marketplace will try to cover those who don't want any involvement with infrastructure running.
+- Given the cli that makes it super easy to deploy new chains with optimism stack the marketplace will try to cover those who don't want any involvement with infrastructure running.
 - There may be security concerns regarding key manager as we don't have any other way around giving away keys for services like batcher, proposer, etc. We aim for honesty and rely on the power of reputation and L1Proxy and L2Proxy admin roles power to mitigate damages.
 - Providing a proper proof of execution of services may be challenging, we aim to cover a broad case but malicious actors may still have work arounds.
+
+## Roadmaps
+
+At this point we want
+
+Stipulated times:
+
+- Contracts development: 2-3 weeks
+- Contracts integrations (meaning cronjob for vendors to call oracle and UI integration) 2-3 weeks
+
+If decentralized marketplace is not pursued we can instead:
+
+- Generate tutorials, explanations of chain configs
+- Add more extras like data availability, paymaster setup, bridge ui, etc
+- Add more cloud providers, for instance GCP and Azure
