@@ -29,6 +29,7 @@ impl TCreateProjectService for CreateProjectService {
         if root.exists() {
             return Err("Directory already exists".into());
         }
+        std::fs::create_dir_all(root)?;
 
         let project = Project::new_from_root(root.to_path_buf());
 
@@ -64,35 +65,60 @@ impl TCreateProjectService for CreateProjectService {
 }
 
 const README: &str = r#"
-# Opruaas
+## Opruaas cli
 
-Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
+### Commands
 
-## Commands
+Usage: `npx opruaas [OPTIONS] <COMMAND>`
 
-- `opraas new <name>` -> Creates a new project at `<name>`
-- `opraas init` -> Pulls sources as per your config.toml
-- `opraas build` -> Compiles sources and creates docker images for them
-- `opraas release` -> Tags and pushes already built docker images to the registry
-- `opraas dev` -> Spins up local dev environment
-- `opraas deploy` -> Deploys your blockchain
+Commands:
+-  `new`      Create new project, template config file and folders
+-  `init`     Initialize a new project
+-  `build`    Compile sources and create docker images for it
+-  `release`  Tags and pushes already built docker images to the registry for usage in the deployment
+-  `dev`      Spin up local dev environment
+-  `deploy`   Deploy your blockchain. Target must be one of: contracts, infra, all
+-  `inspect`  Get details about the current deployment. Target must be one of: contracts, infra
+-  `help`     Print this message or the help of the given subcommand(s)
 
-## Instructions
+Options:
+-  `-q`, `--quiet`    Suppress logging output
+-  `-h`, `--help`     Print help
+-  `-V`, `--version`  Print version
 
-1. Create a new project with `opraas new <name>`
-2. Update `<name>/config.toml` and `<name>/.env` to match your needs
-3. If you want to build your own artifacts
-    1. Run `opraas init <target>` to pull sources as per your config.toml
-    2. Run `opraas build <target>` to compile sources and create docker images for them
-    3. Run `opraas release <target>` to tag and push docker images
-4. If you want to use pre-built artifacts
-    1. Run `opraas dev` to spin up local dev environment
-    2. Run `opraas deploy <target> <name>` to deploy your blockchain. Target must be one of: contracts, infra, all
+### Create new project and build releases from source
 
+```bash
+# 1. create your project
+npx opruaas new my-chain && cd my-chain
 
-## Notes
+# 2. Fill up config.toml and .env
 
-...
+# 3. Pull sources with init (target can be all|batcher|node|geth|contracts)
+npx opruaas --quiet init contracts
+
+# 4. Build images with 
+npx opruaas build contracts
+
+# 5. Finally when ready release. It's important you have docker already configured with enough permissions to push to the repo you want to release to
+npx opruaas release contracts
+```
+
+### Test releases with dev
+
+```bash
+# 1. Just run dev command... We'll prompt you about which release to use
+# We'll fork the l1 you have in .env so make sure to have a valid rpc. As per wallets we'll replace your values with mock wallets already funded.
+npx opruaas dev
+```
+
+### Deploy contracts/infra/all
+
+```bash
+# 1. Just run dev command... We'll prompt you about which release to use
+npx opruaas deploy all --name my-prod-depl
+```
+
 "#;
 
 const GITIGNORE: &str = r#"

@@ -1796,6 +1796,7 @@ dependencies = [
  "semver",
  "serde",
  "serde_json",
+ "tempfile",
  "tokio 1.40.0",
  "toml",
 ]

@@ -1,10 +1,10 @@
 use crate::{
-    config::artifacts::{INFRA_SOURCE_REPO, INFRA_SOURCE_REPO_VERSION}, domain::{self, artifact::Artifact}, git
+    config::artifacts::{INFRA_SOURCE_REPO, INFRA_SOURCE_REPO_VERSION},
+    domain::{self, artifact::Artifact},
+    git,
 };
 
 pub struct GitArtifactSourceRepository;
-
-
 
 impl GitArtifactSourceRepository {
     pub fn new() -> Self {

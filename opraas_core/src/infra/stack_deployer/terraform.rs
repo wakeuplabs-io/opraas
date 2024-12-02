@@ -3,7 +3,11 @@ use crate::{
     domain::{Deployment, Stack, TDeploymentRepository},
     system, yaml,
 };
-use std::{collections::HashMap, fs::{self, File}, process::Command};
+use std::{
+    collections::HashMap,
+    fs::{self, File},
+    process::Command,
+};
 
 pub struct TerraformDeployer {
     deployment_repository: Box<dyn TDeploymentRepository>,
@@ -112,7 +116,7 @@ impl TStackInfraDeployer for TerraformDeployer {
             config_dir.join("addresses.json"),
         )?;
 
-        // deploy using terraform 
+        // deploy using terraform
 
         system::execute_command(
             Command::new("terraform")

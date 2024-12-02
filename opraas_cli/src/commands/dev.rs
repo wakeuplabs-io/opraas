@@ -1,7 +1,3 @@
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
 use crate::config::get_config_path;
 use crate::console::{print_info, print_warning, style_spinner};
 use assert_cmd::Command;
@@ -11,6 +7,10 @@ use opraas_core::application::{StackContractsDeployerService, TStackContractsDep
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory, Stack};
 use opraas_core::infra::{testnet_node::docker::DockerTestnetNode, testnet_node::testnet_node::TTestnetNode};
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::Arc;
+use std::thread;
+use std::time::Duration;
 
 pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
@@ -111,8 +111,8 @@ impl DevCommand {
 
         self.stack_runner.start(&Stack::new(
             project.infra.helm.clone(),
-             project.infra.aws.clone(),
-            Some(contracts_deployment)
+            project.infra.aws.clone(),
+            Some(contracts_deployment),
         ))?;
 
         infra_spinner.finish_with_message("✔️ Infra installed...");
@@ -129,13 +129,13 @@ impl DevCommand {
 
         print_warning("Press Ctrl + C to exit...");
 
-          let running = Arc::new(AtomicBool::new(true));
-          let running_clone = Arc::clone(&running);
-  
-          ctrlc::set_handler(move || {
-              running_clone.store(false, Ordering::SeqCst); // Set the flag to false
-              print_warning("Ctrl + C received, exiting...");
-          })?;
+        let running = Arc::new(AtomicBool::new(true));
+        let running_clone = Arc::clone(&running);
+
+        ctrlc::set_handler(move || {
+            running_clone.store(false, Ordering::SeqCst); // Set the flag to false
+            print_warning("Ctrl + C received, exiting...");
+        })?;
 
         // wait for exit
         while running.load(Ordering::SeqCst) {

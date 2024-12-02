@@ -1,5 +1,7 @@
 use crate::{
-    config::artifacts::{INFRA_SOURCE_REPO, INFRA_SOURCE_REPO_VERSION}, domain::{Stack, TStackInfraRepository}, git
+    config::artifacts::{INFRA_SOURCE_REPO, INFRA_SOURCE_REPO_VERSION},
+    domain::{Stack, TStackInfraRepository},
+    git,
 };
 
 pub struct GitStackInfraRepository {}
@@ -17,7 +19,7 @@ impl TStackInfraRepository for GitStackInfraRepository {
         if !stack.helm.exists() {
             git::download_zipped_asset(
                 INFRA_SOURCE_REPO,
-                    INFRA_SOURCE_REPO_VERSION,
+                INFRA_SOURCE_REPO_VERSION,
                 "infra-helm",
                 stack.helm.to_str().unwrap(),
             )?;
@@ -26,7 +28,7 @@ impl TStackInfraRepository for GitStackInfraRepository {
         if !stack.aws.exists() {
             git::download_zipped_asset(
                 INFRA_SOURCE_REPO,
-                    INFRA_SOURCE_REPO_VERSION,
+                INFRA_SOURCE_REPO_VERSION,
                 "infra-aws",
                 stack.aws.to_str().unwrap(),
             )?;

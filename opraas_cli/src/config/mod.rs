@@ -1,7 +1,7 @@
 pub mod config;
-pub mod requirements;
 pub mod global;
+pub mod requirements;
 
 pub use config::*;
-pub use requirements::*;
 pub use global::*;
+pub use requirements::*;
