@@ -9,33 +9,33 @@ const error = msg => {
 
 // binary definition
 const repository = "https://github.com/wakeuplabs-io/op-ruaas"
-const version = "0.0.7"
-const name = "opraas_cli"
+const version = "0.0.9"
+const name = "opruaas"
 
 const supportedPlatforms = [
     {
         TYPE: "Windows",
         ARCHITECTURE: "x64",
         RUST_TARGET: "x86_64-pc-windows-gnu",
-        BINARY_NAME: "opraas_cli.exe"
+        BINARY_NAME: "opruaas.exe"
     },
     {
         TYPE: "Linux",
         ARCHITECTURE: "x64",
         RUST_TARGET: "x86_64-unknown-linux-gnu",
-        BINARY_NAME: "opraas_cli"
+        BINARY_NAME: "opruaas"
     },
     {
         TYPE: "Darwin",
         ARCHITECTURE: "x64",
         RUST_TARGET: "x86_64-apple-darwin",
-        BINARY_NAME: "opraas_cli"
+        BINARY_NAME: "opruaas"
       },
       {
         TYPE: "Darwin",
         ARCHITECTURE: "arm64",
         RUST_TARGET: "x86_64-apple-darwin",
-        BINARY_NAME: "opraas_cli"
+        BINARY_NAME: "opruaas"
       }
 ];
 
