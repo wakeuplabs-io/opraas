@@ -1,0 +1,138 @@
+domain:
+  host: localhost # demo.example.com
+  email: email@email.com
+
+global:
+  storageClassName: gp2 # Override with "" for default (recommended in local environment)
+  image:
+    pullPolicy: IfNotPresent
+
+chain:
+  id: "override" 
+  l1Rpc: "override"
+  artifacts: "config/artifacts.zip"
+  addresses: "config/addresses.json"
+
+geth:
+  name: op-geth
+  image:
+    repository: wakeuplabs/op-geth
+    tag: v0.0.4
+  deployment:
+    replicaCount: 1
+  ports:
+    rpc: 8545 
+    ws: 8546
+    rpcAuth: 9551
+    metrics: 7300
+  datadir: /app/data/datadir/data
+
+node:
+  name: op-node
+  image:
+    repository: wakeuplabs/op-node
+    tag: v0.0.4
+  config:
+    p2pEnabled: false
+  ports:
+    rpc: 7545
+    p2p: 9222
+    metrics: 7300
+
+batcher:
+  name: op-batcher
+  image:
+    repository: wakeuplabs/op-batcher
+    tag: v0.0.4
+  config:
+    privateKey: ""
+  ports:
+    rpc: 6545 
+    metrics: 7300
+
+proposer:
+  name: op-proposer
+  image:
+    repository: wakeuplabs/op-proposer
+    tag: v0.0.4
+  config:
+    privateKey: ""
+  ports:
+    rpc: 5545 
+    metrics: 7300
+
+proxyd:
+  name: proxyd
+  image:
+    repository: us-docker.pkg.dev/oplabs-tools-artifacts/images/proxyd
+    tag: latest
+  service:
+    port: 8080
+    targetPort: 8080
+  ingress:
+    nodePath: /rpc
+  redis:
+    name: proxyd-redis
+    image:
+      repository: redis
+      tag: latest
+
+explorer:
+  enabled: true
+
+monitoring:
+  enabled: false
+
+kube-prometheus-stack:
+  grafana:
+    ingress:
+      enabled: true
+      ingressClassName: nginx
+      paths:
+        - /grafana
+      hosts:
+        - "localhost"
+  prometheus:
+    serviceAccount:
+      name: "" # prometheus
+  prometheus-node-exporter:
+    hostRootFsMount:
+      enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
+      mountPropagation: HostToContainer
+
+blockscoutStack:
+  postgres:
+    dbName: bs
+    user: bs-db-user
+    password: bs-db-password
+    image:
+      repository: postgres
+      tag: latest
+
+blockscout-stack:
+  blockscout:
+    ingress:
+      enabled: true
+      className: nginx
+      hostname: localhost
+
+    env:
+      ECTO_USE_SSL: "false"
+      ETHEREUM_JSONRPC_VARIANT: "geth"
+      ETHEREUM_JSONRPC_HTTP_URL: "http://op-geth-replica-service:8545"
+      ETHEREUM_JSONRPC_WS_URL: "ws://op-geth-replica-service:8546"
+      NETWORK: "Optimism"
+      CHAIN_ID: "1201"
+    extraEnv:
+      - name: DATABASE_URL
+        valueFrom:
+          secretKeyRef:
+            name: blockscout-secret
+            key: DATABASE_URL
+  frontend:
+    ingress:
+      enabled: true
+      className: nginx
+      hostname: localhost
+    env:
+      NEXT_PUBLIC_API_PROTOCOL: "https" # Change to http if using localhost

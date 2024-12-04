@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.geth.name }}-replica-pvc-datadir
+  labels:
+    app: {{ .Values.geth.name }}-replica
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi # 3Ti optimal
+  {{- if ne .Values.global.storageClassName "" }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .Values.geth.name }}-replica-pvc-configurations
+  labels:
+    app: {{ .Values.geth.name }}-replica
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 50Mi
+  # storageClassName: gp2
