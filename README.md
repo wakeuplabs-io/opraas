@@ -189,9 +189,9 @@ Follow these steps to prepare and publish a new version of the package:
 4. Verify Actions:  
    Ensure the GitHub Actions workflow completes successfully.
 
-5. Publish the Package:  
+5. Publish the Package:
    From the `npm` folder, run the following command to publish the package:
 
 ```bash
- npm run publish --access public
+npm run publish --access public
 ```
