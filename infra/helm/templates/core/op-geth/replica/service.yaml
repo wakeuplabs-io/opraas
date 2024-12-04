@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.geth.name }}-replica-service
+  labels:
+    app: {{ .Values.geth.name }}-replica
+spec:
+  type: ClusterIP
+  selector:
+    app: {{ .Values.geth.name }}-replica
+  ports:
+    - name: rpc
+      port: {{ .Values.geth.ports.rpc }}
+      targetPort: {{ .Values.geth.ports.rpc }}
+    - name: ws
+      port: {{ .Values.geth.ports.ws }}
+      targetPort: {{ .Values.geth.ports.ws }}
+    - name: rpc-auth
+      port: {{ .Values.geth.ports.rpcAuth }}
+      targetPort: {{ .Values.geth.ports.rpcAuth }}
+    - name: metrics
+      port: {{ .Values.geth.ports.metrics }}
+      targetPort: {{ .Values.geth.ports.metrics }}
