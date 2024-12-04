@@ -79,6 +79,16 @@ Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism
 
 Install with `npm i -g @wakeuplabs/opruaas`
 
+### System requirements
+
+```
+docker >= 24.0.0
+kubectl >= 1.28.0
+helm >= 3.0.0
+terraform >= 1.9.8 (with aws authentication done)
+git >= 2.0.0
+```
+
 ### Commands
 
 Usage: opruuas [OPTIONS] <COMMAND>
