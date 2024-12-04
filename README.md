@@ -1,4 +1,3 @@
-
 # Opruaas - Optimism Rollup as a service
 
 Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
@@ -7,38 +6,40 @@ Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism
 
 Install with `npm i -g @wakeuplabs/opruaas`
 
-### System Requirements  
+### System Requirements
 
-Ensure you have the following tools installed and properly configured:  
+Ensure you have the following tools installed and properly configured:
 
-- **Docker**: `>= 24.0.0`  
-- **kubectl**: `>= 1.28.0`  
-- **Helm**: `>= 3.0.0`  
-- **Terraform**: `>= 1.9.8` (with AWS authentication configured)  
-- **Git**: `>= 2.0.0`  
+- **Docker**: `>= 24.0.0`
+- **kubectl**: `>= 1.28.0`
+- **Helm**: `>= 3.0.0`
+- **Terraform**: `>= 1.9.8` (with AWS authentication configured)
+- **Git**: `>= 2.0.0`
 
 ### Commands
 
-Usage: `opruaas [OPTIONS] <COMMAND>`  
+Usage: `opruaas [OPTIONS] <COMMAND>`
 
 #### Available Commands:
-- `new`      Create a new project, template config file, and folders  
-- `init`     Initialize a new project  
-- `build`    Compile sources and create Docker images  
-- `release`  Tag and push the already built Docker images to the registry for deployment  
-- `dev`      Spin up a local development environment  
-- `deploy`   Deploy your blockchain. Target must be one of: `contracts`, `infra`, `all`  
-- `inspect`  Get details about the current deployment. Target must be one of: `contracts`, `infra`  
-- `help`     Print this message or the help for the given subcommand(s)  
+
+- `new` Create a new project, template config file, and folders
+- `init` Initialize a new project
+- `build` Compile sources and create Docker images
+- `release` Tag and push the already built Docker images to the registry for deployment
+- `dev` Spin up a local development environment
+- `deploy` Deploy your blockchain. Target must be one of: `contracts`, `infra`, `all`
+- `inspect` Get details about the current deployment. Target must be one of: `contracts`, `infra`
+- `help` Print this message or the help for the given subcommand(s)
 
 #### Options:
-- `-q`, `--quiet`    Suppress logging output  
-- `-h`, `--help`     Print help  
-- `-V`, `--version`  Print version
 
-### Create a New Project and Build Releases from Source  
+- `-q`, `--quiet` Suppress logging output
+- `-h`, `--help` Print help
+- `-V`, `--version` Print version
 
-Follow these steps to create a new project and build releases:  
+### Create a New Project and Build Releases from Source
+
+Follow these steps to create a new project and build releases:
 
 ```bash
 # 1. Create your project
@@ -67,6 +68,7 @@ The dev command simplifies the setup for local testing. It performs the followin
 4. Installs Helm Chart: Configures the corresponding Helm chart on your local machine for testing.
 
 **Prerequisites**
+
 - You need to provide the `container registry` and the release `name` for your deployment.
 - For reference, you can use the example configuration at `wakeuplabs` with the release name `v0.0.4`.
 
@@ -79,6 +81,7 @@ npx opruaas -v dev
 ```
 
 Once all deployments are up and running, it may take some time for the system to become fully responsive. This includes:
+
 - RPC responsiveness: The RPC endpoint may initially take a few moments to respond to queries.
 - Explorer indexing: The block explorer will need time to finish indexing before it can display your transactions.
 
@@ -135,6 +138,7 @@ In dev mode, all wallets on both L1 and L2 will be funded by default. This is ac
 ```
 
 Once the setup is complete, you can access the following services:
+
 - L1 RPC: http://localhost:8545
 - L2 RPC: http://localhost:80/rpc
 - Explorer: http://localhost:80
@@ -147,9 +151,9 @@ Ensure that your `config.toml` configuration file is properly set up before proc
 # Use -v for verbose output; recommended for detailed progress logs.
 npx opruaas -v deploy all --name my-prod-deployment
 ```
+
 - Optional Flag:
   Add `--deploy-deployer` if the L1 chain does not already have a deployer. For most popular L1 chains, this step is unnecessary.
-
 
 The deployment process will create a deployments/my-prod-deployment directory containing the generated artifacts.
 
@@ -158,37 +162,36 @@ The deployment process will create a deployments/my-prod-deployment directory co
 - Inspecting Artifacts:
   You can manually review the artifacts or use the inspect command for easier analysis.
 
-
 ## Dev
 
-### Makefile Commands  
+### Makefile Commands
 
-- `make format`: Format the codebase.  
-- `make lint`: Run linting checks on the codebase.  
+- `make format`: Format the codebase.
+- `make lint`: Run linting checks on the codebase.
 - `make release-{windows/apple/linux}`:  
-  Creates binaries and zip releases for the specified platform (`windows`, `apple`, or `linux`) within the `releases` folder.  
+  Creates binaries and zip releases for the specified platform (`windows`, `apple`, or `linux`) within the `releases` folder.
 
+### NPM Distribution
 
-### NPM Distribution  
+Follow these steps to prepare and publish a new version of the package:
 
-Follow these steps to prepare and publish a new version of the package:  
+1. Update Version Constants:
 
-1. Update Version Constants:  
-   - Update the version constant in `npm/lib/binary.js`.  
-   - Update the `version` field in `npm/package.json`.  
+   - Update the version constant in `npm/lib/binary.js`.
+   - Update the `version` field in `npm/package.json`.
 
 2. Update Artifacts (if applicable):  
-   If the artifacts have changed, modify `opraas_core/src/config/artifact.rs` to reflect the future version.  
+   If the artifacts have changed, modify `opraas_core/src/config/artifact.rs` to reflect the future version.
 
 3. Tag the Release:  
-   Create a GitHub tag in the format `v{}.{}.{}` and push it to trigger the GitHub Actions workflow.  
+   Create a GitHub tag in the format `v{}.{}.{}` and push it to trigger the GitHub Actions workflow.
 
 4. Verify Actions:  
-   Ensure the GitHub Actions workflow completes successfully.  
+   Ensure the GitHub Actions workflow completes successfully.
 
-5. Publish the Package:  
-   From the `npm` folder, run the following command to publish the package:  
+5. Publish the Package:
+   From the `npm` folder, run the following command to publish the package:
 
-  ```bash
-   npm run publish --access public
-  ```
+```bash
+npm run publish --access public
+```
