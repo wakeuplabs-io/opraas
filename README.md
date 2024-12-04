@@ -3,74 +3,88 @@
 
 Optimism Rollup As A Service. Easily deploy and manage rollups with the Optimism stack.
 
-## Makefile commands
-
-- `make format`
-- `make lint`
-- `make release-{windows/apple/linux}` -> Creates binaries and zip releases within releases folder.
-
 ## Opruaas cli
 
 Install with `npm i -g @wakeuplabs/opruaas`
 
-### System requirements
+### System Requirements  
 
-```
-docker >= 24.0.0
-kubectl >= 1.28.0
-helm >= 3.0.0
-terraform >= 1.9.8 (with aws authentication done)
-git >= 2.0.0
-```
+Ensure you have the following tools installed and properly configured:  
+
+- **Docker**: `>= 24.0.0`  
+- **kubectl**: `>= 1.28.0`  
+- **Helm**: `>= 3.0.0`  
+- **Terraform**: `>= 1.9.8` (with AWS authentication configured)  
+- **Git**: `>= 2.0.0`  
 
 ### Commands
 
-Usage: opruuas [OPTIONS] <COMMAND>
+Usage: `opruaas [OPTIONS] <COMMAND>`  
 
-Commands:
--  `new`      Create new project, template config file and folders
--  `init`     Initialize a new project
--  `build`    Compile sources and create docker images for it
--  `release`  Tags and pushes already built docker images to the registry for usage in the deployment
--  `dev`      Spin up local dev environment
--  `deploy`   Deploy your blockchain. Target must be one of: contracts, infra, all
--  `inspect`  Get details about the current deployment. Target must be one of: contracts, infra
--  `help`     Print this message or the help of the given subcommand(s)
+#### Available Commands:
+- `new`      Create a new project, template config file, and folders  
+- `init`     Initialize a new project  
+- `build`    Compile sources and create Docker images  
+- `release`  Tag and push the already built Docker images to the registry for deployment  
+- `dev`      Spin up a local development environment  
+- `deploy`   Deploy your blockchain. Target must be one of: `contracts`, `infra`, `all`  
+- `inspect`  Get details about the current deployment. Target must be one of: `contracts`, `infra`  
+- `help`     Print this message or the help for the given subcommand(s)  
 
-Options:
--  `-q`, `--quiet`    Suppress logging output
--  `-h`, `--help`     Print help
--  `-V`, `--version`  Print version
+#### Options:
+- `-q`, `--quiet`    Suppress logging output  
+- `-h`, `--help`     Print help  
+- `-V`, `--version`  Print version
 
-### Create new project and build releases from source
+### Create a New Project and Build Releases from Source  
+
+Follow these steps to create a new project and build releases:  
 
 ```bash
-# 1. create your project
+# 1. Create your project
 npx opruaas new my-chain && cd my-chain
 
-# 2. Fill up config.toml and .env
+# 2. Fill out the config.toml and .env files
 
-# 3. Pull sources with init (target can be all|batcher|node|geth|contracts)
-npx opruaas --quiet init contracts
+# 3. Pull sources with init (target can be one of: all | batcher | node | geth | contracts)
+npx opruaas init contracts
 
-# 4. Build images with 
+# 4. Build the images
 npx opruaas build contracts
 
-# 5. Finally when ready release. It's important you have docker already configured with enough permissions to push to the repo you want to release to
+# 5. Release the build
+# Ensure Docker is properly configured with permissions to push to your target repository
 npx opruaas release contracts
 ```
 
 ### Test releases with dev
 
+The dev command simplifies the setup for local testing. It performs the following actions:
+
+1. Starts an L1 Node: Launches a Geth-based Layer 1 node.
+2. Deploys Deterministic Contracts: Sets up the deterministic contract deployer on the node.
+3. Deploys Your Chain Contracts: Automatically deploys your chain-specific contracts.
+4. Installs Helm Chart: Configures the corresponding Helm chart on your local machine for testing.
+
+**Prerequisites**
+- You need to provide the `container registry` and the release `name` for your deployment.
+- For reference, you can use the example configuration at `wakeuplabs` with the release name `v0.0.4`.
+
+**Usage**
+Run the following command to execute the setup:
+
 ```bash
-# 1. Just run dev command... We'll prompt you about which release to use
-# Don't worry about wallets, we'll override with testing ones.
+# Use -v for verbose output; recommended as the process may take some time
 npx opruaas -v dev
 ```
 
-Once all deployments are up and running it may take some time for it to be reactive, for rpc to respond and for explorer to finish indexing and start showing your transactions.
+Once all deployments are up and running, it may take some time for the system to become fully responsive. This includes:
+- RPC responsiveness: The RPC endpoint may initially take a few moments to respond to queries.
+- Explorer indexing: The block explorer will need time to finish indexing before it can display your transactions.
 
-If you have cast installed some of these commands may help you to give it a try
+**Testing Your Setup**
+
+If you have cast installed, the following commands can help you test the deployment and interact with the setup:
 
 ```bash
 cast chain-id --rpc-url http://localhost:80/rpc
@@ -85,7 +99,7 @@ cast send \
   0x3fAB184622Dc19b6109349B94811493BF2a45362
 ```
 
-On l1 and l2 all these wallets will be funded by default (we automatically set `fund_dev_accounts` to `true` for dev mode)
+In dev mode, all wallets on both L1 and L2 will be funded by default. This is achieved by automatically setting `fund_dev_accounts` to `true`.
 
 ```
 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 with 10000 ETH
@@ -120,32 +134,61 @@ On l1 and l2 all these wallets will be funded by default (we automatically set `
 0x9DCCe783B6464611f38631e6C851bf441907c710 with 10000 ETH
 ```
 
-You'll find:
-- L1 rpc available at http://localhost:8545
-- L2 rpc available at http://localhost:80/rpc
-- Explorer available at http://localhost:80
+Once the setup is complete, you can access the following services:
+- L1 RPC: http://localhost:8545
+- L2 RPC: http://localhost:80/rpc
+- Explorer: http://localhost:80
 
 ### Deploy contracts/infra/all
 
-Make sure to have a properly configured your toml config.
+Ensure that your `config.toml` configuration file is properly set up before proceeding.
 
 ```bash
-# Recommended -v for verbose deployment as it may take a while to get it all up and running
+# Use -v for verbose output; recommended for detailed progress logs.
 npx opruaas -v deploy all --name my-prod-deployment
 ```
-
-Use `--deploy-deployer` in case l1 chain doesn't have one already, for most popular l1 chains you shouldn't worry about it
-
-This will generate `deployments/my-prod-deployment` folder where you can find the generated artifacts. You can manually inspect them or use the `inspect` command for this. It's important you don't loose these files as they're needed to run your chain.
+- Optional Flag:
+  Add `--deploy-deployer` if the L1 chain does not already have a deployer. For most popular L1 chains, this step is unnecessary.
 
 
-### Npm distribution 
+The deployment process will create a deployments/my-prod-deployment directory containing the generated artifacts.
 
-1. Within makefile update `RELEASE_VERSION`
-2. Run `make release-{windows/apple/linux}`
-3. Upload assets to github release named `v{RELEASE_VERSION}`
-4. Bump npm package version to match the release
-5. `npm run publish --access public`
-
+- Artifacts:
+  These files are crucial for running your chain. Ensure you keep them safe and do not lose them.
+- Inspecting Artifacts:
+  You can manually review the artifacts or use the inspect command for easier analysis.
 
 
+## Dev
+
+### Makefile Commands  
+
+- `make format`: Format the codebase.  
+- `make lint`: Run linting checks on the codebase.  
+- `make release-{windows/apple/linux}`:  
+  Creates binaries and zip releases for the specified platform (`windows`, `apple`, or `linux`) within the `releases` folder.  
+
+
+### NPM Distribution  
+
+Follow these steps to prepare and publish a new version of the package:  
+
+1. Update Version Constants:  
+   - Update the version constant in `npm/lib/binary.js`.  
+   - Update the `version` field in `npm/package.json`.  
+
+2. Update Artifacts (if applicable):  
+   If the artifacts have changed, modify `opraas_core/src/config/artifact.rs` to reflect the future version.  
+
+3. Tag the Release:  
+   Create a GitHub tag in the format `v{}.{}.{}` and push it to trigger the GitHub Actions workflow.  
+
+4. Verify Actions:  
+   Ensure the GitHub Actions workflow completes successfully.  
+
+5. Publish the Package:  
+   From the `npm` folder, run the following command to publish the package:  
+
+  ```bash
+   npm run publish --access public
+  ```
