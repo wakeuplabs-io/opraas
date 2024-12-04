@@ -102,7 +102,7 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 - To ensure a flexible build process, we will avoid hardcoding the build steps, as seen in many current solutions. Instead, we will pull Docker files into the infrastructure directory (shown below), allowing us to support most use cases while staying adaptable for custom configurations. This approach reduces dependencies to essentially Docker.
 - Sources will be downloaded directly from GitHub releases.
 
-## Commands Provided
+#### Commands Provided
 
 - `new`: Creates a new folder with a template configuration for the user to review and run. This will generate the following files: `.env`, `config.toml`, `README.md`, `.gitignore`, etc.
 
@@ -281,7 +281,7 @@ The marketplace will be integrated into the Ruaas website as another page. The m
 
 - Providing reliable proof of service execution may be challenging. While we aim to cover a broad range of use cases, malicious actors may still find workarounds.
 
-## Roadmaps
+# Roadmap
 
 At this point, we want to assess the feasibility of pursuing the decentralized marketplace. We need to evaluate the required resources and determine what we could achieve if we instead focus on developing the CLI tooling.
 
