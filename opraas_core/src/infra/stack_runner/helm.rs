@@ -74,10 +74,12 @@ impl HelmStackRunner {
             info!("Installing {} from {}", name, repo);
             system::execute_command(
                 Command::new("helm")
-                    .args(["install", name, repo, "-n", name])
+                    .args(["install", name, repo, "-n", name, "--create-namespace"])
                     .args(args),
                 false,
             )?;
+
+            self.wait_for_running_release(&name)?;
         }
 
         // build dependencies
@@ -158,8 +160,8 @@ impl HelmStackRunner {
         Ok(())
     }
 
-    fn wait_for_release(&self) -> Result<(), Box<dyn std::error::Error>> {
-        info!("Waiting for release to be ready",);
+    fn wait_for_running_release(&self, namespace: &str) -> Result<(), Box<dyn std::error::Error>> {
+        info!("Waiting for release {} to be ready", namespace);
 
         loop {
             let pods = system::execute_command(
@@ -167,7 +169,7 @@ impl HelmStackRunner {
                     .arg("get")
                     .arg("pods")
                     .arg("-n")
-                    .arg(&self.namespace)
+                    .arg(namespace)
                     .arg("--no-headers"),
                 true,
             )?;
@@ -227,7 +229,7 @@ impl TStackRunner for HelmStackRunner {
             false,
         )?;
 
-        self.wait_for_release()?;
+        self.wait_for_running_release(&self.namespace)?;
 
         Ok(())
     }

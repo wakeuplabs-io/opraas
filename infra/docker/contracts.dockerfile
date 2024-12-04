@@ -35,6 +35,8 @@ RUN cd /app/packages/contracts-bedrock && just -v build
 RUN cd /app && make op-node
 RUN chmod +x /app/op-node/bin/op-node
 
+RUN cd /app && make cannon-prestate
+
 # shared volume paths
 ENV IN_DEPLOY_CONFIG=/shared/in/deploy-config.json
 ENV OUT_DEPLOY_CONFIG=/shared/out/deploy-config.json
@@ -57,8 +59,15 @@ ENV DEPLOYER_ADDRESS="0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266"
 ENV DEPLOYER_PRIVATE_KEY="0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80"
 ENV GAS_MULTIPLIER="130"
 ENV SLOW_ARG="--slow"
+ENV DEPLOY_DETERMINISTIC_DEPLOYER="false"
 
-CMD echo "Deploying L2 contracts to L1..." && \
+CMD if [ "$DEPLOY_DETERMINISTIC_DEPLOYER" = "true" ]; then \
+      echo "Deploying create2 deployer" && \
+      cast send --from "$DEPLOYER_ADDRESS" --private-key "$DEPLOYER_PRIVATE_KEY" --rpc-url "$ETH_RPC_URL" --value "1ether" "0x3fAB184622Dc19b6109349B94811493BF2a45362" && \
+      cast publish --rpc-url "$ETH_RPC_URL" "0xf8a58085174876e800830186a08080b853604580600e600039806000f350fe7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffe03601600081602082378035828234f58015156039578182fd5b8082525050506014600cf31ba02222222222222222222222222222222222222222222222222222222222222222a02222222222222222222222222222222222222222222222222222222222222222"; \
+    fi && \
+
+    echo "Deploying L2 contracts to L1..." && \
     cp ${IN_DEPLOY_CONFIG} ${DEPLOY_CONFIG_PATH} && \
     l1GenesisBlockTimestamp=$(printf '0x%x' $(date +%s)) && jq --arg ts "$l1GenesisBlockTimestamp" '.l1GenesisBlockTimestamp = $ts' ${DEPLOY_CONFIG_PATH} > tmp.json && mv tmp.json ${DEPLOY_CONFIG_PATH} && \
     l1StartingBlockTag=$(cast block latest --rpc-url "$ETH_RPC_URL" --json | jq -r ".hash") && jq --arg ts "$l1StartingBlockTag" '.l1StartingBlockTag = $ts' ${DEPLOY_CONFIG_PATH} > tmp.json && mv tmp.json ${DEPLOY_CONFIG_PATH} && \

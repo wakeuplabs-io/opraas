@@ -1,2 +1,2 @@
-pub mod docker;
+pub mod geth;
 pub mod testnet_node;

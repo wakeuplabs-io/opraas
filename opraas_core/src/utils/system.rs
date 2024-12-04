@@ -19,12 +19,16 @@ pub fn execute_command(command: &mut Command, silent: bool) -> Result<String, St
         .map_err(|e| format!("Failed to execute command: {}", e))?;
 
     let result = String::from_utf8_lossy(&output.stdout).to_string();
+    let error = String::from_utf8_lossy(&output.stderr).to_string();
     let status = output.status;
 
     if status.success() {
         return Ok(result);
     } else {
-        return Err(format!("Command exited with non-zero status: {}", status));
+        return Err(format!(
+            "Command exited with non-zero status: {}. {}",
+            status, error
+        ));
     }
 }
 

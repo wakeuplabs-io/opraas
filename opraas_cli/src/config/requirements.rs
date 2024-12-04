@@ -1,7 +1,7 @@
 use crate::system::{System, TSystem};
+use core::fmt;
 use regex::Regex;
 use semver::Version;
-use core::fmt;
 use std::process::Command;
 
 #[derive(Debug)]

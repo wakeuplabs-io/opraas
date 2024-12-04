@@ -6,7 +6,7 @@ use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerServi
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory, Stack};
-use opraas_core::infra::{testnet_node::docker::DockerTestnetNode, testnet_node::testnet_node::TTestnetNode};
+use opraas_core::infra::{testnet_node::geth::GethTestnetNode, testnet_node::testnet_node::TTestnetNode};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;
@@ -14,7 +14,7 @@ use std::time::Duration;
 
 pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
-    fork_node: Box<dyn TTestnetNode>,
+    l1_node: Box<dyn TTestnetNode>,
     stack_runner: Box<dyn TStackRunnerService>,
 }
 
@@ -24,7 +24,7 @@ impl DevCommand {
     pub fn new() -> Self {
         Self {
             dialoguer: Box::new(crate::console::Dialoguer::new()),
-            fork_node: Box::new(DockerTestnetNode::new()),
+            l1_node: Box::new(GethTestnetNode::new()),
             stack_runner: Box::new(StackRunnerService::new("opruaas-dev", "opruaas-dev")),
         }
     }
@@ -62,16 +62,11 @@ impl DevCommand {
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
         let release_factory = ReleaseFactory::new(&project, &config);
 
-        // start local network ===========================
+        // update config for devnet mode
 
-        let fork_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
-
-        self.fork_node
-            .start(config.network.l1_chain_id, &config.network.l1_rpc_url, 8545)?;
-
-        // update config to connect to fork
         let wallet_address = "0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266";
         let wallet_private_key = "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80";
+        config.network.l1_chain_id = 1337;
         config.accounts.admin_address = wallet_address.to_string();
         config.accounts.admin_private_key = wallet_private_key.to_string();
         config.accounts.batcher_address = wallet_address.to_string();
@@ -87,7 +82,13 @@ impl DevCommand {
         config.network.l1_rpc_url = "http://host.docker.internal:8545".to_string();
         config.network.fund_dev_accounts = true;
 
-        fork_spinner.finish_with_message("✔️ L1 fork ready...");
+        // start local network ===========================
+
+        let l1_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
+
+        self.l1_node.start(config.network.l1_chain_id, 8545)?;
+
+        l1_spinner.finish_with_message("✔️ L1 node ready...");
 
         // Deploy contracts ===========================
 
@@ -98,7 +99,7 @@ impl DevCommand {
 
         let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
-        let contracts_deployment = contracts_deployer.deploy("dev", &contracts_release, &config)?;
+        let contracts_deployment = contracts_deployer.deploy("dev", &contracts_release, &config, true, false)?;
 
         contracts_spinner.finish_with_message("✔️ Contracts deployed...");
 
@@ -121,7 +122,7 @@ impl DevCommand {
 
         print_info("\n\n================================================\n\n");
 
-        print_info("L1 fork available at http://127.1.1:8545");
+        print_info("L1 fork available at http://localhost:8545");
         print_info("L2 rpc available at http://localhost:80/rpc");
         print_info("Explorer available at http://localhost:80");
 
@@ -150,7 +151,7 @@ impl Drop for DevCommand {
     fn drop(&mut self) {
         print_warning("Cleaning up don't interrupt...");
 
-        match self.fork_node.stop() {
+        match self.l1_node.stop() {
             Ok(_) => {}
             Err(e) => {
                 print_warning(&format!("Failed to stop fork node: {}", e));

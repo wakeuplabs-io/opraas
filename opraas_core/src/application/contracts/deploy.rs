@@ -23,6 +23,8 @@ pub trait TStackContractsDeployerService {
         name: &str,
         contracts_release: &Release,
         config: &CoreConfig,
+        deploy_deterministic_deployer: bool,
+        slow: bool,
     ) -> Result<Deployment, Box<dyn std::error::Error>>;
 
     fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>>;
@@ -49,6 +51,8 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
         deployment_name: &str,
         contracts_release: &Release,
         config: &CoreConfig,
+        deploy_deterministic_deployer: bool,
+        slow: bool,
     ) -> Result<Deployment, Box<dyn std::error::Error>> {
         // ensure release is available locally for run
         self.release_repository.pull(&contracts_release)?;
@@ -87,6 +91,11 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
                 .map(|b| format!("{:02x}", b))
                 .collect::<String>(),
         );
+        env.insert(
+            "DEPLOY_DETERMINISTIC_DEPLOYER",
+            deploy_deterministic_deployer.to_string(),
+        );
+        env.insert("SLOW_ARG", if slow { "--slow" } else { "" }.to_string());
 
         // using contracts artifact, create a deployment
         self.release_runner.run(&contracts_release, volume, env)?;

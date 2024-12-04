@@ -40,7 +40,12 @@ impl DeployCommand {
         }
     }
 
-    pub fn run(&self, target: DeployTarget, name: String) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(
+        &self,
+        target: DeployTarget,
+        name: String,
+        deploy_deterministic_deployer: bool,
+    ) -> Result<(), Box<dyn std::error::Error>> {
         let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
         let project = Project::new_from_root(std::env::current_dir().unwrap());
 
@@ -65,8 +70,13 @@ impl DeployCommand {
             let contracts_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
 
             let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
-            self.contracts_deployer_service
-                .deploy(&name, &contracts_release, &config)?;
+            self.contracts_deployer_service.deploy(
+                &name,
+                &contracts_release,
+                &config,
+                deploy_deterministic_deployer,
+                true,
+            )?;
 
             contracts_deployer_spinner.finish_with_message("✔️ Contracts deployed...");
         }
@@ -112,25 +122,19 @@ impl DeployCommand {
 
         // print instructions
 
-        println!("\n{}\n", "What's Next?".bright_white().bold());
-
         println!(
-            "You can find your deployment artifacts at ./deployments/{}",
-            name
-        );
-        println!("We recommend you keep these files and your keys secure as they're needed to run your deployment.\n");
-
-        println!("Some useful commands for you now:\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "inspect [contracts|infra|all] --name <deployment_name>".blue()
-        );
-        println!("    Display the artifacts for each deployment.\n");
-
-        println!(
-           "{}", "NOTE: At the moment there's no way to remove a deployment, you'll need to manually go to `infra/aws` and run `terraform destroy`. For upgrades you'll also need to run them directly in helm.".yellow()
+            "\n{title}\n\n\
+            You can find your deployment artifacts at ./deployments/{name}\n\n\
+            We recommend you keep these files and your keys secure as they're needed to run your deployment.\n\n\
+            Some useful commands for you now:\n\n\
+            - {bin_name} {command}\n\
+            \tDisplay the artifacts for each deployment.\n\n\
+            {note}\n",
+            
+            title = "What's Next?".bright_white().bold(),
+            bin_name=BIN_NAME.blue(),
+            command="inspect [contracts|infra|all] --name <deployment_name>".blue(),
+            note="NOTE: At the moment there's no way to remove a deployment, you'll need to manually go to `infra/aws` and run `terraform destroy`. For upgrades you'll also need to run them directly in helm.".yellow()
         );
 
         Ok(())

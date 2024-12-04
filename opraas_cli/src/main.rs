@@ -20,7 +20,7 @@ use dotenv::dotenv;
 use semver::Version;
 
 #[derive(Parser)]
-#[clap(name = "opruaas")] 
+#[clap(name = "opruaas")]
 #[clap(version = "0.0.3")]
 #[clap(about = "Easily deploy and manage rollups with the Optimism stack.", long_about = None)]
 struct Args {
@@ -50,6 +50,9 @@ enum Commands {
 
         #[arg(long)]
         name: String,
+
+        #[arg(long, default_value_t = false)]
+        deterministic_deployer: bool,
     },
     /// Get details about the current deployment. Target must be one of: contracts, infra
     Inspect {
@@ -139,7 +142,11 @@ async fn main() {
         Commands::Build { target } => BuildCommand::new(target).run(),
         Commands::Release { target } => ReleaseCommand::new(target).run(),
         Commands::Dev {} => DevCommand::new().run(),
-        Commands::Deploy { target, name } => DeployCommand::new().run(target, name),
+        Commands::Deploy {
+            target,
+            name,
+            deterministic_deployer,
+        } => DeployCommand::new().run(target, name, deterministic_deployer),
         Commands::Inspect { target, deployment } => InspectCommand::new().run(target, deployment),
         // Commands::Monitor { target } => MonitorCommand::new(target).run(&config).await,
     } {
