@@ -54,16 +54,80 @@ npx opruaas release contracts
 
 ```bash
 # 1. Just run dev command... We'll prompt you about which release to use
-# We'll fork the l1 you have in .env so make sure to have a valid rpc. As per wallets we'll replace your values with mock wallets already funded.
+# Don't worry about wallets, we'll override with testing ones.
 npx opruaas -v dev
 ```
 
-### Deploy contracts/infra/all
+Once all deployments are up and running it may take some time for it to be reactive, for rpc to respond and for explorer to finish indexing and start showing your transactions.
+
+If you have cast installed some of these commands may help you to give it a try
 
 ```bash
-# 1. Just run dev command... We'll prompt you about which release to use
-npx opruaas -v deploy all --name my-prod-depl
+cast chain-id --rpc-url http://localhost:80/rpc
+
+cast balance 0x3fAB184622Dc19b6109349B94811493BF2a45362 --rpc-url http://localhost:80/rpc
+
+cast send \
+  --from 0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 \
+  --private-key ac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80 \
+  --rpc-url http://localhost:80/rpc \
+  --value 1ether \
+  0x3fAB184622Dc19b6109349B94811493BF2a45362
 ```
+
+On l1 and l2 all these wallets will be funded by default (we automatically set `fund_dev_accounts` to `true` for dev mode)
+
+```
+0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266 with 10000 ETH
+0x70997970C51812dc3A010C7d01b50e0d17dc79C8 with 10000 ETH
+0x3C44CdDdB6a900fa2b585dd299e03d12FA4293BC with 10000 ETH
+0x90F79bf6EB2c4f870365E785982E1f101E93b906 with 10000 ETH
+0x15d34AAf54267DB7D7c367839AAf71A00a2C6A65 with 10000 ETH
+0x9965507D1a55bcC2695C58ba16FB37d819B0A4dc with 10000 ETH
+0x976EA74026E726554dB657fA54763abd0C3a0aa9 with 10000 ETH
+0x14dC79964da2C08b23698B3D3cc7Ca32193d9955 with 10000 ETH
+0x23618e81E3f5cdF7f54C3d65f7FBc0aBf5B21E8f with 10000 ETH
+0xa0Ee7A142d267C1f36714E4a8F75612F20a79720 with 10000 ETH
+0xBcd4042DE499D14e55001CcbB24a551F3b954096 with 10000 ETH
+0x71bE63f3384f5fb98995898A86B02Fb2426c5788 with 10000 ETH
+0xFABB0ac9d68B0B445fB7357272Ff202C5651694a with 10000 ETH
+0x1CBd3b2770909D4e10f157cABC84C7264073C9Ec with 10000 ETH
+0xdF3e18d64BC6A983f673Ab319CCaE4f1a57C7097 with 10000 ETH
+0xcd3B766CCDd6AE721141F452C550Ca635964ce71 with 10000 ETH
+0x2546BcD3c84621e976D8185a91A922aE77ECEc30 with 10000 ETH
+0xbDA5747bFD65F08deb54cb465eB87D40e51B197E with 10000 ETH
+0xdD2FD4581271e230360230F9337D5c0430Bf44C0 with 10000 ETH
+0x8626f6940E2eb28930eFb4CeF49B2d1F2C9C1199 with 10000 ETH
+0x09DB0a93B389bEF724429898f539AEB7ac2Dd55f with 10000 ETH
+0x02484cb50AAC86Eae85610D6f4Bf026f30f6627D with 10000 ETH
+0x08135Da0A343E492FA2d4282F2AE34c6c5CC1BbE with 10000 ETH
+0x5E661B79FE2D3F6cE70F5AAC07d8Cd9abb2743F1 with 10000 ETH
+0x61097BA76cD906d2ba4FD106E757f7Eb455fc295 with 10000 ETH
+0xDf37F81dAAD2b0327A0A50003740e1C935C70913 with 10000 ETH
+0x553BC17A05702530097c3677091C5BB47a3a7931 with 10000 ETH
+0x87BdCE72c06C21cd96219BD8521bDF1F42C78b5e with 10000 ETH
+0x40Fc963A729c542424cD800349a7E4Ecc4896624 with 10000 ETH
+0x9DCCe783B6464611f38631e6C851bf441907c710 with 10000 ETH
+```
+
+You'll find:
+- L1 rpc available at http://localhost:8545
+- L2 rpc available at http://localhost:80/rpc
+- Explorer available at http://localhost:80
+
+### Deploy contracts/infra/all
+
+Make sure to have a properly configured your toml config.
+
+```bash
+# Recommended -v for verbose deployment as it may take a while to get it all up and running
+npx opruaas -v deploy all --name my-prod-deployment
+```
+
+Use `--deploy-deployer` in case l1 chain doesn't have one already, for most popular l1 chains you shouldn't worry about it
+
+This will generate `deployments/my-prod-deployment` folder where you can find the generated artifacts. You can manually inspect them or use the `inspect` command for this. It's important you don't loose these files as they're needed to run your chain.
+
 
 ### Npm distribution 
 

@@ -57,8 +57,8 @@ impl ReleaseCommand {
         let cwd = std::env::current_dir()?;
 
         // request release name and repository
-        print_info("We'll tag your local builds and push them to your repository.");
-        print_warning("Make sure you're docker user has push access to the repository");
+        print_info("We'll tag your local builds and push them to your registry.");
+        print_warning("Make sure your docker user has push permissions to the registry");
 
         let registry_url: String = self
             .dialoguer
@@ -131,17 +131,17 @@ impl ReleaseCommand {
 
         // print instructions  =========================
 
-        println!("\n{}\n", "What's Next?".bright_white().bold());
-
-        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
-        println!("    Try your artifacts locally without spending any resources.\n");
-
         println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "deploy [contracts|infra|all] --name <deployment_name>".blue()
+            "\n{title}\n\n\
+            - {bin} {dev_cmd}\n\
+            \tTry your artifacts locally without spending any resources.\n\n\
+            - {bin} {deploy_cmd}\n\
+            \tUse your artifacts to create contracts deployments or whole infra.\n",
+            title = "What's Next?".bright_white().bold(),
+            bin = BIN_NAME.blue(),
+            dev_cmd = "dev".blue(),
+            deploy_cmd = "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
-        println!("    Use your artifacts to create contracts deployments or whole infra.\n");
 
         Ok(())
     }

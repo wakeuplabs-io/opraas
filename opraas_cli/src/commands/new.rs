@@ -41,43 +41,32 @@ impl NewCommand {
 
         // print instructions ========================================
 
-        println!("\n{}\n", "What's Next?".bright_white().bold());
-        println!("Inside that directory, you can run several commands:\n");
-
         println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "init [contracts|node|etc...]".blue()
+            "\n{title}\n\n\
+            Inside that directory, you can run several commands:\n\n\
+            - {bin} {init_cmd}\n\
+            \tInitiates artifacts for local builds.\n\n\
+            - {bin} {build_cmd}\n\
+            \tBuilds docker images from artifacts.\n\n\
+            - {bin} {release_cmd}\n\
+            \tPublishes docker images to be used in dev or prod.\n\n\
+            - {bin} {dev_cmd}\n\
+            \tRuns a local dev environment.\n\n\
+            - {bin} {deploy_cmd}\n\
+            \tDeploys contracts to l1 and infra to kubernetes through terraform.\n\n\
+            We suggest that you begin by typing:\n\
+            - {cd_cmd} {name}\n\
+            - {bin} {dev_cmd}",
+            title = "What's Next?".bright_white().bold(),
+            bin = BIN_NAME.blue(),
+            init_cmd = "init [contracts|node|etc...]".blue(),
+            build_cmd = "build [contracts|node|etc...]".blue(),
+            release_cmd = "release [contracts|node|etc...]".blue(),
+            dev_cmd = "dev".blue(),
+            deploy_cmd = "deploy [contracts|infra|all] --name <deployment_name>".blue(),
+            cd_cmd = "cd".blue(),
+            name = name.blue()
         );
-        println!("    Initiates artifacts for local builds.\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "build [contracts|node|etc...]".blue()
-        );
-        println!("    Builds docker images from artifacts.\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "release [contracts|node|etc...]".blue()
-        );
-        println!("    Publishes docker images to be used in dev or prod.\n");
-
-        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
-        println!("    Runs a local dev environment.\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "deploy [contracts|infra|all] --name <deployment_name>".blue()
-        );
-        println!("    Deploys contracts to l1 and infra to kubernetes through terraform.\n");
-
-        println!("We suggest that you begin by typing:\n");
-        println!("  {} {}", "cd".blue(), name.blue());
-        println!("  {} {}\n", BIN_NAME.blue(), "dev".blue());
 
         Ok(())
     }

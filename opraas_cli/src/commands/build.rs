@@ -98,24 +98,20 @@ impl BuildCommand {
 
         // print instructions
 
-        println!("\n{}\n", "What's Next?".bright_white().bold());
-
         println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "release [contracts|node|etc...]".blue()
+            "\n{title}\n\n\
+            - {bin} {release_cmd}\n\
+            \tPublishes artifacts to registry for consumption in dev and deploy.\n\n\
+            - {bin} {dev_cmd}\n\
+            \tTry your artifacts locally without spending any resources.\n\n\
+            - {bin} {deploy_cmd}\n\
+            \tUse your artifacts to create contracts deployments or whole infra.\n",
+            title = "What's Next?".bright_white().bold(),
+            bin = BIN_NAME.blue(),
+            release_cmd = "release [contracts|node|etc...]".blue(),
+            dev_cmd = "dev".blue(),
+            deploy_cmd = "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
-        println!("    Publishes artifacts to registry for consumption in dev and deploy.\n");
-
-        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
-        println!("    Try your artifacts locally without spending any resources.\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "deploy [contracts|infra|all] --name <deployment_name>".blue()
-        );
-        println!("    Use your artifacts to create contracts deployments or whole infra.\n");
 
         Ok(())
     }

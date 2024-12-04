@@ -130,7 +130,6 @@ impl DeployCommand {
             - {bin_name} {command}\n\
             \tDisplay the artifacts for each deployment.\n\n\
             {note}\n",
-            
             title = "What's Next?".bright_white().bold(),
             bin_name=BIN_NAME.blue(),
             command="inspect [contracts|infra|all] --name <deployment_name>".blue(),

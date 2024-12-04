@@ -33,7 +33,7 @@ impl DevCommand {
         let mut config = CoreConfig::new_from_toml(&get_config_path())?;
         let project = Project::new_from_root(std::env::current_dir()?);
 
-        print_info("Dev command will run a local fork node, deploy contracts to it and then install the infra in your local network.");
+        print_info("Dev command will run a local l1 node, deploy contracts to it and then install the infra in your local network.");
         print_info("You can use a release you build with build and release command or a third-party release");
 
         // confirm kubernetes context point to local
@@ -84,7 +84,7 @@ impl DevCommand {
 
         // start local network ===========================
 
-        let l1_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 fork...");
+        let l1_spinner = style_spinner(ProgressBar::new_spinner(), "⏳ Starting l1 node...");
 
         self.l1_node.start(config.network.l1_chain_id, 8545)?;
 
@@ -122,9 +122,10 @@ impl DevCommand {
 
         print_info("\n\n================================================\n\n");
 
-        print_info("L1 fork available at http://localhost:8545");
+        print_info("L1 rpc available at http://localhost:8545");
         print_info("L2 rpc available at http://localhost:80/rpc");
         print_info("Explorer available at http://localhost:80");
+        print_warning("It may take a little bit for rpc to respond and explorer to index...");
 
         print_info("\n\n================================================\n\n");
 
@@ -134,8 +135,7 @@ impl DevCommand {
         let running_clone = Arc::clone(&running);
 
         ctrlc::set_handler(move || {
-            running_clone.store(false, Ordering::SeqCst); // Set the flag to false
-            print_warning("Ctrl + C received, exiting...");
+            running_clone.store(false, Ordering::SeqCst); 
         })?;
 
         // wait for exit
@@ -154,7 +154,7 @@ impl Drop for DevCommand {
         match self.l1_node.stop() {
             Ok(_) => {}
             Err(e) => {
-                print_warning(&format!("Failed to stop fork node: {}", e));
+                print_warning(&format!("Failed to stop l1 node: {}", e));
             }
         }
 

@@ -96,31 +96,23 @@ impl InitCommand {
 
         // print instructions ========================================
 
-        println!("\n{}\n", "What's Next?".bright_white().bold());
-
         println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "build [contracts|node|etc...]".blue()
+            "\n{title}\n\n\
+            - {bin} {build_cmd}\n\
+            \tBuilds docker images from artifacts.\n\n\
+            - {bin} {release_cmd}\n\
+            \tPublishes docker images to be used in dev or prod.\n\n\
+            - {bin} {dev_cmd}\n\
+            \tRuns a local dev environment.\n\n\
+            - {bin} {deploy_cmd}\n\
+            \tDeploys contracts to l1 and infra to kubernetes through terraform.\n",
+            title = "What's Next?".bright_white().bold(),
+            bin = BIN_NAME.blue(),
+            build_cmd = "build [contracts|node|etc...]".blue(),
+            release_cmd = "release [contracts|node|etc...]".blue(),
+            dev_cmd = "dev".blue(),
+            deploy_cmd = "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
-        println!("    Builds docker images from artifacts.\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "release [contracts|node|etc...]".blue()
-        );
-        println!("    Publishes docker images to be used in dev or prod.\n");
-
-        println!("  {} {}", BIN_NAME.blue(), "dev".blue());
-        println!("    Runs a local dev environment.\n");
-
-        println!(
-            "  {} {}",
-            BIN_NAME.blue(),
-            "deploy [contracts|infra|all] --name <deployment_name>".blue()
-        );
-        println!("    Deploys contracts to l1 and infra to kubernetes through terraform.\n");
 
         Ok(())
     }
