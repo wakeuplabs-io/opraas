@@ -93,8 +93,8 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
                 .execute_command(&mut Command::new(requirement.program).arg(requirement.version_arg))
                 .map_err(|_| {
                     format!(
-                        "Could not find {}. Please install version {} {}",
-                        requirement.program, requirement.required_comparator, requirement.required_version
+                        "{} {} did not exited succesfully. Please ensure program is installed and running.",
+                        requirement.program, requirement.version_arg
                     )
                 })?;
             let re = Regex::new(r"(\d+\.\d+\.\d+)").unwrap();
