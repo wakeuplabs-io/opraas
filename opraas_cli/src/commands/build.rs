@@ -13,7 +13,7 @@ use std::{sync::Arc, thread, time::Instant};
 
 pub struct BuildCommand {
     artifacts: Vec<Arc<Artifact>>,
-    system_requirements_checker:  Box<dyn TSystemRequirementsChecker>
+    system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -43,16 +43,16 @@ impl BuildCommand {
             BuildTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
 
-        Self { artifacts, system_requirements_checker: Box::new(SystemRequirementsChecker::new()) }
+        Self {
+            artifacts,
+            system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
+        }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.system_requirements_checker.check(vec![
-            GIT_REQUIREMENT,
-            DOCKER_REQUIREMENT,
-        ])?;
+        self.system_requirements_checker
+            .check(vec![GIT_REQUIREMENT, DOCKER_REQUIREMENT])?;
 
-        
         let started = Instant::now();
         let build_spinner = style_spinner(
             ProgressBar::new_spinner(),

@@ -56,10 +56,8 @@ impl ReleaseCommand {
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.system_requirements_checker.check(vec![
-            GIT_REQUIREMENT,
-            DOCKER_REQUIREMENT,
-        ])?;
+        self.system_requirements_checker
+            .check(vec![GIT_REQUIREMENT, DOCKER_REQUIREMENT])?;
 
         let cwd = std::env::current_dir()?;
 

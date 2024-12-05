@@ -29,8 +29,6 @@ impl InspectCommand {
     }
 
     pub fn run(&self, target: InspectTarget, deployment_name: String) -> Result<(), Box<dyn std::error::Error>> {
-
-
         if matches!(target, InspectTarget::Contracts | InspectTarget::All) {
             let deployment = self.contracts_deployer_service.find(&deployment_name)?;
 

@@ -21,7 +21,7 @@ pub enum InitTargets {
 
 pub struct InitCommand {
     artifacts: Vec<Arc<Artifact>>,
-    system_requirement_checker: Box<dyn TSystemRequirementsChecker>
+    system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
 }
 
 // implementations ================================================
@@ -41,13 +41,15 @@ impl InitCommand {
             InitTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
 
-        Self { artifacts, system_requirement_checker: Box::new(SystemRequirementsChecker::new()) }
+        Self {
+            artifacts,
+            system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
+        }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        self.system_requirement_checker.check(vec![
-            GIT_REQUIREMENT,
-        ])?;
+        self.system_requirement_checker
+            .check(vec![GIT_REQUIREMENT])?;
 
         // start timer and spinner
         let started = Instant::now();

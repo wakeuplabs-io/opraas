@@ -65,7 +65,6 @@ pub const GIT_REQUIREMENT: Requirement = Requirement {
 
 // implementations =============================================
 
-
 impl fmt::Display for Comparison {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {

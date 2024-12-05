@@ -77,7 +77,7 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // create environment
         let mut env: HashMap<&str, String> = HashMap::new();
-        
+
         #[rustfmt::skip]
         env.insert("ETH_RPC_URL", config.network.l1_rpc_url.clone());
         #[rustfmt::skip]

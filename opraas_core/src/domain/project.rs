@@ -50,10 +50,10 @@ impl Project {
     /// walk back to find config.toml
     pub fn new_from_cwd() -> Option<Self> {
         let mut current = env::current_dir().unwrap();
-        
+
         for _ in 0..10 {
             if current.join("config.toml").exists() {
-                return Some(Project::new_from_root(current))
+                return Some(Project::new_from_root(current));
             }
 
             current = current.parent().unwrap().to_path_buf()

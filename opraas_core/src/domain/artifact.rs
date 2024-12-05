@@ -1,5 +1,5 @@
-use mockall::automock;
 use crate::config::{artifacts::ArtifactConfig, CoreConfig};
+use mockall::automock;
 use std::{collections::HashMap, fmt, path::PathBuf, sync::Arc};
 
 use super::Project;
