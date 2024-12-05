@@ -1,7 +1,6 @@
 use crate::{
     config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
-    console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
-    git::TGit,
+    infra::{console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer}, version_control::{git::TGit, Git}},
 };
 use clap::ValueEnum;
 use colored::*;
@@ -36,7 +35,7 @@ pub enum ReleaseTargets {
 impl ReleaseCommand {
     pub fn new() -> Self {
         Self {
-            git: Box::new(crate::git::Git::new()),
+            git: Box::new(Git::new()),
             dialoguer: Box::new(Dialoguer::new()),
             system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),

@@ -1,4 +1,4 @@
-use crate::console::style_spinner;
+use crate::infra::console::style_spinner;
 use colored::*;
 use indicatif::ProgressBar;
 use opraas_core::application::{CreateProjectService, TCreateProjectService};

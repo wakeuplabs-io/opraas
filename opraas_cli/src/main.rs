@@ -1,20 +1,18 @@
 mod commands;
 mod config;
-mod console;
-mod utils;
+mod infra;
 
 use build::BuildTargets;
 use clap::{Parser, Subcommand};
 use colored::Colorize;
 use commands::*;
-use console::print_error;
+use infra::console::print_error;
 use deploy::DeployTarget;
 use dotenv::dotenv;
 use init::InitTargets;
 use inspect::InspectTarget;
 use log::{Level, LevelFilter};
 use release::ReleaseTargets;
-pub use utils::*;
 
 #[derive(Parser)]
 #[clap(name = "opruaas")]

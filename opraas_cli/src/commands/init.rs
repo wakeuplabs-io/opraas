@@ -1,5 +1,5 @@
 use crate::config::{SystemRequirementsChecker, TSystemRequirementsChecker, GIT_REQUIREMENT};
-use crate::console::{print_error, style_spinner};
+use crate::infra::console::{print_error, style_spinner};
 use clap::ValueEnum;
 use colored::*;
 use indicatif::{HumanDuration, ProgressBar};

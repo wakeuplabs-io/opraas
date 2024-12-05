@@ -1,4 +1,4 @@
-use crate::system::{System, TSystem};
+use crate::infra::system::{System, TSystem};
 use core::fmt;
 use regex::Regex;
 use semver::Version;
@@ -160,7 +160,7 @@ mod tests {
     use crate::config::requirements::Comparison;
     use crate::config::requirements::Requirement;
     use crate::config::requirements::SystemRequirementsChecker;
-    use crate::system::MockTSystem;
+    use crate::infra::system::MockTSystem;
 
     #[test]
     fn test_check() {

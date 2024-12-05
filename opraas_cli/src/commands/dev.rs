@@ -1,7 +1,7 @@
 use crate::config::{
     SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT,
 };
-use crate::console::{print_info, print_warning, style_spinner};
+use crate::infra::console::{Dialoguer, TDialoguer, print_info, print_warning, style_spinner};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
@@ -15,7 +15,7 @@ use std::thread;
 use std::time::Duration;
 
 pub struct DevCommand {
-    dialoguer: Box<dyn crate::console::TDialoguer>,
+    dialoguer: Box<dyn TDialoguer>,
     l1_node: Box<dyn TTestnetNode>,
     stack_runner: Box<dyn TStackRunnerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
@@ -27,7 +27,7 @@ pub struct DevCommand {
 impl DevCommand {
     pub fn new() -> Self {
         Self {
-            dialoguer: Box::new(crate::console::Dialoguer::new()),
+            dialoguer: Box::new(Dialoguer::new()),
             l1_node: Box::new(GethTestnetNode::new()),
             stack_runner: Box::new(StackRunnerService::new("opruaas-dev", "opruaas-dev")),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),

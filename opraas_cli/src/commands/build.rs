@@ -1,6 +1,6 @@
 use crate::{
     config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
-    console::{print_error, style_spinner},
+    infra::console::{print_error, style_spinner},
 };
 use colored::*;
 use indicatif::{HumanDuration, ProgressBar};

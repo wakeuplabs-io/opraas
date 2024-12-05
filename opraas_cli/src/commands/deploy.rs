@@ -3,7 +3,7 @@ use crate::{
         SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT,
         TERRAFORM_REQUIREMENT,
     },
-    console::{print_info, style_spinner},
+    infra::console::{print_info, style_spinner, Dialoguer, TDialoguer},
 };
 use clap::ValueEnum;
 use colored::*;
@@ -26,7 +26,7 @@ pub enum DeployTarget {
 }
 
 pub struct DeployCommand {
-    dialoguer: Box<dyn crate::console::TDialoguer>,
+    dialoguer: Box<dyn TDialoguer>,
     contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
     infra_deployer_service: Box<dyn TStackInfraDeployerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
@@ -39,7 +39,7 @@ impl DeployCommand {
     pub fn new() -> Self {
         let cwd = std::env::current_dir().unwrap();
         Self {
-            dialoguer: Box::new(crate::console::Dialoguer::new()),
+            dialoguer: Box::new(Dialoguer::new()),
             contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
             infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
