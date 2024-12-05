@@ -15,9 +15,11 @@ use opraas_core::{
         StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
-    domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory},
+    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, Release, Stack, TArtifactFactory, TProjectFactory},
     infra::{
-        deployment::InMemoryDeploymentRepository, release::{DockerReleaseRepository, DockerReleaseRunner}, stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository}
+        deployment::InMemoryDeploymentRepository,
+        release::{DockerReleaseRepository, DockerReleaseRunner},
+        stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository},
     },
 };
 
@@ -34,13 +36,15 @@ pub struct DeployCommand {
     infra_deployer: Box<dyn TStackInfraDeployerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 // implementations ================================================
 
 impl DeployCommand {
     pub fn new() -> Self {
-        let project = Project::new_from_cwd().unwrap();
+        let project_factory = Box::new(ProjectFactory::new());
+        let project = project_factory.from_cwd().unwrap();
 
         Self {
             dialoguer: Box::new(Dialoguer::new()),
@@ -56,6 +60,7 @@ impl DeployCommand {
             )),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
+            project_factory,
         }
     }
 
@@ -72,7 +77,7 @@ impl DeployCommand {
             TERRAFORM_REQUIREMENT,
         ])?;
 
-        let project = Project::new_from_cwd().unwrap();
+        let project = self.project_factory.from_cwd().unwrap();
         let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // dev is reserved for local deployments

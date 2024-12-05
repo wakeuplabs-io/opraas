@@ -7,7 +7,8 @@ use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::build::{ArtifactBuilderService, TArtifactBuilderService},
     config::CoreConfig,
-    domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory}, infra::artifact::{DockerArtifactRepository, GitArtifactSourceRepository},
+    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory},
+    infra::artifact::{DockerArtifactRepository, GitArtifactSourceRepository},
 };
 use std::{sync::Arc, thread, time::Instant};
 
@@ -15,6 +16,7 @@ pub struct BuildCommand {
     artifacts_factory: Box<dyn TArtifactFactory>,
     artifacts_builder: Arc<dyn TArtifactBuilderService>,
     system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -31,16 +33,14 @@ pub enum BuildTargets {
 
 impl BuildCommand {
     pub fn new() -> Self {
-        let artifact_repository = Box::new(DockerArtifactRepository::new());
-        let artifact_source_repository = Box::new(GitArtifactSourceRepository::new());
-
         Self {
             artifacts_factory: Box::new(ArtifactFactory::new()),
             artifacts_builder: Arc::new(ArtifactBuilderService::new(
-                artifact_repository,
-                artifact_source_repository,
+                Box::new(DockerArtifactRepository::new()),
+                Box::new(GitArtifactSourceRepository::new()),
             )),
             system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
+            project_factory: Box::new(ProjectFactory::new()),
         }
     }
 
@@ -48,7 +48,7 @@ impl BuildCommand {
         self.system_requirements_checker
             .check(vec![GIT_REQUIREMENT, DOCKER_REQUIREMENT])?;
 
-        let project = Project::new_from_cwd().unwrap();
+        let project = self.project_factory.from_cwd().unwrap();
         let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // assemble list of artifacts to build

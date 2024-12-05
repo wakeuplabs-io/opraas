@@ -1,12 +1,12 @@
 use crate::{
     config::CoreConfig,
-    domain::{self, Project, Stack, TStackInfraRepository},
+    domain::{self, Project, ProjectFactory, Stack, TProjectFactory, TStackInfraRepository},
 };
 
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
     version_control: Box<dyn domain::project::TProjectVersionControl>,
-    stack_infra_repository: Box<dyn TStackInfraRepository>,
+    stack_infra_repository: Box<dyn TStackInfraRepository>
 }
 
 pub trait TCreateProjectService {
@@ -34,7 +34,8 @@ impl TCreateProjectService for CreateProjectService {
         }
         std::fs::create_dir_all(root)?;
 
-        let project = Project::new_from_root(root.to_path_buf());
+        let project_factory = ProjectFactory::new();
+        let project = project_factory.from_root(root.clone());
 
         self.repository
             .write(&project, &root.join("README.md"), README)?;
@@ -46,7 +47,7 @@ impl TCreateProjectService for CreateProjectService {
             .write(&project, &root.join(".env.sample"), ENV_FILE)?;
         self.repository.write(
             &project,
-            &root.join("config.toml"),
+            &project.config,
             &toml::to_string(&CoreConfig::default()).unwrap(),
         )?;
 

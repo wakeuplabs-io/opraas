@@ -5,8 +5,7 @@ use colored::*;
 use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitializerService};
 use opraas_core::config::CoreConfig;
-use opraas_core::domain::project::Project;
-use opraas_core::domain::{ArtifactFactory, ArtifactKind, TArtifactFactory};
+use opraas_core::domain::{ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory};
 use opraas_core::infra::artifact::GitArtifactSourceRepository;
 use std::{sync::Arc, thread, time::Instant};
 
@@ -24,18 +23,20 @@ pub struct InitCommand {
     artifacts_factory: Box<dyn TArtifactFactory>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
     artifact_initializer: Arc<dyn TArtifactInitializerService>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 // implementations ================================================
 
 impl InitCommand {
     pub fn new() -> Self {
-        let artifact_source_repository = Box::new(GitArtifactSourceRepository::new());
-
         Self {
             artifacts_factory: Box::new(ArtifactFactory::new()),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
-            artifact_initializer: Arc::new(ArtifactInitializer::new(artifact_source_repository)),
+            artifact_initializer: Arc::new(ArtifactInitializer::new(Box::new(
+                GitArtifactSourceRepository::new(),
+            ))),
+            project_factory: Box::new(ProjectFactory::new()),
         }
     }
 
@@ -43,7 +44,7 @@ impl InitCommand {
         self.system_requirement_checker
             .check(vec![GIT_REQUIREMENT])?;
 
-        let project = Project::new_from_cwd().unwrap();
+        let project = self.project_factory.from_cwd().unwrap();
         let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // assemble list of artifacts to build

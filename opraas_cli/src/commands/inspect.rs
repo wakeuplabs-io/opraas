@@ -4,8 +4,12 @@ use opraas_core::{
         stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
         StackContractsDeployerService, TStackContractsDeployerService,
     },
-    domain::Project,
-    infra::{deployment::InMemoryDeploymentRepository, release::{DockerReleaseRepository, DockerReleaseRunner}, stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository}},
+    domain::{ProjectFactory, TProjectFactory},
+    infra::{
+        deployment::InMemoryDeploymentRepository,
+        release::{DockerReleaseRepository, DockerReleaseRunner},
+        stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository},
+    },
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -24,7 +28,8 @@ pub struct InspectCommand {
 
 impl InspectCommand {
     pub fn new() -> Self {
-        let project = Project::new_from_cwd().unwrap();
+        let project_factory = Box::new(ProjectFactory::new());
+        let project = project_factory.from_cwd().unwrap();
 
         Self {
             contracts_deployer: Box::new(StackContractsDeployerService::new(

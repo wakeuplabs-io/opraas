@@ -8,6 +8,8 @@ pub struct Project {
     pub src: Src,
 }
 
+pub struct ProjectFactory;
+
 #[derive(Debug, Clone)]
 pub struct Infra {
     pub root: PathBuf,
@@ -50,16 +52,27 @@ pub trait TProjectVersionControl {
     fn commit(&self, filepath: &str, message: &str) -> Result<(), Box<dyn std::error::Error>>;
 }
 
+pub trait TProjectFactory {
+    fn from_cwd(&self) -> Option<Project>;
+    fn from_root(&self, root: PathBuf) -> Project;
+}
+
 // implementations =================================================================
 
-impl Project {
+impl ProjectFactory {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl TProjectFactory for ProjectFactory {
     /// walk back to find config.toml
-    pub fn new_from_cwd() -> Option<Self> {
+    fn from_cwd(&self) -> Option<Project> {
         let mut current = env::current_dir().unwrap();
 
         for _ in 0..10 {
             if current.join("config.toml").exists() {
-                return Some(Project::new_from_root(current));
+                return Some(self.from_root(current));
             }
 
             current = current.parent().unwrap().to_path_buf()
@@ -69,8 +82,8 @@ impl Project {
     }
 
     /// creates from given root
-    pub fn new_from_root(root: PathBuf) -> Self {
-        Self {
+    fn from_root(&self, root: PathBuf) -> Project {
+        Project {
             root: root.clone(),
             config: root.join("config.toml"),
             infra: Infra {

@@ -7,7 +7,9 @@ use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
-use opraas_core::domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory};
+use opraas_core::domain::{
+    ArtifactFactory, ArtifactKind, ProjectFactory, Release, Stack, TArtifactFactory, TProjectFactory,
+};
 use opraas_core::infra::deployment::InMemoryDeploymentRepository;
 use opraas_core::infra::ethereum::{GethTestnetNode, TTestnetNode};
 use opraas_core::infra::release::{DockerReleaseRepository, DockerReleaseRunner};
@@ -25,13 +27,15 @@ pub struct DevCommand {
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
     contracts_deployer: Box<dyn TStackContractsDeployerService>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 // implementations ================================================
 
 impl DevCommand {
     pub fn new() -> Self {
-        let project = Project::new_from_cwd().unwrap();
+        let project_factory = Box::new(ProjectFactory::new());
+        let project = project_factory.from_cwd().unwrap();
 
         Self {
             dialoguer: Box::new(Dialoguer::new()),
@@ -47,6 +51,7 @@ impl DevCommand {
                 Box::new(DockerReleaseRepository::new()),
                 Box::new(DockerReleaseRunner::new()),
             )),
+            project_factory,
         }
     }
 
@@ -54,7 +59,7 @@ impl DevCommand {
         self.system_requirement_checker
             .check(vec![DOCKER_REQUIREMENT, K8S_REQUIREMENT, HELM_REQUIREMENT])?;
 
-        let project = Project::new_from_cwd().unwrap();
+        let project = self.project_factory.from_cwd().unwrap();
         let mut config = CoreConfig::new_from_toml(&project.config)?;
 
         print_info("Dev command will run a local l1 node, deploy contracts to it and then install the infra in your local network.");

@@ -11,7 +11,8 @@ use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
-    domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory}, infra::release::DockerReleaseRepository,
+    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory},
+    infra::release::DockerReleaseRepository,
 };
 use std::{sync::Arc, thread, time::Instant};
 
@@ -21,6 +22,7 @@ pub struct ReleaseCommand {
     system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
     artifacts_releaser: Arc<dyn TArtifactReleaserService>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -37,14 +39,15 @@ pub enum ReleaseTargets {
 
 impl ReleaseCommand {
     pub fn new() -> Self {
-        let release_repository = Box::new(DockerReleaseRepository::new());
-
         Self {
             git: Box::new(Git::new()),
             dialoguer: Box::new(Dialoguer::new()),
             system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
-            artifacts_releaser: Arc::new(ArtifactReleaserService::new(release_repository)),
+            artifacts_releaser: Arc::new(ArtifactReleaserService::new(Box::new(
+                DockerReleaseRepository::new(),
+            ))),
+            project_factory: Box::new(ProjectFactory::new()),
         }
     }
 
@@ -52,7 +55,7 @@ impl ReleaseCommand {
         self.system_requirements_checker
             .check(vec![GIT_REQUIREMENT, DOCKER_REQUIREMENT])?;
 
-        let project = Project::new_from_cwd().unwrap();
+        let project = self.project_factory.from_cwd().unwrap();
         let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // request release name and repository
