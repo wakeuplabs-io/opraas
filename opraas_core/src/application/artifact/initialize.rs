@@ -1,6 +1,5 @@
 use crate::domain;
 use crate::domain::artifact::Artifact;
-use crate::infra::repositories::artifact_source::GitArtifactSourceRepository;
 
 pub struct ArtifactInitializer {
     source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>,
@@ -13,10 +12,8 @@ pub trait TArtifactInitializerService: Send + Sync {
 // implementations =================================================
 
 impl ArtifactInitializer {
-    pub fn new() -> Self {
-        Self {
-            source_repository: Box::new(GitArtifactSourceRepository::new()),
-        }
+    pub fn new(source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>) -> Self {
+        Self { source_repository }
     }
 }
 

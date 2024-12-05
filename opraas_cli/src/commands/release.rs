@@ -1,6 +1,9 @@
 use crate::{
     config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
-    infra::{console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer}, version_control::{TVersionControl, Git}},
+    infra::{
+        console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
+        version_control::{Git, TVersionControl},
+    },
 };
 use clap::ValueEnum;
 use colored::*;
@@ -9,6 +12,7 @@ use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
     domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory},
+    infra::repositories::release::DockerReleaseRepository,
 };
 use std::{sync::Arc, thread, time::Instant};
 
@@ -17,7 +21,7 @@ pub struct ReleaseCommand {
     dialoguer: Box<dyn TDialoguer>,
     system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
-    artifacts_releaser: Arc<dyn TArtifactReleaserService>
+    artifacts_releaser: Arc<dyn TArtifactReleaserService>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -34,12 +38,14 @@ pub enum ReleaseTargets {
 
 impl ReleaseCommand {
     pub fn new() -> Self {
+        let release_repository = Box::new(DockerReleaseRepository::new());
+
         Self {
             git: Box::new(Git::new()),
             dialoguer: Box::new(Dialoguer::new()),
             system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
-            artifacts_releaser: Arc::new(ArtifactReleaserService::new())
+            artifacts_releaser: Arc::new(ArtifactReleaserService::new(release_repository)),
         }
     }
 

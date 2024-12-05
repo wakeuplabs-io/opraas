@@ -1,8 +1,5 @@
+use crate::{domain::TProjectVersionControl, system::execute_command};
 use std::process::Command;
-
-use crate::system::execute_command;
-
-use super::version_control::TVersionControl;
 
 pub struct GitVersionControl;
 
@@ -12,7 +9,7 @@ impl GitVersionControl {
     }
 }
 
-impl TVersionControl for GitVersionControl {
+impl TProjectVersionControl for GitVersionControl {
     fn init(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>> {
         execute_command(Command::new("git").arg("init").current_dir(&filepath), true)?;
 

@@ -1,11 +1,17 @@
 use crate::infra::console::style_spinner;
 use colored::*;
 use indicatif::ProgressBar;
-use opraas_core::application::{CreateProjectService, TCreateProjectService};
+use opraas_core::{
+    application::{CreateProjectService, TCreateProjectService},
+    infra::{
+        repositories::{project::InMemoryProjectRepository, stack_infra::GitStackInfraRepository},
+        version_control::GitVersionControl,
+    },
+};
 use std::{env, path::PathBuf};
 
 pub struct NewCommand {
-    create_project_service: Box<dyn TCreateProjectService>,
+    project_creator: Box<dyn TCreateProjectService>,
 }
 
 // implementations ================================================
@@ -13,13 +19,15 @@ pub struct NewCommand {
 impl NewCommand {
     pub fn new() -> Self {
         Self {
-            create_project_service: Box::new(CreateProjectService::new()),
+            project_creator: Box::new(CreateProjectService::new(
+                Box::new(InMemoryProjectRepository::new()),
+                Box::new(GitVersionControl::new()),
+                Box::new(GitStackInfraRepository::new()),
+            )),
         }
     }
 
     pub fn run(&self, name: String) -> Result<(), Box<dyn std::error::Error>> {
-        // create project at given root
-
         let mut root = PathBuf::from(&name);
         if !root.is_absolute() {
             root = env::current_dir()?.join(root)
@@ -30,7 +38,7 @@ impl NewCommand {
             &format!("⏳ Creating {} at {}...", name, root.display()),
         );
 
-        self.create_project_service.create(&root)?;
+        self.project_creator.create(&root)?;
 
         create_spinner.finish_with_message(format!(
             "✔️ Success! Created {} at {}\n",

@@ -1,6 +1,6 @@
 use std::process::Command;
 
-use crate::infra::system::{TSystem, System};
+use crate::infra::system::{System, TSystem};
 
 use super::TVersionControl;
 

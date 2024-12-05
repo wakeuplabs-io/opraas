@@ -1,12 +1,11 @@
 use crate::{
     config::CoreConfig,
     domain::{self, Project, Stack, TStackInfraRepository},
-    infra::{self, repositories::stack_infra::GitStackInfraRepository},
 };
 
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
-    version_control: Box<dyn infra::version_control::TVersionControl>,
+    version_control: Box<dyn domain::project::TProjectVersionControl>,
     stack_infra_repository: Box<dyn TStackInfraRepository>,
 }
 
@@ -15,11 +14,15 @@ pub trait TCreateProjectService {
 }
 
 impl CreateProjectService {
-    pub fn new() -> Self {
+    pub fn new(
+        repository: Box<dyn domain::project::TProjectRepository>,
+        version_control: Box<dyn domain::project::TProjectVersionControl>,
+        stack_infra_repository: Box<dyn TStackInfraRepository>,
+    ) -> Self {
         Self {
-            repository: Box::new(infra::repositories::project::InMemoryProjectRepository::new()),
-            version_control: Box::new(infra::version_control::GitVersionControl::new()),
-            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
+            repository,
+            version_control,
+            stack_infra_repository,
         }
     }
 }

@@ -16,6 +16,14 @@ use opraas_core::{
     },
     config::CoreConfig,
     domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory},
+    infra::{
+        release_runner::DockerReleaseRunner,
+        repositories::{
+            deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository,
+            stack_infra::GitStackInfraRepository,
+        },
+        stack_deployer::TerraformDeployer,
+    },
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -27,8 +35,8 @@ pub enum DeployTarget {
 
 pub struct DeployCommand {
     dialoguer: Box<dyn TDialoguer>,
-    contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
-    infra_deployer_service: Box<dyn TStackInfraDeployerService>,
+    contracts_deployer: Box<dyn TStackContractsDeployerService>,
+    infra_deployer: Box<dyn TStackInfraDeployerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
 }
@@ -37,11 +45,20 @@ pub struct DeployCommand {
 
 impl DeployCommand {
     pub fn new() -> Self {
-        let cwd = std::env::current_dir().unwrap();
+        let project = Project::new_from_cwd().unwrap();
+
         Self {
             dialoguer: Box::new(Dialoguer::new()),
-            contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
-            infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
+            contracts_deployer: Box::new(StackContractsDeployerService::new(
+                Box::new(InMemoryDeploymentRepository::new(&project.root)),
+                Box::new(DockerReleaseRepository::new()),
+                Box::new(DockerReleaseRunner::new()),
+            )),
+            infra_deployer: Box::new(StackInfraDeployerService::new(
+                Box::new(TerraformDeployer::new(&project.root)),
+                Box::new(GitStackInfraRepository::new()),
+                Box::new(InMemoryDeploymentRepository::new(&project.root)),
+            )),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
         }
@@ -89,7 +106,7 @@ impl DeployCommand {
                 &release_name,
                 &registry_url,
             );
-            self.contracts_deployer_service.deploy(
+            self.contracts_deployer.deploy(
                 &name,
                 &contracts_release,
                 &config,
@@ -105,8 +122,7 @@ impl DeployCommand {
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
             let infra_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
-            self.infra_deployer_service
-                .deploy(&Stack::load(&project, &name))?;
+            self.infra_deployer.deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("✔️ Infra deployed, your chain is live!");
 
@@ -118,7 +134,7 @@ impl DeployCommand {
         print!("\x1B[2J\x1B[1;1H");
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
-            let deployment = self.contracts_deployer_service.find(&name)?;
+            let deployment = self.contracts_deployer.find(&name)?;
 
             if let Some(deployment) = deployment {
                 info!("Inspecting contracts deployment: {}", deployment.name);
@@ -129,7 +145,7 @@ impl DeployCommand {
         }
 
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
-            let deployment = self.infra_deployer_service.find(&name)?;
+            let deployment = self.infra_deployer.find(&name)?;
 
             if let Some(deployment) = deployment {
                 info!("Inspecting infra deployment: {}", deployment.name);

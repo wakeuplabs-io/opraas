@@ -1,6 +1,5 @@
-use super::TStackInfraDeployer;
 use crate::{
-    domain::{Deployment, Stack, TDeploymentRepository},
+    domain::{Deployment, Stack, TDeploymentRepository, TStackInfraDeployer},
     system, yaml,
 };
 use std::{

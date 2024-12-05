@@ -1,13 +1,18 @@
 use crate::config::{
     SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT,
 };
-use crate::infra::console::{Dialoguer, TDialoguer, print_info, print_warning, style_spinner};
+use crate::infra::console::{print_info, print_warning, style_spinner, Dialoguer, TDialoguer};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory};
+use opraas_core::infra::release_runner::DockerReleaseRunner;
+use opraas_core::infra::repositories::deployment::InMemoryDeploymentRepository;
+use opraas_core::infra::repositories::release::DockerReleaseRepository;
+use opraas_core::infra::repositories::stack_infra::GitStackInfraRepository;
+use opraas_core::infra::stack_runner::helm::HelmStackRunner;
 use opraas_core::infra::{testnet_node::geth::GethTestnetNode, testnet_node::testnet_node::TTestnetNode};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -20,18 +25,29 @@ pub struct DevCommand {
     stack_runner: Box<dyn TStackRunnerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
+    contracts_deployer: Box<dyn TStackContractsDeployerService>,
 }
 
 // implementations ================================================
 
 impl DevCommand {
     pub fn new() -> Self {
+        let project = Project::new_from_cwd().unwrap();
+
         Self {
             dialoguer: Box::new(Dialoguer::new()),
             l1_node: Box::new(GethTestnetNode::new()),
-            stack_runner: Box::new(StackRunnerService::new("opruaas-dev", "opruaas-dev")),
+            stack_runner: Box::new(StackRunnerService::new(
+                Box::new(HelmStackRunner::new("opruaas-dev", "opruaas-dev")),
+                Box::new(GitStackInfraRepository::new()),
+            )),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
+            contracts_deployer: Box::new(StackContractsDeployerService::new(
+                Box::new(InMemoryDeploymentRepository::new(&project.root)),
+                Box::new(DockerReleaseRepository::new()),
+                Box::new(DockerReleaseRunner::new()),
+            )),
         }
     }
 
@@ -112,8 +128,10 @@ impl DevCommand {
             &release_name,
             &registry_url,
         );
-        let contracts_deployer = StackContractsDeployerService::new(&project.root);
-        let contracts_deployment = contracts_deployer.deploy("dev", &contracts_release, &config, true, false)?;
+
+        let contracts_deployment = self
+            .contracts_deployer
+            .deploy("dev", &contracts_release, &config, true, false)?;
 
         contracts_spinner.finish_with_message("✔️ Contracts deployed...");
 

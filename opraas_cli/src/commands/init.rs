@@ -7,6 +7,7 @@ use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitial
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::project::Project;
 use opraas_core::domain::{ArtifactFactory, ArtifactKind, TArtifactFactory};
+use opraas_core::infra::repositories::artifact_source::GitArtifactSourceRepository;
 use std::{sync::Arc, thread, time::Instant};
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -29,10 +30,12 @@ pub struct InitCommand {
 
 impl InitCommand {
     pub fn new() -> Self {
+        let artifact_source_repository = Box::new(GitArtifactSourceRepository::new());
+
         Self {
             artifacts_factory: Box::new(ArtifactFactory::new()),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
-            artifact_initializer: Arc::new(ArtifactInitializer::new()),
+            artifact_initializer: Arc::new(ArtifactInitializer::new(artifact_source_repository)),
         }
     }
 

@@ -1,11 +1,6 @@
 use crate::{
     config::CoreConfig,
     domain::{self, Deployment, Release},
-    infra::{
-        self,
-        release_runner::DockerArtifactRunner,
-        repositories::{deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository},
-    },
 };
 use rand::Rng;
 use std::collections::HashMap;
@@ -14,7 +9,7 @@ use tempfile::TempDir;
 pub struct StackContractsDeployerService {
     deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
     release_repository: Box<dyn domain::release::TReleaseRepository>,
-    release_runner: Box<dyn infra::release_runner::TReleaseRunner>,
+    release_runner: Box<dyn domain::release::TReleaseRunner>,
 }
 
 pub trait TStackContractsDeployerService {
@@ -36,11 +31,15 @@ const OUT_ARTIFACTS: &str = "out/artifacts.zip";
 // implementations ===================================================
 
 impl StackContractsDeployerService {
-    pub fn new(root: &std::path::PathBuf) -> Self {
+    pub fn new(
+        deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
+        release_repository: Box<dyn domain::release::TReleaseRepository>,
+        release_runner: Box<dyn domain::release::TReleaseRunner>,
+    ) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
-            release_repository: Box::new(DockerReleaseRepository::new()),
-            release_runner: Box::new(DockerArtifactRunner::new()),
+            deployment_repository,
+            release_repository,
+            release_runner,
         }
     }
 }

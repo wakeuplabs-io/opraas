@@ -1,3 +1,5 @@
+use std::{collections::HashMap, path::Path};
+
 use super::Artifact;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
@@ -18,6 +20,15 @@ pub trait TReleaseRepository: Send + Sync {
         registry_url: &str,
     ) -> Result<Release, Box<dyn std::error::Error>>;
     fn pull(&self, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+pub trait TReleaseRunner {
+    fn run(
+        &self,
+        release: &Release,
+        volume: &Path,
+        env: HashMap<&str, String>,
+    ) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 // implementations =============================================

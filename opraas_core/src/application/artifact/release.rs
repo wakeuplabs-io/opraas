@@ -1,7 +1,4 @@
-use crate::{
-    domain::{self, artifact::Artifact, Release},
-    infra,
-};
+use crate::domain::{self, artifact::Artifact, Release};
 
 pub struct ArtifactReleaserService {
     release_repository: Box<dyn domain::release::TReleaseRepository>,
@@ -19,10 +16,8 @@ pub trait TArtifactReleaserService: Send + Sync {
 // implementations ======================================================
 
 impl ArtifactReleaserService {
-    pub fn new() -> Self {
-        Self {
-            release_repository: Box::new(infra::repositories::release::DockerReleaseRepository::new()),
-        }
+    pub fn new(release_repository: Box<dyn domain::release::TReleaseRepository>) -> Self {
+        Self { release_repository }
     }
 }
 

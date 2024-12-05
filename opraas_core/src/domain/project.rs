@@ -44,6 +44,12 @@ pub trait TProjectRepository {
     fn has(&self, project: &Project, filepath: &PathBuf) -> bool;
 }
 
+pub trait TProjectVersionControl {
+    fn init(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn stage(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn commit(&self, filepath: &str, message: &str) -> Result<(), Box<dyn std::error::Error>>;
+}
+
 // implementations =================================================================
 
 impl Project {

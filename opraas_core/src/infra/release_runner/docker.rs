@@ -1,18 +1,20 @@
-use super::TReleaseRunner;
-use crate::{domain::Release, system::execute_command};
+use crate::{
+    domain::{Release, TReleaseRunner},
+    system::execute_command,
+};
 use std::{collections::HashMap, path::Path, process::Command};
 
-pub struct DockerArtifactRunner;
+pub struct DockerReleaseRunner;
 
 // implementations =============================================
 
-impl DockerArtifactRunner {
+impl DockerReleaseRunner {
     pub fn new() -> Self {
         Self
     }
 }
 
-impl TReleaseRunner for DockerArtifactRunner {
+impl TReleaseRunner for DockerReleaseRunner {
     fn run(
         &self,
         release: &Release,
