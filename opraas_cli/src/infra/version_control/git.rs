@@ -1,9 +1,14 @@
 use std::process::Command;
+
 use crate::infra::system::{TSystem, System};
+
+use super::TVersionControl;
 
 pub struct Git {
     system: Box<dyn TSystem>,
 }
+
+// implementations ================================================
 
 impl Git {
     pub fn new() -> Self {
@@ -13,11 +18,7 @@ impl Git {
     }
 }
 
-pub trait TGit {
-    fn tag_release(&self, git_path: &str, release_tag: &str) -> Result<(), Box<dyn std::error::Error>>;
-}
-
-impl TGit for Git {
+impl TVersionControl for Git {
     fn tag_release(&self, git_path: &str, release_tag: &str) -> Result<(), Box<dyn std::error::Error>> {
         self.system.execute_command(
             Command::new("git")

@@ -8,7 +8,7 @@ impl Dialoguer {
     }
 }
 
-pub trait TDialoguer {
+pub trait TDialoguer: Send + Sync {
     fn prompt(&self, message: &str) -> String;
     fn confirm(&self, message: &str) -> bool;
 }

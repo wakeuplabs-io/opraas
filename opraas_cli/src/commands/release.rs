@@ -1,6 +1,6 @@
 use crate::{
     config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
-    infra::{console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer}, version_control::{git::TGit, Git}},
+    infra::{console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer}, version_control::{TVersionControl, Git}},
 };
 use clap::ValueEnum;
 use colored::*;
@@ -13,8 +13,8 @@ use opraas_core::{
 use std::{sync::Arc, thread, time::Instant};
 
 pub struct ReleaseCommand {
-    git: Box<dyn TGit + Send + Sync>,
-    dialoguer: Box<dyn TDialoguer + Send + Sync>,
+    git: Box<dyn TVersionControl>,
+    dialoguer: Box<dyn TDialoguer>,
     system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
     artifacts_releaser: Arc<dyn TArtifactReleaserService>
