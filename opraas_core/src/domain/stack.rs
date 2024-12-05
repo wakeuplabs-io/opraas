@@ -1,5 +1,6 @@
-use crate::infra::repositories::deployment::InMemoryDeploymentRepository;
 use std::path::PathBuf;
+
+use crate::infra::deployment::InMemoryDeploymentRepository;
 
 use super::{Deployment, Project, TDeploymentRepository};
 
@@ -11,6 +12,15 @@ pub struct Stack {
 
 pub trait TStackInfraRepository {
     fn pull(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+pub trait TStackInfraDeployer {
+    fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>>;
+}
+
+pub trait TStackRunner {
+    fn run(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>>;
+    fn stop(&self) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 // implementations ==================================================

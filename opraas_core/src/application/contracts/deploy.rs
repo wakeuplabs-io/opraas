@@ -1,11 +1,6 @@
 use crate::{
     config::CoreConfig,
     domain::{self, Deployment, Release},
-    infra::{
-        self,
-        release_runner::DockerArtifactRunner,
-        repositories::{deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository},
-    },
 };
 use rand::Rng;
 use std::collections::HashMap;
@@ -14,7 +9,7 @@ use tempfile::TempDir;
 pub struct StackContractsDeployerService {
     deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
     release_repository: Box<dyn domain::release::TReleaseRepository>,
-    release_runner: Box<dyn infra::release_runner::TReleaseRunner>,
+    release_runner: Box<dyn domain::release::TReleaseRunner>,
 }
 
 pub trait TStackContractsDeployerService {
@@ -36,11 +31,15 @@ const OUT_ARTIFACTS: &str = "out/artifacts.zip";
 // implementations ===================================================
 
 impl StackContractsDeployerService {
-    pub fn new(root: &std::path::PathBuf) -> Self {
+    pub fn new(
+        deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
+        release_repository: Box<dyn domain::release::TReleaseRepository>,
+        release_runner: Box<dyn domain::release::TReleaseRunner>,
+    ) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
-            release_repository: Box::new(DockerReleaseRepository::new()),
-            release_runner: Box::new(DockerArtifactRunner::new()),
+            deployment_repository,
+            release_repository,
+            release_runner,
         }
     }
 }
@@ -77,24 +76,18 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // create environment
         let mut env: HashMap<&str, String> = HashMap::new();
+
+        #[rustfmt::skip]
         env.insert("ETH_RPC_URL", config.network.l1_rpc_url.clone());
+        #[rustfmt::skip]
         env.insert("DEPLOYER_ADDRESS", config.accounts.deployer_address.clone());
-        env.insert(
-            "DEPLOYER_PRIVATE_KEY",
-            config.accounts.deployer_private_key.clone(),
-        );
-        env.insert(
-            "IMPL_SALT",
-            rand::thread_rng()
-                .gen::<[u8; 16]>()
-                .iter()
-                .map(|b| format!("{:02x}", b))
-                .collect::<String>(),
-        );
-        env.insert(
-            "DEPLOY_DETERMINISTIC_DEPLOYER",
-            deploy_deterministic_deployer.to_string(),
-        );
+        #[rustfmt::skip]
+        env.insert("DEPLOYER_PRIVATE_KEY", config.accounts.deployer_private_key.clone());
+        #[rustfmt::skip]
+        env.insert("IMPL_SALT", rand::thread_rng() .gen::<[u8; 16]>() .iter() .map(|b| format!("{:02x}", b)) .collect::<String>());
+        #[rustfmt::skip]
+        env.insert("DEPLOY_DETERMINISTIC_DEPLOYER",deploy_deterministic_deployer.to_string());
+        #[rustfmt::skip]
         env.insert("SLOW_ARG", if slow { "--slow" } else { "" }.to_string());
 
         // using contracts artifact, create a deployment

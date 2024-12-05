@@ -1,23 +1,18 @@
 mod commands;
 mod config;
-mod console;
-mod utils;
+mod infra;
 
 use build::BuildTargets;
+use clap::{Parser, Subcommand};
 use colored::Colorize;
+use commands::*;
 use deploy::DeployTarget;
+use dotenv::dotenv;
+use infra::console::print_error;
 use init::InitTargets;
 use inspect::InspectTarget;
 use log::{Level, LevelFilter};
 use release::ReleaseTargets;
-pub use utils::*;
-
-use clap::{Parser, Subcommand};
-use commands::*;
-use config::{Comparison, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
-use console::print_error;
-use dotenv::dotenv;
-use semver::Version;
 
 #[derive(Parser)]
 #[clap(name = "opruaas")]
@@ -69,7 +64,6 @@ enum Commands {
 async fn main() {
     dotenv().ok();
 
-    // parse args
     let args = Args::parse();
 
     let log_level = if args.verbose {
@@ -96,51 +90,12 @@ async fn main() {
         .filter_module("opraas_core", log_level)
         .init();
 
-    // Check requirements
-    SystemRequirementsChecker::new()
-        .check(vec![
-            Requirement {
-                program: "docker",
-                version_arg: "-v",
-                required_version: Version::parse("24.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "kubectl",
-                version_arg: "version",
-                required_version: Version::parse("1.28.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "helm",
-                version_arg: "version",
-                required_version: Version::parse("3.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "terraform",
-                version_arg: "-v",
-                required_version: Version::parse("1.9.8").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "git",
-                version_arg: "--version",
-                required_version: Version::parse("2.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-        ])
-        .unwrap_or_else(|e| {
-            print_error(&format!("\n\nError: {}\n\n", e));
-            std::process::exit(1);
-        });
-
     // run commands
     if let Err(e) = match args.cmd {
         Commands::New { name } => NewCommand::new().run(name),
-        Commands::Init { target } => InitCommand::new(target).run(),
-        Commands::Build { target } => BuildCommand::new(target).run(),
-        Commands::Release { target } => ReleaseCommand::new(target).run(),
+        Commands::Init { target } => InitCommand::new().run(target),
+        Commands::Build { target } => BuildCommand::new().run(target),
+        Commands::Release { target } => ReleaseCommand::new().run(target),
         Commands::Dev {} => DevCommand::new().run(),
         Commands::Deploy {
             target,

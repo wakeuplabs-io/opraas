@@ -1,6 +1,9 @@
 use crate::{
-    config::{get_config_path, BIN_NAME},
-    console::{print_info, style_spinner},
+    config::{
+        SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT,
+        TERRAFORM_REQUIREMENT,
+    },
+    infra::console::{print_info, style_spinner, Dialoguer, TDialoguer},
 };
 use clap::ValueEnum;
 use colored::*;
@@ -12,7 +15,12 @@ use opraas_core::{
         StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
-    domain::{ArtifactKind, Project, ReleaseFactory, Stack},
+    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, Release, Stack, TArtifactFactory, TProjectFactory},
+    infra::{
+        deployment::InMemoryDeploymentRepository,
+        release::{DockerReleaseRepository, DockerReleaseRunner},
+        stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository},
+    },
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -23,20 +31,36 @@ pub enum DeployTarget {
 }
 
 pub struct DeployCommand {
-    dialoguer: Box<dyn crate::console::TDialoguer>,
-    contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
-    infra_deployer_service: Box<dyn TStackInfraDeployerService>,
+    dialoguer: Box<dyn TDialoguer>,
+    contracts_deployer: Box<dyn TStackContractsDeployerService>,
+    infra_deployer: Box<dyn TStackInfraDeployerService>,
+    system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
+    artifacts_factory: Box<dyn TArtifactFactory>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 // implementations ================================================
 
 impl DeployCommand {
     pub fn new() -> Self {
-        let cwd = std::env::current_dir().unwrap();
+        let project_factory = Box::new(ProjectFactory::new());
+        let project = project_factory.from_cwd().unwrap();
+
         Self {
-            dialoguer: Box::new(crate::console::Dialoguer::new()),
-            contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
-            infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
+            dialoguer: Box::new(Dialoguer::new()),
+            contracts_deployer: Box::new(StackContractsDeployerService::new(
+                Box::new(InMemoryDeploymentRepository::new(&project.root)),
+                Box::new(DockerReleaseRepository::new()),
+                Box::new(DockerReleaseRunner::new()),
+            )),
+            infra_deployer: Box::new(StackInfraDeployerService::new(
+                Box::new(TerraformDeployer::new(&project.root)),
+                Box::new(GitStackInfraRepository::new()),
+                Box::new(InMemoryDeploymentRepository::new(&project.root)),
+            )),
+            system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
+            artifacts_factory: Box::new(ArtifactFactory::new()),
+            project_factory,
         }
     }
 
@@ -46,8 +70,15 @@ impl DeployCommand {
         name: String,
         deploy_deterministic_deployer: bool,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
+        self.system_requirement_checker.check(vec![
+            DOCKER_REQUIREMENT,
+            K8S_REQUIREMENT,
+            HELM_REQUIREMENT,
+            TERRAFORM_REQUIREMENT,
+        ])?;
+
+        let project = self.project_factory.from_cwd().unwrap();
+        let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // dev is reserved for local deployments
         if name == "dev" {
@@ -62,15 +93,20 @@ impl DeployCommand {
             .dialoguer
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
-        let release_factory = ReleaseFactory::new(&project, &config);
 
         // contracts deployment ===========================================================
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
             let contracts_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
 
-            let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
-            self.contracts_deployer_service.deploy(
+            let contracts_release = Release::from_artifact(
+                &self
+                    .artifacts_factory
+                    .get(&ArtifactKind::Contracts, &project, &config),
+                &release_name,
+                &registry_url,
+            );
+            self.contracts_deployer.deploy(
                 &name,
                 &contracts_release,
                 &config,
@@ -86,8 +122,7 @@ impl DeployCommand {
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
             let infra_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying stack infra...");
 
-            self.infra_deployer_service
-                .deploy(&Stack::load(&project, &name))?;
+            self.infra_deployer.deploy(&Stack::load(&project, &name))?;
 
             infra_deployer_spinner.finish_with_message("✔️ Infra deployed, your chain is live!");
 
@@ -99,7 +134,7 @@ impl DeployCommand {
         print!("\x1B[2J\x1B[1;1H");
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
-            let deployment = self.contracts_deployer_service.find(&name)?;
+            let deployment = self.contracts_deployer.find(&name)?;
 
             if let Some(deployment) = deployment {
                 info!("Inspecting contracts deployment: {}", deployment.name);
@@ -110,7 +145,7 @@ impl DeployCommand {
         }
 
         if matches!(target, DeployTarget::Infra | DeployTarget::All) {
-            let deployment = self.infra_deployer_service.find(&name)?;
+            let deployment = self.infra_deployer.find(&name)?;
 
             if let Some(deployment) = deployment {
                 info!("Inspecting infra deployment: {}", deployment.name);
@@ -131,7 +166,7 @@ impl DeployCommand {
             \tDisplay the artifacts for each deployment.\n\n\
             {note}\n",
             title = "What's Next?".bright_white().bold(),
-            bin_name=BIN_NAME.blue(),
+            bin_name=env!("CARGO_BIN_NAME").blue(),
             command="inspect [contracts|infra|all] --name <deployment_name>".blue(),
             note="NOTE: At the moment there's no way to remove a deployment, you'll need to manually go to `infra/aws` and run `terraform destroy`. For upgrades you'll also need to run them directly in helm.".yellow()
         );

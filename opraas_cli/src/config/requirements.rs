@@ -1,4 +1,4 @@
-use crate::system::{System, TSystem};
+use crate::infra::system::{System, TSystem};
 use core::fmt;
 use regex::Regex;
 use semver::Version;
@@ -14,6 +14,57 @@ pub enum Comparison {
     LessThan,
 }
 
+#[derive(Debug)]
+pub struct Requirement<'a> {
+    pub program: &'a str,
+    pub version_arg: &'a str,
+    pub required_version: &'a str,
+    pub required_comparator: Comparison,
+}
+
+pub trait TSystemRequirementsChecker {
+    fn check(&self, requirements: Vec<Requirement>) -> Result<(), String>;
+}
+
+pub struct SystemRequirementsChecker {
+    system: Box<dyn TSystem>,
+}
+
+// requirements constants ======================================
+
+pub const DOCKER_REQUIREMENT: Requirement = Requirement {
+    program: "docker",
+    version_arg: "-v",
+    required_version: "24.0.0",
+    required_comparator: Comparison::GreaterThanOrEqual,
+};
+pub const K8S_REQUIREMENT: Requirement = Requirement {
+    program: "kubectl",
+    version_arg: "version",
+    required_version: "1.28.0",
+    required_comparator: Comparison::GreaterThanOrEqual,
+};
+pub const HELM_REQUIREMENT: Requirement = Requirement {
+    program: "helm",
+    version_arg: "version",
+    required_version: "3.0.0",
+    required_comparator: Comparison::GreaterThanOrEqual,
+};
+pub const TERRAFORM_REQUIREMENT: Requirement = Requirement {
+    program: "terraform",
+    version_arg: "-v",
+    required_version: "1.9.8",
+    required_comparator: Comparison::GreaterThanOrEqual,
+};
+pub const GIT_REQUIREMENT: Requirement = Requirement {
+    program: "git",
+    version_arg: "--version",
+    required_version: "2.0.0",
+    required_comparator: Comparison::GreaterThanOrEqual,
+};
+
+// implementations =============================================
+
 impl fmt::Display for Comparison {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -26,22 +77,6 @@ impl fmt::Display for Comparison {
     }
 }
 
-#[derive(Debug)]
-pub struct Requirement<'a> {
-    pub program: &'a str,
-    pub version_arg: &'a str,
-    pub required_version: Version,
-    pub required_comparator: Comparison,
-}
-
-pub struct SystemRequirementsChecker {
-    system: Box<dyn TSystem>,
-}
-
-pub trait TSystemRequirementsChecker {
-    fn check(self, requirements: Vec<Requirement>) -> Result<(), String>;
-}
-
 impl SystemRequirementsChecker {
     pub fn new() -> Self {
         Self {
@@ -51,15 +86,15 @@ impl SystemRequirementsChecker {
 }
 
 impl TSystemRequirementsChecker for SystemRequirementsChecker {
-    fn check(self, requirements: Vec<Requirement>) -> Result<(), String> {
+    fn check(&self, requirements: Vec<Requirement>) -> Result<(), String> {
         for requirement in requirements.iter() {
             let output = self
                 .system
                 .execute_command(&mut Command::new(requirement.program).arg(requirement.version_arg))
                 .map_err(|_| {
                     format!(
-                        "Could not find {}. Please install version {} {}",
-                        requirement.program, requirement.required_comparator, requirement.required_version
+                        "{} {} did not exited succesfully. Please ensure program is installed and running.",
+                        requirement.program, requirement.version_arg
                     )
                 })?;
             let re = Regex::new(r"(\d+\.\d+\.\d+)").unwrap();
@@ -70,9 +105,10 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
             )
             .unwrap();
 
+            let required_version = Version::parse(requirement.required_version).map_err(|e| e.to_string())?;
             match requirement.required_comparator {
                 Comparison::Equal => {
-                    if version != requirement.required_version {
+                    if version != required_version {
                         return Err(format!(
                             "Version {} does not equal required version {}",
                             version, requirement.required_version
@@ -80,7 +116,7 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
                     }
                 }
                 Comparison::GreaterThanOrEqual => {
-                    if version < requirement.required_version {
+                    if version < required_version {
                         return Err(format!(
                             "Version {} is not greater than or equal to required version {}",
                             version, requirement.required_version
@@ -88,7 +124,7 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
                     }
                 }
                 Comparison::LessThanOrEqual => {
-                    if version > requirement.required_version {
+                    if version > required_version {
                         return Err(format!(
                             "Version {} is not less than or equal to required version {}",
                             version, requirement.required_version
@@ -96,7 +132,7 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
                     }
                 }
                 Comparison::GreaterThan => {
-                    if version <= requirement.required_version {
+                    if version <= required_version {
                         return Err(format!(
                             "Version {} is not greater than required version {}",
                             version, requirement.required_version
@@ -104,7 +140,7 @@ impl TSystemRequirementsChecker for SystemRequirementsChecker {
                     }
                 }
                 Comparison::LessThan => {
-                    if version >= requirement.required_version {
+                    if version >= required_version {
                         return Err(format!(
                             "Version {} is not less than required version {}",
                             version, requirement.required_version
@@ -124,14 +160,14 @@ mod tests {
     use crate::config::requirements::Comparison;
     use crate::config::requirements::Requirement;
     use crate::config::requirements::SystemRequirementsChecker;
-    use crate::system::MockTSystem;
+    use crate::infra::system::MockTSystem;
 
     #[test]
     fn test_check() {
         let requirements = vec![Requirement {
             program: "rustc",
             version_arg: "--version",
-            required_version: Version::new(1, 0, 0),
+            required_version: "1.0.0",
             required_comparator: Comparison::GreaterThanOrEqual,
         }];
 
@@ -154,7 +190,7 @@ mod tests {
         let requirements = vec![Requirement {
             program: "rustc",
             version_arg: "--version",
-            required_version: Version::new(1, 0, 0),
+            required_version: "1.0.0",
             required_comparator: Comparison::GreaterThanOrEqual,
         }];
 

@@ -1,12 +1,17 @@
+use crate::infra::console::style_spinner;
 use colored::*;
 use indicatif::ProgressBar;
-use opraas_core::application::{CreateProjectService, TCreateProjectService};
+use opraas_core::{
+    application::{CreateProjectService, TCreateProjectService},
+    infra::{
+        project::{GitVersionControl, InMemoryProjectRepository},
+        stack::repo_inmemory::GitStackInfraRepository,
+    },
+};
 use std::{env, path::PathBuf};
 
-use crate::{config::BIN_NAME, console::style_spinner};
-
 pub struct NewCommand {
-    create_project_service: Box<dyn TCreateProjectService>,
+    project_creator: Box<dyn TCreateProjectService>,
 }
 
 // implementations ================================================
@@ -14,7 +19,11 @@ pub struct NewCommand {
 impl NewCommand {
     pub fn new() -> Self {
         Self {
-            create_project_service: Box::new(CreateProjectService::new()),
+            project_creator: Box::new(CreateProjectService::new(
+                Box::new(InMemoryProjectRepository::new()),
+                Box::new(GitVersionControl::new()),
+                Box::new(GitStackInfraRepository::new()),
+            )),
         }
     }
 
@@ -24,14 +33,12 @@ impl NewCommand {
             root = env::current_dir()?.join(root)
         }
 
-        // create project ============================================
-
         let create_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!("⏳ Creating {} at {}...", name, root.display()),
         );
 
-        self.create_project_service.create(&root)?;
+        self.project_creator.create(&root)?;
 
         create_spinner.finish_with_message(format!(
             "✔️ Success! Created {} at {}\n",
@@ -58,7 +65,7 @@ impl NewCommand {
             - {cd_cmd} {name}\n\
             - {bin} {dev_cmd}",
             title = "What's Next?".bright_white().bold(),
-            bin = BIN_NAME.blue(),
+            bin = env!("CARGO_BIN_NAME").blue(),
             init_cmd = "init [contracts|node|etc...]".blue(),
             build_cmd = "build [contracts|node|etc...]".blue(),
             release_cmd = "release [contracts|node|etc...]".blue(),

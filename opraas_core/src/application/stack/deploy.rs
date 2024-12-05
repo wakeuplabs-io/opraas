@@ -1,14 +1,7 @@
-use crate::{
-    domain::{self, Deployment, Stack},
-    infra::{
-        self,
-        repositories::{deployment::InMemoryDeploymentRepository, stack_infra::GitStackInfraRepository},
-        stack_deployer::TerraformDeployer,
-    },
-};
+use crate::domain::{self, Deployment, Stack};
 
 pub struct StackInfraDeployerService {
-    stack_deployer: Box<dyn infra::stack_deployer::TStackInfraDeployer>,
+    stack_deployer: Box<dyn domain::stack::TStackInfraDeployer>,
     stack_infra_repository: Box<dyn domain::stack::TStackInfraRepository>,
     deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
 }
@@ -21,11 +14,15 @@ pub trait TStackInfraDeployerService {
 // implementations ===================================================
 
 impl StackInfraDeployerService {
-    pub fn new(root: &std::path::PathBuf) -> Self {
+    pub fn new(
+        stack_deployer: Box<dyn domain::stack::TStackInfraDeployer>,
+        stack_infra_repository: Box<dyn domain::stack::TStackInfraRepository>,
+        deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
+    ) -> Self {
         Self {
-            stack_deployer: Box::new(TerraformDeployer::new(root)),
-            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(&root)),
+            stack_deployer,
+            stack_infra_repository,
+            deployment_repository,
         }
     }
 }

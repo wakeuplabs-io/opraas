@@ -1,7 +1,9 @@
 use crate::{
-    config::{get_config_path, BIN_NAME},
-    console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
-    git::TGit,
+    config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
+    infra::{
+        console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
+        version_control::{Git, TVersionControl},
+    },
 };
 use clap::ValueEnum;
 use colored::*;
@@ -9,14 +11,18 @@ use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
-    domain::{Artifact, ArtifactFactory, ArtifactKind, Project},
+    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory},
+    infra::release::DockerReleaseRepository,
 };
 use std::{sync::Arc, thread, time::Instant};
 
 pub struct ReleaseCommand {
-    git: Box<dyn TGit + Send + Sync>,
-    dialoguer: Box<dyn TDialoguer + Send + Sync>,
-    artifacts: Vec<Arc<Artifact>>,
+    git: Box<dyn TVersionControl>,
+    dialoguer: Box<dyn TDialoguer>,
+    system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
+    artifacts_factory: Box<dyn TArtifactFactory>,
+    artifacts_releaser: Arc<dyn TArtifactReleaserService>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -32,29 +38,25 @@ pub enum ReleaseTargets {
 // implementations ================================================
 
 impl ReleaseCommand {
-    pub fn new(target: ReleaseTargets) -> Self {
-        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
-
-        let artifacts_factory = ArtifactFactory::new(&project, &config);
-        let artifacts = match target {
-            ReleaseTargets::All => artifacts_factory.get_all(),
-            ReleaseTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
-            ReleaseTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
-            ReleaseTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
-            ReleaseTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
-            ReleaseTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
-        };
-
+    pub fn new() -> Self {
         Self {
-            git: Box::new(crate::git::Git::new()),
+            git: Box::new(Git::new()),
             dialoguer: Box::new(Dialoguer::new()),
-            artifacts,
+            system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
+            artifacts_factory: Box::new(ArtifactFactory::new()),
+            artifacts_releaser: Arc::new(ArtifactReleaserService::new(Box::new(
+                DockerReleaseRepository::new(),
+            ))),
+            project_factory: Box::new(ProjectFactory::new()),
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let cwd = std::env::current_dir()?;
+    pub fn run(&self, target: ReleaseTargets) -> Result<(), Box<dyn std::error::Error>> {
+        self.system_requirements_checker
+            .check(vec![GIT_REQUIREMENT, DOCKER_REQUIREMENT])?;
+
+        let project = self.project_factory.from_cwd().unwrap();
+        let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // request release name and repository
         print_info("We'll tag your local builds and push them to your registry.");
@@ -71,16 +73,37 @@ impl ReleaseCommand {
             .confirm("Would you also like to tag your local git repository?")
         {
             self.git
-                .tag_release(&cwd.to_str().unwrap(), &release_name)?;
+                .tag_release(&project.root.to_str().unwrap(), &release_name)?;
         }
 
         // Iterate over the artifacts and release =========================
 
+        // assemble list of artifacts to build
+        let artifacts = match target {
+            ReleaseTargets::All => self.artifacts_factory.get_all(&project, &config),
+            ReleaseTargets::Batcher => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Batcher, &project, &config)],
+            ReleaseTargets::Node => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Node, &project, &config)],
+            ReleaseTargets::Contracts => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Contracts, &project, &config)],
+            ReleaseTargets::Proposer => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Proposer, &project, &config)],
+            ReleaseTargets::Geth => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Geth, &project, &config)],
+        };
+
+        let started = Instant::now();
         let release_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!(
                 "⏳ Releasing {}...",
-                self.artifacts
+                artifacts
                     .iter()
                     .map(|e| e.to_string())
                     .collect::<Vec<_>>()
@@ -88,17 +111,16 @@ impl ReleaseCommand {
             ),
         );
 
-        let started = Instant::now();
-        let handles: Vec<_> = self
-            .artifacts
+        let handles: Vec<_> = artifacts
             .iter()
             .map(|&ref artifact| {
                 let release_name = release_name.clone();
                 let registry_url = registry_url.clone();
                 let artifact = Arc::clone(artifact);
+                let artifacts_releaser = Arc::clone(&self.artifacts_releaser);
 
                 thread::spawn(move || -> Result<(), String> {
-                    match ArtifactReleaserService::new().release(&artifact, &release_name, &registry_url) {
+                    match artifacts_releaser.release(&artifact, &release_name, &registry_url) {
                         Ok(_) => {}
                         Err(e) => {
                             print_error(&format!("❌ Error releasing {}", artifact));
@@ -110,7 +132,7 @@ impl ReleaseCommand {
             })
             .collect();
 
-        // Wait for all threads to complete
+        // wait for all threads to complete
         for handle in handles {
             match handle.join() {
                 Ok(Ok(_)) => {}
@@ -138,7 +160,7 @@ impl ReleaseCommand {
             - {bin} {deploy_cmd}\n\
             \tUse your artifacts to create contracts deployments or whole infra.\n",
             title = "What's Next?".bright_white().bold(),
-            bin = BIN_NAME.blue(),
+            bin = env!("CARGO_BIN_NAME").blue(),
             dev_cmd = "dev".blue(),
             deploy_cmd = "deploy [contracts|infra|all] --name <deployment_name>".blue()
         );
