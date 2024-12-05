@@ -1,5 +1,4 @@
 use clap::ValueEnum;
-use log::info;
 use opraas_core::application::{
     stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
     StackContractsDeployerService, TStackContractsDeployerService,

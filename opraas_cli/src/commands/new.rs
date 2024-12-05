@@ -1,4 +1,4 @@
-use crate::{config::BIN_NAME, console::style_spinner};
+use crate::console::style_spinner;
 use colored::*;
 use indicatif::ProgressBar;
 use opraas_core::application::{CreateProjectService, TCreateProjectService};
@@ -57,7 +57,7 @@ impl NewCommand {
             - {cd_cmd} {name}\n\
             - {bin} {dev_cmd}",
             title = "What's Next?".bright_white().bold(),
-            bin = BIN_NAME.blue(),
+            bin = env!("CARGO_BIN_NAME").blue(),
             init_cmd = "init [contracts|node|etc...]".blue(),
             build_cmd = "build [contracts|node|etc...]".blue(),
             release_cmd = "release [contracts|node|etc...]".blue(),

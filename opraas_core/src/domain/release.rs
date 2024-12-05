@@ -1,8 +1,6 @@
-use super::{Artifact, ArtifactFactory, ArtifactKind, Project};
-use crate::config::CoreConfig;
+use super::Artifact;
 use mockall::automock;
 use serde::{Deserialize, Serialize};
-use std::sync::Arc;
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Release {
@@ -11,12 +9,8 @@ pub struct Release {
     pub registry_url: String,
 }
 
-pub struct ReleaseFactory {
-    artifacts_factory: ArtifactFactory,
-}
-
 #[automock]
-pub trait TReleaseRepository {
+pub trait TReleaseRepository: Send + Sync {
     fn create_for_artifact(
         &self,
         artifact: &Artifact,
@@ -70,35 +64,5 @@ impl Release {
             "{}/{}:{}",
             self.registry_url, self.artifact_name, self.artifact_tag
         )
-    }
-}
-
-impl ReleaseFactory {
-    pub fn new(project: &Project, config: &CoreConfig) -> Self {
-        Self {
-            artifacts_factory: ArtifactFactory::new(project, config),
-        }
-    }
-
-    pub fn get(&self, kind: ArtifactKind, release_name: &str, registry_url: &str) -> Arc<Release> {
-        Arc::new(Release::from_artifact(
-            &self.artifacts_factory.get(kind),
-            release_name,
-            registry_url,
-        ))
-    }
-
-    pub fn get_all(&self, release_name: &str, registry_url: &str) -> Vec<Arc<Release>> {
-        self.artifacts_factory
-            .get_all()
-            .iter()
-            .map(|artifact| {
-                Arc::new(Release::from_artifact(
-                    &artifact,
-                    release_name,
-                    registry_url,
-                ))
-            })
-            .collect()
     }
 }

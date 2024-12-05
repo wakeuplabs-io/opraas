@@ -1,26 +1,24 @@
-use crate::{
-    domain::{self, artifact::Artifact},
-    infra,
-};
+use crate::domain::{self, artifact::Artifact};
 
 pub struct ArtifactBuilderService {
     artifact_repository: Box<dyn domain::artifact::TArtifactRepository>,
     artifact_source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>,
 }
 
-pub trait TArtifactBuilderService {
+pub trait TArtifactBuilderService: Send + Sync {
     fn build(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 // implementations ======================================================
 
 impl ArtifactBuilderService {
-    pub fn new() -> Self {
+    pub fn new(
+        artifact_repository: Box<dyn domain::artifact::TArtifactRepository>,
+        artifact_source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>,
+    ) -> Self {
         Self {
-            artifact_repository: Box::new(infra::repositories::artifact::DockerArtifactRepository::new()),
-            artifact_source_repository: Box::new(
-                infra::repositories::artifact_source::GitArtifactSourceRepository::new(),
-            ),
+            artifact_repository,
+            artifact_source_repository,
         }
     }
 }

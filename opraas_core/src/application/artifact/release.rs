@@ -7,7 +7,7 @@ pub struct ArtifactReleaserService {
     release_repository: Box<dyn domain::release::TReleaseRepository>,
 }
 
-pub trait TArtifactReleaserService {
+pub trait TArtifactReleaserService: Send + Sync {
     fn release(
         &self,
         artifact: &Artifact,

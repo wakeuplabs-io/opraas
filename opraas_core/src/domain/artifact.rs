@@ -1,6 +1,6 @@
 use crate::config::{artifacts::ArtifactConfig, CoreConfig};
 use mockall::automock;
-use std::{collections::HashMap, fmt, path::PathBuf, sync::Arc};
+use std::{fmt, path::PathBuf, sync::Arc};
 
 use super::Project;
 
@@ -20,6 +20,18 @@ pub enum ArtifactKind {
     Contracts,
     Proposer,
     Geth,
+}
+
+impl ArtifactKind {
+    pub const fn all() -> &'static [ArtifactKind] {
+        &[
+            ArtifactKind::Batcher,
+            ArtifactKind::Node,
+            ArtifactKind::Contracts,
+            ArtifactKind::Proposer,
+            ArtifactKind::Geth,
+        ]
+    }
 }
 
 #[derive(Debug)]
@@ -43,18 +55,21 @@ impl fmt::Display for Artifact {
     }
 }
 
-pub struct ArtifactFactory {
-    artifacts: HashMap<ArtifactKind, Arc<Artifact>>,
-}
+pub struct ArtifactFactory {}
 
 #[automock]
-pub trait TArtifactSourceRepository {
+pub trait TArtifactSourceRepository: Send + Sync {
     fn pull(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, artifact: &Artifact) -> bool;
 }
 
+pub trait TArtifactFactory {
+    fn get(&self, kind: &ArtifactKind, project: &Project, config: &CoreConfig) -> Arc<Artifact>;
+    fn get_all(&self, project: &Project, config: &CoreConfig) -> Vec<Arc<Artifact>>;
+}
+
 #[automock]
-pub trait TArtifactRepository {
+pub trait TArtifactRepository: Send + Sync {
     fn exists(&self, artifact: &Artifact) -> bool;
     fn create(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
 }
@@ -131,66 +146,51 @@ impl Artifact {
 }
 
 impl ArtifactFactory {
-    pub fn new(project: &Project, config: &CoreConfig) -> Self {
-        let mut map: HashMap<ArtifactKind, Arc<Artifact>> = HashMap::new();
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
-        map.insert(
-            ArtifactKind::Batcher,
-            Arc::new(Artifact::new(
+impl TArtifactFactory for ArtifactFactory {
+    fn get(&self, kind: &ArtifactKind, project: &Project, config: &CoreConfig) -> Arc<Artifact> {
+        match kind {
+            ArtifactKind::Batcher => Arc::new(Artifact::new(
                 ArtifactKind::Batcher,
                 &project.src.batcher,
                 &project.infra.docker.batcher,
                 &config.artifacts.batcher,
             )),
-        );
-        map.insert(
-            ArtifactKind::Node,
-            Arc::new(Artifact::new(
-                ArtifactKind::Node,
-                &project.src.node,
-                &project.infra.docker.node,
-                &config.artifacts.node,
-            )),
-        );
-        map.insert(
-            ArtifactKind::Contracts,
-            Arc::new(Artifact::new(
+            ArtifactKind::Contracts => Arc::new(Artifact::new(
                 ArtifactKind::Contracts,
                 &project.src.contracts,
                 &project.infra.docker.contracts,
                 &config.artifacts.contracts,
             )),
-        );
-        map.insert(
-            ArtifactKind::Proposer,
-            Arc::new(Artifact::new(
-                ArtifactKind::Proposer,
-                &project.src.proposer,
-                &project.infra.docker.proposer,
-                &config.artifacts.proposer,
-            )),
-        );
-        map.insert(
-            ArtifactKind::Geth,
-            Arc::new(Artifact::new(
+            ArtifactKind::Geth => Arc::new(Artifact::new(
                 ArtifactKind::Geth,
                 &project.src.geth,
                 &project.infra.docker.geth,
                 &config.artifacts.geth,
             )),
-        );
-
-        Self { artifacts: map }
+            ArtifactKind::Node => Arc::new(Artifact::new(
+                ArtifactKind::Node,
+                &project.src.node,
+                &project.infra.docker.node,
+                &config.artifacts.node,
+            )),
+            ArtifactKind::Proposer => Arc::new(Artifact::new(
+                ArtifactKind::Proposer,
+                &project.src.proposer,
+                &project.infra.docker.proposer,
+                &config.artifacts.proposer,
+            )),
+        }
     }
 
-    pub fn get(&self, kind: ArtifactKind) -> Arc<Artifact> {
-        Arc::clone(self.artifacts.get(&kind).unwrap())
-    }
-
-    pub fn get_all(&self) -> Vec<Arc<Artifact>> {
-        self.artifacts
+    fn get_all(&self, project: &Project, config: &CoreConfig) -> Vec<Arc<Artifact>> {
+        ArtifactKind::all()
             .iter()
-            .map(|(_, artifact)| Arc::clone(artifact))
+            .map(|kind| self.get(kind, project, config))
             .collect()
     }
 }

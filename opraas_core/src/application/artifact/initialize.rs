@@ -6,7 +6,7 @@ pub struct ArtifactInitializer {
     source_repository: Box<dyn domain::artifact::TArtifactSourceRepository>,
 }
 
-pub trait TArtifactInitializerService {
+pub trait TArtifactInitializerService: Send + Sync {
     fn initialize(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
 }
 

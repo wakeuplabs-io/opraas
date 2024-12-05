@@ -7,7 +7,7 @@ use indicatif::ProgressBar;
 use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
-use opraas_core::domain::{ArtifactKind, Project, ReleaseFactory, Stack};
+use opraas_core::domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory};
 use opraas_core::infra::{testnet_node::geth::GethTestnetNode, testnet_node::testnet_node::TTestnetNode};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
@@ -19,6 +19,7 @@ pub struct DevCommand {
     l1_node: Box<dyn TTestnetNode>,
     stack_runner: Box<dyn TStackRunnerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
+    artifacts_factory: Box<dyn TArtifactFactory>,
 }
 
 // implementations ================================================
@@ -30,6 +31,7 @@ impl DevCommand {
             l1_node: Box::new(GethTestnetNode::new()),
             stack_runner: Box::new(StackRunnerService::new("opruaas-dev", "opruaas-dev")),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
+            artifacts_factory: Box::new(ArtifactFactory::new()),
         }
     }
 
@@ -67,7 +69,6 @@ impl DevCommand {
             .dialoguer
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
-        let release_factory = ReleaseFactory::new(&project, &config);
 
         // update config for devnet mode
 
@@ -104,7 +105,13 @@ impl DevCommand {
             "⏳ Deploying contracts to local network...",
         );
 
-        let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
+        let contracts_release = Release::from_artifact(
+            &self
+                .artifacts_factory
+                .get(&ArtifactKind::Contracts, &project, &config),
+            &release_name,
+            &registry_url,
+        );
         let contracts_deployer = StackContractsDeployerService::new(&project.root);
         let contracts_deployment = contracts_deployer.deploy("dev", &contracts_release, &config, true, false)?;
 

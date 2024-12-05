@@ -4,17 +4,17 @@ mod console;
 mod utils;
 
 use build::BuildTargets;
+use clap::{Parser, Subcommand};
 use colored::Colorize;
+use commands::*;
+use console::print_error;
 use deploy::DeployTarget;
+use dotenv::dotenv;
 use init::InitTargets;
 use inspect::InspectTarget;
 use log::{Level, LevelFilter};
 use release::ReleaseTargets;
 pub use utils::*;
-use clap::{Parser, Subcommand};
-use commands::*;
-use console::print_error;
-use dotenv::dotenv;
 
 #[derive(Parser)]
 #[clap(name = "opruaas")]
@@ -95,9 +95,9 @@ async fn main() {
     // run commands
     if let Err(e) = match args.cmd {
         Commands::New { name } => NewCommand::new().run(name),
-        Commands::Init { target } => InitCommand::new(target).run(),
-        Commands::Build { target } => BuildCommand::new(target).run(),
-        Commands::Release { target } => ReleaseCommand::new(target).run(),
+        Commands::Init { target } => InitCommand::new().run(target),
+        Commands::Build { target } => BuildCommand::new().run(target),
+        Commands::Release { target } => ReleaseCommand::new().run(target),
         Commands::Dev {} => DevCommand::new().run(),
         Commands::Deploy {
             target,

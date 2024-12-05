@@ -1,7 +1,7 @@
 use crate::{
     config::{
-        SystemRequirementsChecker, TSystemRequirementsChecker, BIN_NAME, DOCKER_REQUIREMENT, HELM_REQUIREMENT,
-        K8S_REQUIREMENT, TERRAFORM_REQUIREMENT,
+        SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT,
+        TERRAFORM_REQUIREMENT,
     },
     console::{print_info, style_spinner},
 };
@@ -15,7 +15,7 @@ use opraas_core::{
         StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
-    domain::{ArtifactKind, Project, ReleaseFactory, Stack},
+    domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory},
 };
 
 #[derive(Debug, Clone, ValueEnum)]
@@ -30,6 +30,7 @@ pub struct DeployCommand {
     contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
     infra_deployer_service: Box<dyn TStackInfraDeployerService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
+    artifacts_factory: Box<dyn TArtifactFactory>,
 }
 
 // implementations ================================================
@@ -42,6 +43,7 @@ impl DeployCommand {
             contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
             infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
+            artifacts_factory: Box::new(ArtifactFactory::new()),
         }
     }
 
@@ -74,14 +76,19 @@ impl DeployCommand {
             .dialoguer
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
-        let release_factory = ReleaseFactory::new(&project, &config);
 
         // contracts deployment ===========================================================
 
         if matches!(target, DeployTarget::Contracts | DeployTarget::All) {
             let contracts_deployer_spinner = style_spinner(ProgressBar::new_spinner(), "Deploying contracts...");
 
-            let contracts_release = release_factory.get(ArtifactKind::Contracts, &release_name, &registry_url);
+            let contracts_release = Release::from_artifact(
+                &self
+                    .artifacts_factory
+                    .get(&ArtifactKind::Contracts, &project, &config),
+                &release_name,
+                &registry_url,
+            );
             self.contracts_deployer_service.deploy(
                 &name,
                 &contracts_release,
@@ -143,7 +150,7 @@ impl DeployCommand {
             \tDisplay the artifacts for each deployment.\n\n\
             {note}\n",
             title = "What's Next?".bright_white().bold(),
-            bin_name=BIN_NAME.blue(),
+            bin_name=env!("CARGO_BIN_NAME").blue(),
             command="inspect [contracts|infra|all] --name <deployment_name>".blue(),
             note="NOTE: At the moment there's no way to remove a deployment, you'll need to manually go to `infra/aws` and run `terraform destroy`. For upgrades you'll also need to run them directly in helm.".yellow()
         );
