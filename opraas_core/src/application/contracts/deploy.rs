@@ -77,24 +77,18 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // create environment
         let mut env: HashMap<&str, String> = HashMap::new();
+        
+        #[rustfmt::skip]
         env.insert("ETH_RPC_URL", config.network.l1_rpc_url.clone());
+        #[rustfmt::skip]
         env.insert("DEPLOYER_ADDRESS", config.accounts.deployer_address.clone());
-        env.insert(
-            "DEPLOYER_PRIVATE_KEY",
-            config.accounts.deployer_private_key.clone(),
-        );
-        env.insert(
-            "IMPL_SALT",
-            rand::thread_rng()
-                .gen::<[u8; 16]>()
-                .iter()
-                .map(|b| format!("{:02x}", b))
-                .collect::<String>(),
-        );
-        env.insert(
-            "DEPLOY_DETERMINISTIC_DEPLOYER",
-            deploy_deterministic_deployer.to_string(),
-        );
+        #[rustfmt::skip]
+        env.insert("DEPLOYER_PRIVATE_KEY", config.accounts.deployer_private_key.clone());
+        #[rustfmt::skip]
+        env.insert("IMPL_SALT", rand::thread_rng() .gen::<[u8; 16]>() .iter() .map(|b| format!("{:02x}", b)) .collect::<String>());
+        #[rustfmt::skip]
+        env.insert("DEPLOY_DETERMINISTIC_DEPLOYER",deploy_deterministic_deployer.to_string());
+        #[rustfmt::skip]
         env.insert("SLOW_ARG", if slow { "--slow" } else { "" }.to_string());
 
         // using contracts artifact, create a deployment

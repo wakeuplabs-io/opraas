@@ -1,5 +1,6 @@
 use super::{Artifact, ArtifactFactory, ArtifactKind, Project};
 use crate::config::CoreConfig;
+use mockall::automock;
 use serde::{Deserialize, Serialize};
 use std::sync::Arc;
 
@@ -14,6 +15,7 @@ pub struct ReleaseFactory {
     artifacts_factory: ArtifactFactory,
 }
 
+#[automock]
 pub trait TReleaseRepository {
     fn create_for_artifact(
         &self,

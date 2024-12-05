@@ -1,3 +1,4 @@
+use mockall::automock;
 use crate::config::{artifacts::ArtifactConfig, CoreConfig};
 use std::{collections::HashMap, fmt, path::PathBuf, sync::Arc};
 
@@ -46,11 +47,13 @@ pub struct ArtifactFactory {
     artifacts: HashMap<ArtifactKind, Arc<Artifact>>,
 }
 
+#[automock]
 pub trait TArtifactSourceRepository {
     fn pull(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, artifact: &Artifact) -> bool;
 }
 
+#[automock]
 pub trait TArtifactRepository {
     fn exists(&self, artifact: &Artifact) -> bool;
     fn create(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>>;
