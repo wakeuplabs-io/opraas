@@ -172,6 +172,7 @@ impl DevCommand {
 
         ctrlc::set_handler(move || {
             running_clone.store(false, Ordering::SeqCst);
+            print_warning("Cleaning up don't interrupt...");
         })?;
 
         // wait for exit
@@ -185,8 +186,6 @@ impl DevCommand {
 
 impl Drop for DevCommand {
     fn drop(&mut self) {
-        print_warning("Cleaning up don't interrupt...");
-
         match self.l1_node.stop() {
             Ok(_) => {}
             Err(e) => {

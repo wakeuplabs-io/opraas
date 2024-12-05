@@ -6,7 +6,7 @@ use crate::{
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
     version_control: Box<dyn domain::project::TProjectVersionControl>,
-    stack_infra_repository: Box<dyn TStackInfraRepository>
+    stack_infra_repository: Box<dyn TStackInfraRepository>,
 }
 
 pub trait TCreateProjectService {

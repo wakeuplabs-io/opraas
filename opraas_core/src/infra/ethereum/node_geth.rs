@@ -146,6 +146,11 @@ impl TTestnetNode for GethTestnetNode {
     }
 
     fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let running_containers = execute_command(Command::new("docker").arg("ps"), true)?;
+        if running_containers.contains(CONTAINER_NAME) == false {
+            return Ok(());
+        }
+
         let _ = execute_command(Command::new("docker").arg("stop").arg(CONTAINER_NAME), true);
         let _ = execute_command(Command::new("docker").arg("rm").arg(CONTAINER_NAME), true);
 

@@ -237,6 +237,18 @@ impl TStackRunner for HelmStackRunner {
     }
 
     fn stop(&self) -> Result<(), Box<dyn std::error::Error>> {
+        let running_releases = system::execute_command(
+            Command::new("helm")
+                .arg("list")
+                .arg("--no-headers")
+                .arg("--namespace")
+                .arg(&self.namespace),
+            true,
+        )?;
+        if running_releases.contains(&format!("op-ruaas-runner-{}", &self.release_name)) == false {
+            return Ok(());
+        }
+
         system::execute_command(
             Command::new("helm")
                 .arg("uninstall")
