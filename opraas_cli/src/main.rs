@@ -11,16 +11,10 @@ use inspect::InspectTarget;
 use log::{Level, LevelFilter};
 use release::ReleaseTargets;
 pub use utils::*;
-
 use clap::{Parser, Subcommand};
 use commands::*;
-use config::{
-    Comparison, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT,
-    GIT_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT, TERRAFORM_REQUIREMENT,
-};
 use console::print_error;
 use dotenv::dotenv;
-use semver::Version;
 
 #[derive(Parser)]
 #[clap(name = "opruaas")]
