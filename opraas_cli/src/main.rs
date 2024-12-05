@@ -132,6 +132,16 @@ async fn main() {
         ])
         .unwrap_or_else(|e| {
             print_error(&format!("\n\nError: {}\n\n", e));
+
+            println!(
+                "\nEnsure you have the following tools installed and properly configured:\n\
+                - Docker: `>= 24.0.0`\n\
+                - Kubernetes with kubectl: `>= 1.28.0` (ensure kubernetes engine is running when calling the cli, you can check with `kubectl version`)
+                - Helm `>= 3.0.0`\n\
+                - Terraform `>= 1.9.8` (with AWS authentication configured)\n\
+                - Git `>= 2.0.0`"
+            );
+
             std::process::exit(1);
         });
 

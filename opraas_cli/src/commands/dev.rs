@@ -1,4 +1,3 @@
-use crate::config::get_config_path;
 use crate::console::{print_info, print_warning, style_spinner};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
@@ -30,8 +29,8 @@ impl DevCommand {
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let mut config = CoreConfig::new_from_toml(&get_config_path())?;
-        let project = Project::new_from_root(std::env::current_dir()?);
+        let project = Project::new_from_cwd().unwrap();
+        let mut config = CoreConfig::new_from_toml(&project.config)?;
 
         print_info("Dev command will run a local l1 node, deploy contracts to it and then install the infra in your local network.");
         print_info("You can use a release you build with build and release command or a third-party release");
@@ -135,7 +134,7 @@ impl DevCommand {
         let running_clone = Arc::clone(&running);
 
         ctrlc::set_handler(move || {
-            running_clone.store(false, Ordering::SeqCst); 
+            running_clone.store(false, Ordering::SeqCst);
         })?;
 
         // wait for exit

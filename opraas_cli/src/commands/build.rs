@@ -1,5 +1,5 @@
 use crate::{
-    config::{get_config_path, BIN_NAME},
+    config::BIN_NAME,
     console::{print_error, style_spinner},
 };
 use colored::*;
@@ -29,8 +29,8 @@ pub enum BuildTargets {
 
 impl BuildCommand {
     pub fn new(target: BuildTargets) -> Self {
-        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
+        let project = Project::new_from_cwd().unwrap();
+        let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         let artifacts_factory = ArtifactFactory::new(&project, &config);
         let artifacts = match target {

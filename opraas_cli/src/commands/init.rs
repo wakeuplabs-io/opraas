@@ -1,4 +1,4 @@
-use crate::config::{get_config_path, BIN_NAME};
+use crate::config:: BIN_NAME;
 use crate::console::{print_error, style_spinner};
 use clap::ValueEnum;
 use colored::*;
@@ -27,8 +27,8 @@ pub struct InitCommand {
 
 impl InitCommand {
     pub fn new(target: InitTargets) -> Self {
-        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
+        let project = Project::new_from_cwd().unwrap();
+        let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         let artifacts_factory = ArtifactFactory::new(&project, &config);
         let artifacts = match target {

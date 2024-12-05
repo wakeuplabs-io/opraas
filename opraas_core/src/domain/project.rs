@@ -1,8 +1,9 @@
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub struct Project {
     pub root: PathBuf,
+    pub config: PathBuf,
     pub infra: Infra,
     pub src: Src,
 }
@@ -46,9 +47,26 @@ pub trait TProjectRepository {
 // implementations =================================================================
 
 impl Project {
+    /// walk back to find config.toml
+    pub fn new_from_cwd() -> Option<Self> {
+        let mut current = env::current_dir().unwrap();
+        
+        for _ in 0..10 {
+            if current.join("config.toml").exists() {
+                return Some(Project::new_from_root(current))
+            }
+
+            current = current.parent().unwrap().to_path_buf()
+        }
+
+        None
+    }
+
+    /// creates from given root
     pub fn new_from_root(root: PathBuf) -> Self {
         Self {
             root: root.clone(),
+            config: root.join("config.toml"),
             infra: Infra {
                 root: root.join("infra"),
                 aws: root.join("infra").join("aws"),

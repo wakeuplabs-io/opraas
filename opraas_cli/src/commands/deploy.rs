@@ -1,5 +1,5 @@
 use crate::{
-    config::{get_config_path, BIN_NAME},
+    config::BIN_NAME,
     console::{print_info, style_spinner},
 };
 use clap::ValueEnum;
@@ -46,8 +46,8 @@ impl DeployCommand {
         name: String,
         deploy_deterministic_deployer: bool,
     ) -> Result<(), Box<dyn std::error::Error>> {
-        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
+        let project = Project::new_from_cwd().unwrap();
+        let config = CoreConfig::new_from_toml(&project.config).unwrap();
 
         // dev is reserved for local deployments
         if name == "dev" {
