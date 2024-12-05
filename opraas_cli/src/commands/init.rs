@@ -7,7 +7,7 @@ use opraas_core::application::initialize::{ArtifactInitializer, TArtifactInitial
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::project::Project;
 use opraas_core::domain::{ArtifactFactory, ArtifactKind, TArtifactFactory};
-use opraas_core::infra::repositories::artifact_source::GitArtifactSourceRepository;
+use opraas_core::infra::artifact::GitArtifactSourceRepository;
 use std::{sync::Arc, thread, time::Instant};
 
 #[derive(Debug, Clone, ValueEnum)]

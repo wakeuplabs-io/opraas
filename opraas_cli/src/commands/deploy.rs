@@ -17,12 +17,7 @@ use opraas_core::{
     config::CoreConfig,
     domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory},
     infra::{
-        release_runner::DockerReleaseRunner,
-        repositories::{
-            deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository,
-            stack_infra::GitStackInfraRepository,
-        },
-        stack_deployer::TerraformDeployer,
+        deployment::InMemoryDeploymentRepository, release::{DockerReleaseRepository, DockerReleaseRunner}, stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository}
     },
 };
 

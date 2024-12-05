@@ -11,8 +11,7 @@ use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
-    domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory},
-    infra::repositories::release::DockerReleaseRepository,
+    domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory}, infra::release::DockerReleaseRepository,
 };
 use std::{sync::Arc, thread, time::Instant};
 

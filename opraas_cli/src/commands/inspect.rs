@@ -5,14 +5,7 @@ use opraas_core::{
         StackContractsDeployerService, TStackContractsDeployerService,
     },
     domain::Project,
-    infra::{
-        release_runner::DockerReleaseRunner,
-        repositories::{
-            deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository,
-            stack_infra::GitStackInfraRepository,
-        },
-        stack_deployer::TerraformDeployer,
-    },
+    infra::{deployment::InMemoryDeploymentRepository, release::{DockerReleaseRepository, DockerReleaseRunner}, stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository}},
 };
 
 #[derive(Debug, Clone, ValueEnum)]

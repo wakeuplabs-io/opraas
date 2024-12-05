@@ -1,8 +1,8 @@
-use super::testnet_node::TTestnetNode;
-use crate::infra::eth_rpc::{EthRpc, JsonRpc};
 use crate::system::execute_command;
 use serde_json::json;
 use std::{process::Command, thread, time};
+
+use super::{EthRpc, JsonRpc, TTestnetNode};
 
 const DOCKER_IMAGE: &str = "ethereum/client-go:v1.13.4";
 const CONTAINER_NAME: &str = "geth-testnet-node";

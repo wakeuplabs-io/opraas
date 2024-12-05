@@ -3,10 +3,7 @@ use colored::*;
 use indicatif::ProgressBar;
 use opraas_core::{
     application::{CreateProjectService, TCreateProjectService},
-    infra::{
-        repositories::{project::InMemoryProjectRepository, stack_infra::GitStackInfraRepository},
-        version_control::GitVersionControl,
-    },
+    infra::{project::{GitVersionControl, InMemoryProjectRepository}, stack::repo_inmemory::GitStackInfraRepository},
 };
 use std::{env, path::PathBuf};
 

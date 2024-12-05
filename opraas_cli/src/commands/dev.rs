@@ -8,12 +8,11 @@ use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerServi
 use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{ArtifactFactory, ArtifactKind, Project, Release, Stack, TArtifactFactory};
-use opraas_core::infra::release_runner::DockerReleaseRunner;
-use opraas_core::infra::repositories::deployment::InMemoryDeploymentRepository;
-use opraas_core::infra::repositories::release::DockerReleaseRepository;
-use opraas_core::infra::repositories::stack_infra::GitStackInfraRepository;
-use opraas_core::infra::stack_runner::helm::HelmStackRunner;
-use opraas_core::infra::{testnet_node::geth::GethTestnetNode, testnet_node::testnet_node::TTestnetNode};
+use opraas_core::infra::deployment::InMemoryDeploymentRepository;
+use opraas_core::infra::ethereum::{GethTestnetNode, TTestnetNode};
+use opraas_core::infra::release::{DockerReleaseRepository, DockerReleaseRunner};
+use opraas_core::infra::stack::repo_inmemory::GitStackInfraRepository;
+use opraas_core::infra::stack::runner_helm::HelmStackRunner;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::thread;

@@ -7,8 +7,7 @@ use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::build::{ArtifactBuilderService, TArtifactBuilderService},
     config::CoreConfig,
-    domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory},
-    infra::repositories::{artifact::DockerArtifactRepository, artifact_source::GitArtifactSourceRepository},
+    domain::{ArtifactFactory, ArtifactKind, Project, TArtifactFactory}, infra::artifact::{DockerArtifactRepository, GitArtifactSourceRepository},
 };
 use std::{sync::Arc, thread, time::Instant};
 

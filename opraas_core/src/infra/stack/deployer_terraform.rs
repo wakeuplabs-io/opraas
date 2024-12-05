@@ -1,6 +1,5 @@
 use crate::{
-    domain::{Deployment, Stack, TDeploymentRepository, TStackInfraDeployer},
-    system, yaml,
+    domain::{Deployment, Stack, TDeploymentRepository, TStackInfraDeployer}, infra::deployment::InMemoryDeploymentRepository, system, yaml
 };
 use std::{
     collections::HashMap,
@@ -18,7 +17,7 @@ impl TerraformDeployer {
     pub fn new(root: &std::path::PathBuf) -> Self {
         Self {
             deployment_repository: Box::new(
-                crate::infra::repositories::deployment::InMemoryDeploymentRepository::new(root),
+                InMemoryDeploymentRepository::new(root),
             ),
         }
     }

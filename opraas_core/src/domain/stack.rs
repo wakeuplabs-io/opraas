@@ -1,5 +1,6 @@
-use crate::infra::repositories::deployment::InMemoryDeploymentRepository;
 use std::path::PathBuf;
+
+use crate::infra::deployment::InMemoryDeploymentRepository;
 
 use super::{Deployment, Project, TDeploymentRepository};
 
