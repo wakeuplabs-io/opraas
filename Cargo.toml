@@ -2,4 +2,4 @@
 members = [
     "opraas_core",
     "opraas_cli"
-]
+, "opraas_server"]
