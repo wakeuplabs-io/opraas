@@ -1,3 +1,4 @@
+use crate::config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT};
 use crate::console::{print_info, print_warning, style_spinner};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
@@ -15,6 +16,7 @@ pub struct DevCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
     l1_node: Box<dyn TTestnetNode>,
     stack_runner: Box<dyn TStackRunnerService>,
+    system_requirement_checker: Box<dyn TSystemRequirementsChecker>
 }
 
 // implementations ================================================
@@ -25,10 +27,17 @@ impl DevCommand {
             dialoguer: Box::new(crate::console::Dialoguer::new()),
             l1_node: Box::new(GethTestnetNode::new()),
             stack_runner: Box::new(StackRunnerService::new("opruaas-dev", "opruaas-dev")),
+            system_requirement_checker: Box::new(SystemRequirementsChecker::new())
         }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
+        self.system_requirement_checker.check(vec![
+            DOCKER_REQUIREMENT,
+            K8S_REQUIREMENT,
+            HELM_REQUIREMENT,
+        ])?;
+
         let project = Project::new_from_cwd().unwrap();
         let mut config = CoreConfig::new_from_toml(&project.config)?;
 

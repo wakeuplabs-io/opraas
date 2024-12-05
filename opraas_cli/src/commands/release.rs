@@ -1,5 +1,5 @@
 use crate::{
-    config::BIN_NAME,
+    config::{SystemRequirementsChecker, TSystemRequirementsChecker, BIN_NAME, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
     console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
     git::TGit,
 };
@@ -16,6 +16,7 @@ use std::{sync::Arc, thread, time::Instant};
 pub struct ReleaseCommand {
     git: Box<dyn TGit + Send + Sync>,
     dialoguer: Box<dyn TDialoguer + Send + Sync>,
+    system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts: Vec<Arc<Artifact>>,
 }
 
@@ -49,11 +50,17 @@ impl ReleaseCommand {
         Self {
             git: Box::new(crate::git::Git::new()),
             dialoguer: Box::new(Dialoguer::new()),
+            system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts,
         }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
+        self.system_requirements_checker.check(vec![
+            GIT_REQUIREMENT,
+            DOCKER_REQUIREMENT,
+        ])?;
+
         let cwd = std::env::current_dir()?;
 
         // request release name and repository

@@ -2,7 +2,6 @@ use colored::*;
 use indicatif::ProgressBar;
 use opraas_core::application::{CreateProjectService, TCreateProjectService};
 use std::{env, path::PathBuf};
-
 use crate::{config::BIN_NAME, console::style_spinner};
 
 pub struct NewCommand {
@@ -19,12 +18,12 @@ impl NewCommand {
     }
 
     pub fn run(&self, name: String) -> Result<(), Box<dyn std::error::Error>> {
+        // create project at given root
+        
         let mut root = PathBuf::from(&name);
         if !root.is_absolute() {
             root = env::current_dir()?.join(root)
         }
-
-        // create project ============================================
 
         let create_spinner = style_spinner(
             ProgressBar::new_spinner(),

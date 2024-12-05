@@ -14,7 +14,7 @@ pub use utils::*;
 
 use clap::{Parser, Subcommand};
 use commands::*;
-use config::{Comparison, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
+use config::{Comparison, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT, TERRAFORM_REQUIREMENT};
 use console::print_error;
 use dotenv::dotenv;
 use semver::Version;
@@ -69,7 +69,6 @@ enum Commands {
 async fn main() {
     dotenv().ok();
 
-    // parse args
     let args = Args::parse();
 
     let log_level = if args.verbose {
@@ -95,55 +94,6 @@ async fn main() {
         .filter_module("main", log_level)
         .filter_module("opraas_core", log_level)
         .init();
-
-    // Check requirements
-    SystemRequirementsChecker::new()
-        .check(vec![
-            Requirement {
-                program: "docker",
-                version_arg: "-v",
-                required_version: Version::parse("24.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "kubectl",
-                version_arg: "version",
-                required_version: Version::parse("1.28.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "helm",
-                version_arg: "version",
-                required_version: Version::parse("3.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "terraform",
-                version_arg: "-v",
-                required_version: Version::parse("1.9.8").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "git",
-                version_arg: "--version",
-                required_version: Version::parse("2.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-        ])
-        .unwrap_or_else(|e| {
-            print_error(&format!("\n\nError: {}\n\n", e));
-
-            println!(
-                "\nEnsure you have the following tools installed and properly configured:\n\
-                - Docker: `>= 24.0.0`\n\
-                - Kubernetes with kubectl: `>= 1.28.0` (ensure kubernetes engine is running when calling the cli, you can check with `kubectl version`)
-                - Helm `>= 3.0.0`\n\
-                - Terraform `>= 1.9.8` (with AWS authentication configured)\n\
-                - Git `>= 2.0.0`"
-            );
-
-            std::process::exit(1);
-        });
 
     // run commands
     if let Err(e) = match args.cmd {

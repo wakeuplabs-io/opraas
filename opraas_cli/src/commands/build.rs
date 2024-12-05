@@ -1,5 +1,5 @@
 use crate::{
-    config::BIN_NAME,
+    config::{SystemRequirementsChecker, TSystemRequirementsChecker, BIN_NAME, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
     console::{print_error, style_spinner},
 };
 use colored::*;
@@ -13,6 +13,7 @@ use std::{sync::Arc, thread, time::Instant};
 
 pub struct BuildCommand {
     artifacts: Vec<Arc<Artifact>>,
+    system_requirements_checker:  Box<dyn TSystemRequirementsChecker>
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -42,12 +43,17 @@ impl BuildCommand {
             BuildTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
 
-        Self { artifacts }
+        Self { artifacts, system_requirements_checker: Box::new(SystemRequirementsChecker::new()) }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let started = Instant::now();
+        self.system_requirements_checker.check(vec![
+            GIT_REQUIREMENT,
+            DOCKER_REQUIREMENT,
+        ])?;
 
+        
+        let started = Instant::now();
         let build_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!(

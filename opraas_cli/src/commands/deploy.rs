@@ -1,5 +1,5 @@
 use crate::{
-    config::BIN_NAME,
+    config::{SystemRequirementsChecker, TSystemRequirementsChecker, BIN_NAME, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT, TERRAFORM_REQUIREMENT},
     console::{print_info, style_spinner},
 };
 use clap::ValueEnum;
@@ -26,6 +26,7 @@ pub struct DeployCommand {
     dialoguer: Box<dyn crate::console::TDialoguer>,
     contracts_deployer_service: Box<dyn TStackContractsDeployerService>,
     infra_deployer_service: Box<dyn TStackInfraDeployerService>,
+    system_requirement_checker: Box<dyn TSystemRequirementsChecker>
 }
 
 // implementations ================================================
@@ -37,6 +38,7 @@ impl DeployCommand {
             dialoguer: Box::new(crate::console::Dialoguer::new()),
             contracts_deployer_service: Box::new(StackContractsDeployerService::new(&cwd)),
             infra_deployer_service: Box::new(StackInfraDeployerService::new(&cwd)),
+            system_requirement_checker: Box::new(SystemRequirementsChecker::new())
         }
     }
 
@@ -46,6 +48,13 @@ impl DeployCommand {
         name: String,
         deploy_deterministic_deployer: bool,
     ) -> Result<(), Box<dyn std::error::Error>> {
+        self.system_requirement_checker.check(vec![
+            DOCKER_REQUIREMENT,
+            K8S_REQUIREMENT,
+            HELM_REQUIREMENT,
+            TERRAFORM_REQUIREMENT
+        ])?;
+
         let project = Project::new_from_cwd().unwrap();
         let config = CoreConfig::new_from_toml(&project.config).unwrap();
 

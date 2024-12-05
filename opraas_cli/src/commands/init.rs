@@ -1,4 +1,4 @@
-use crate::config:: BIN_NAME;
+use crate::config::{SystemRequirementsChecker, TSystemRequirementsChecker, BIN_NAME, GIT_REQUIREMENT};
 use crate::console::{print_error, style_spinner};
 use clap::ValueEnum;
 use colored::*;
@@ -21,6 +21,7 @@ pub enum InitTargets {
 
 pub struct InitCommand {
     artifacts: Vec<Arc<Artifact>>,
+    system_requirement_checker: Box<dyn TSystemRequirementsChecker>
 }
 
 // implementations ================================================
@@ -40,12 +41,16 @@ impl InitCommand {
             InitTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
         };
 
-        Self { artifacts }
+        Self { artifacts, system_requirement_checker: Box::new(SystemRequirementsChecker::new()) }
     }
 
     pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let started = Instant::now();
+        self.system_requirement_checker.check(vec![
+            GIT_REQUIREMENT,
+        ])?;
 
+        // start timer and spinner
+        let started = Instant::now();
         let init_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!(
@@ -58,7 +63,7 @@ impl InitCommand {
             ),
         );
 
-        // Iterate over the artifacts and download
+        // iterate over the artifacts and download
         let handles: Vec<_> = self
             .artifacts
             .iter()
@@ -78,7 +83,7 @@ impl InitCommand {
             })
             .collect();
 
-        // Wait for all threads to complete
+        // wait for all threads to complete
         for handle in handles {
             match handle.join() {
                 Ok(Ok(_)) => {}
