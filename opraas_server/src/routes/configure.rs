@@ -1,7 +1,11 @@
 use crate::handlers::{build_handler, health_handler};
-use actix_web::web;
+use axum::{
+    routing::{get, post},
+    Router,
+};
 
-pub fn configure(cfg: &mut web::ServiceConfig) {
-    cfg.service(web::resource("/build").route(web::post().to(build_handler::build_form)))
-        .service(web::resource("/health").route(web::get().to(health_handler::health)));
+pub fn configure() -> Router {
+    Router::new()
+        .route("/health", get(health_handler))
+        .route("/build", post(build_handler))
 }

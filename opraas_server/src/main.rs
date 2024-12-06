@@ -1,21 +1,19 @@
+use std::net::SocketAddr;
+
 mod handlers;
-mod models;
 mod routes;
 mod utils;
 
-use actix_web::{middleware::Logger, App, HttpServer};
-
-#[actix_web::main]
-async fn main() -> std::io::Result<()> {
+#[tokio::main]
+async fn main() {
     env_logger::init();
 
-    println!("Listening on http://localhost:8080");
-    HttpServer::new(|| {
-        App::new()
-            .wrap(Logger::default())
-            .configure(routes::configure::configure)
-    })
-    .bind("127.0.0.1:8080")?
-    .run()
-    .await
+    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
+    println!("Listening on {}", addr);
+
+    let app = routes::configure();
+    axum::Server::bind(&addr)
+        .serve(app.into_make_service())
+        .await
+        .unwrap();
 }

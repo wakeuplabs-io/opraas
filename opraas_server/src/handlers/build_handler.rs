@@ -1,13 +1,25 @@
-use crate::models::build_data::BuildData;
 use crate::utils::zip::create_zip;
-use actix_web::http::header::ContentDisposition;
-use actix_web::{web, HttpResponse, Result};
+use axum::{response::IntoResponse, Form};
+use serde::Deserialize;
 
-pub async fn build_form(form: web::Form<BuildData>) -> Result<HttpResponse> {
-    let zip_data = create_zip(&form.name, &form.email, &form.message)?;
+#[derive(Deserialize)]
+pub struct FormData {
+    name: String,
+    email: String,
+    message: String,
+}
 
-    Ok(HttpResponse::Ok()
-        .content_type("application/zip")
-        .insert_header(ContentDisposition::attachment("form_data.zip"))
-        .body(zip_data))
+pub async fn build_handler(Form(data): Form<FormData>) -> impl IntoResponse {
+    match create_zip(&data.name, &data.email, &data.message) {
+        Ok(zip_data) => (
+            axum::http::StatusCode::OK,
+            [(axum::http::header::CONTENT_TYPE, "application/zip")],
+            zip_data,
+        ),
+        Err(_) => (
+            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
+            [(axum::http::header::CONTENT_TYPE, "text/plain")],
+            b"Failed to generate zip file".to_vec(),
+        ),
+    }
 }
