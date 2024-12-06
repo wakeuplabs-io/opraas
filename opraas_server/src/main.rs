@@ -2,18 +2,14 @@ mod handlers;
 mod routes;
 mod utils;
 
-use std::net::SocketAddr;
+use lambda_http::{run, Error};
 use tower_http::trace::{self, TraceLayer};
-use tracing::Level;
+use tracing::{level_filters::LevelFilter, Level};
 
 #[tokio::main]
-async fn main() {
-    let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
-    println!("Listening on {}", addr);
-
+async fn main() -> Result<(), Error> {
     tracing_subscriber::fmt()
-        .with_target(false)
-        .compact()
+        .with_max_level(LevelFilter::INFO)
         .init();
 
     let router = routes::configure().layer(
@@ -22,8 +18,5 @@ async fn main() {
             .on_response(trace::DefaultOnResponse::new().level(Level::INFO)),
     );
 
-    axum::Server::bind(&addr)
-        .serve(router.into_make_service())
-        .await
-        .unwrap();
+    run(router).await
 }
