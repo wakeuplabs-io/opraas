@@ -139,16 +139,19 @@ data "aws_route53_zone" "selected_zone" {
   private_zone = false
 }
 
-resource "aws_route53_record" "cname_record" {
+resource "aws_route53_record" "domain_record" {
   depends_on = [aws_cloudfront_distribution.Site_Access]
 
   zone_id = data.aws_route53_zone.selected_zone.zone_id
   name    = "opruaas.${var.domain_name}"
-  type    = "CNAME"
-  ttl     = 300
-  records = [aws_cloudfront_distribution.Site_Access.domain_name]
-}
+  type    = "A"
 
+  alias {
+    name                   = aws_cloudfront_distribution.Site_Access.domain_name
+    zone_id                = aws_cloudfront_distribution.Site_Access.hosted_zone_id
+    evaluate_target_health = false
+  }
+}
 
 # outputs ==================================================================
 
