@@ -187,8 +187,26 @@ Follow these steps to prepare and publish a new version of the package:
    Ensure the GitHub Actions workflow completes successfully.  
 
 5. Publish the Package:  
-   From the `npm` folder, run the following command to publish the package:  
+   From the `packages/cli` folder, run the following command to publish the package:  
 
   ```bash
    npm run publish --access public
   ```
+
+### WWW Deployments
+
+#### UI
+
+1. Setup `terraform` with `aws`
+2. `cd packages/ui` -> `terraform init` -> `terraform plan` -> `terraform apply`
+3. After this actions can take place. Or manually (assuming bucket name to be `op-ruaas`, otherwise you can get this commands from `terraform output`):
+  - `npm run build`
+  - `aws s3 sync dist s3://op-ruaas --delete`
+  - `DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='op-ruaas.s3.amazonaws.com'].DomainName].Id" --output text) && aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"`
+
+
+
+#### Server
+
+1. Configure aws
+2. `make deploy-server`

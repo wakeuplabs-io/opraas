@@ -31,7 +31,7 @@ impl HelmStackRunner {
                 "ingress-nginx",
                 "https://kubernetes.github.io/ingress-nginx",
             ),
-            ("cert-manager", "https://charts.jetstack.io/"),
+            ("jetstack", "https://charts.jetstack.io/"),
             ("blockscout", "https://blockscout.github.io/helm-charts"),
             (
                 "prometheus-community",
@@ -45,7 +45,8 @@ impl HelmStackRunner {
                     .arg("repo")
                     .arg("add")
                     .arg(repo)
-                    .arg(url),
+                    .arg(url)
+                    .arg("--force-update"),
                 false,
             )?;
         }
