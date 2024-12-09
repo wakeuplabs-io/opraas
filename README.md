@@ -216,14 +216,8 @@ Follow these steps to prepare and publish a new version of the package:
 
 **Build & Deploy**
 
-From linux:
 1. Install [cargo-lambda](https://www.cargo-lambda.info/guide/getting-started.html)
-2. Run `make deploy-server`
-
-From other:
-
-1. Install [cargo-lambda](https://www.cargo-lambda.info/guide/getting-started.html)
-2. `docker build -t opraas-server . -f cross.dockerfile`
-2. Build the function with `cargo lambda build --package opraas_server --release`
+2. Install [cross](https://crates.io/crates/cross)
+2. Build the function with `cargo lambda build --package opraas_server --release --compiler cross`
 3. Deploy the function to AWS Lambda with `cargo lambda deploy opraas_server --tag customer=op-ruaas --enable-function-url`
 

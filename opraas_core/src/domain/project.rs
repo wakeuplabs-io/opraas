@@ -49,7 +49,7 @@ pub trait TProjectRepository {
 pub trait TProjectVersionControl {
     fn init(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>>;
     fn stage(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>>;
-    fn commit(&self, filepath: &str, message: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn commit(&self, filepath: &str, message: &str, initial: bool) -> Result<(), Box<dyn std::error::Error>>;
 }
 
 pub trait TProjectFactory {

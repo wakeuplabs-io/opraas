@@ -1,5 +1,5 @@
 use crate::domain::TProjectVersionControl;
-use git2::{IndexAddOption, Repository};
+use git2::{Commit, Oid, Repository, Tree};
 
 pub struct GitVersionControl;
 
@@ -10,79 +10,53 @@ impl GitVersionControl {
 }
 
 impl TProjectVersionControl for GitVersionControl {
-    fn init(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>> {
-        Repository::init(filepath)?;
+    fn init(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+        Repository::init(path)?;
 
         Ok(())
     }
 
-    fn stage(&self, filepath: &str) -> Result<(), Box<dyn std::error::Error>> {
-        let repo = Repository::open(filepath)?;
-
-        let mut index = repo.index()?;
-        index.add_all(&["."], IndexAddOption::DEFAULT, None)?;
-        index.write()?;
+    fn stage(&self, path: &str) -> Result<(), Box<dyn std::error::Error>> {
+        Repository::open(path)?
+            .index()?
+            .add_all(&["."], git2::IndexAddOption::DEFAULT, None)?;
 
         Ok(())
     }
 
-    fn commit(&self, filepath: &str, message: &str) -> Result<(), Box<dyn std::error::Error>> {
-        // let repo = Repository::open(filepath)?;
-        // let mut index = repo.index()?;
-
-        // let new_tree_oid = index.write_tree()?;
-        // let new_tree = repo.find_tree(new_tree_oid)?;
-
-        // // either use the configured author signature
-        // let author = repo.signature()?;
-
-        // let head = repo.head()?;
-        // let parent = repo.find_commit(head.target().unwrap())?;
-        // repo.commit(
-        //     Some("HEAD"),
-        //     &author,
-        //     &author,
-        //     message,
-        //     &new_tree,
-        //     &[&parent],
-        // )?;
-
-        let repo = Repository::open(filepath)?;
+    fn commit(&self, path: &str, message: &str, initial_commit: bool) -> Result<(), Box<dyn std::error::Error>> {
+        let repo = Repository::open(path)?;
+        let signature = repo.signature().unwrap();
         let mut index = repo.index()?;
 
-        // Stage all changes
-        let new_tree_oid = index.write_tree()?;
-        let new_tree = repo.find_tree(new_tree_oid)?;
+        let oid: Oid;
+        let tree: Tree;
+        let parent_commit: Option<Commit>;
 
-        // Author signature (you can customize this if needed)
-        let author = repo.signature()?;
-
-        // Check if HEAD exists and points to a valid branch
-        let head = match repo.head() {
-            Ok(head) => Some(head),
-            Err(e) if e.code() == git2::ErrorCode::NotFound => None, // No HEAD (e.g., new repo)
-            Err(e) => return Err(Box::new(e)),                       // Other errors
-        };
-
-        let parents = if let Some(head) = head {
-            // Get the current commit pointed by HEAD
-            let parent_commit = repo.find_commit(head.target().unwrap())?;
-            vec![parent_commit]
+        if initial_commit {
+            oid = repo.index()?.write_tree()?;
+            tree = repo.find_tree(oid)?;
+            parent_commit = None;
         } else {
-            // No parent commits (first commit)
-            vec![]
+            index.write()?;
+
+            oid = index.write_tree()?;
+            tree = repo.find_tree(oid)?;
+            parent_commit = Some(repo.head()?.peel_to_commit()?);
+        }
+
+        let commit_slice: &[&Commit] = match parent_commit.as_ref() {
+            Some(parent_commit) => &[parent_commit],
+            None => &[],
         };
 
-        let parent_refs: Vec<&git2::Commit> = parents.iter().collect();
-
-        // Create a new commit
         repo.commit(
-            Some("HEAD"), // Update the current branch
-            &author,      // Commit author
-            &author,      // Commit committer
-            message,      // Commit message
-            &new_tree,    // The tree object for the commit
-            &parent_refs, // Parents of the commit
+            Some("HEAD"),
+            &signature,
+            &signature,
+            message,
+            &tree,
+            commit_slice,
         )?;
 
         Ok(())
