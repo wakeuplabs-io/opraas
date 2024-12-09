@@ -3,6 +3,7 @@ use colored::*;
 use indicatif::ProgressBar;
 use opraas_core::{
     application::{CreateProjectService, TCreateProjectService},
+    config::CoreConfig,
     infra::{
         project::{GitVersionControl, InMemoryProjectRepository},
         stack::repo_inmemory::GitStackInfraRepository,
@@ -38,7 +39,8 @@ impl NewCommand {
             &format!("⏳ Creating {} at {}...", name, root.display()),
         );
 
-        self.project_creator.create(&root)?;
+        let default_config = CoreConfig::default();
+        self.project_creator.create(&root, &default_config, true)?;
 
         create_spinner.finish_with_message(format!(
             "✔️ Success! Created {} at {}\n",

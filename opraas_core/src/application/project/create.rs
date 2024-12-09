@@ -2,6 +2,7 @@ use crate::{
     config::CoreConfig,
     domain::{self, Project, ProjectFactory, Stack, TProjectFactory, TStackInfraRepository},
 };
+use std::path::PathBuf;
 
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
@@ -10,7 +11,12 @@ pub struct CreateProjectService {
 }
 
 pub trait TCreateProjectService {
-    fn create(&self, root: &std::path::PathBuf) -> Result<Project, Box<dyn std::error::Error>>;
+    fn create(
+        &self,
+        root: &PathBuf,
+        config: &CoreConfig,
+        init_git: bool,
+    ) -> Result<Project, Box<dyn std::error::Error>>;
 }
 
 impl CreateProjectService {
@@ -28,7 +34,12 @@ impl CreateProjectService {
 }
 
 impl TCreateProjectService for CreateProjectService {
-    fn create(&self, root: &std::path::PathBuf) -> Result<Project, Box<dyn std::error::Error>> {
+    fn create(
+        &self,
+        root: &PathBuf,
+        config: &CoreConfig,
+        init_git: bool,
+    ) -> Result<Project, Box<dyn std::error::Error>> {
         if root.exists() {
             return Err("Directory already exists".into());
         }
@@ -45,11 +56,8 @@ impl TCreateProjectService for CreateProjectService {
             .write(&project, &root.join(".env"), ENV_FILE)?;
         self.repository
             .write(&project, &root.join(".env.sample"), ENV_FILE)?;
-        self.repository.write(
-            &project,
-            &project.config,
-            &toml::to_string(&CoreConfig::default()).unwrap(),
-        )?;
+        self.repository
+            .write(&project, &project.config, &toml::to_string(config).unwrap())?;
 
         // pull stack infra
         self.stack_infra_repository.pull(&Stack::new(
@@ -59,10 +67,13 @@ impl TCreateProjectService for CreateProjectService {
         ))?;
 
         // initialize git and create first commit
-        self.version_control.init(&root.to_str().unwrap())?;
-        self.version_control.stage(&root.to_str().unwrap())?;
-        self.version_control
-            .commit(&root.to_str().unwrap(), "First commit")?;
+        if init_git {
+            self.version_control.init(&root.to_str().unwrap())?;
+            self.version_control.stage(&root.to_str().unwrap())?;
+            
+            // self.version_control
+            //     .commit(&root.to_str().unwrap(), "First commit")?;
+        }
 
         Ok(project)
     }
