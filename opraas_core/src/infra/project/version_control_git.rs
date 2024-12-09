@@ -61,4 +61,21 @@ impl TProjectVersionControl for GitVersionControl {
 
         Ok(())
     }
+
+    fn tag(&self, root: &str, tag: &str) -> Result<(), Box<dyn std::error::Error>> {
+        let repo = Repository::open(root)?;
+
+        let head = repo.head()?.peel_to_commit()?;
+        let signature = repo.signature().unwrap();
+
+        repo.tag(
+            tag,
+            &repo.find_object(head.id(), None)?,
+            &signature,
+            "",
+            false,
+        )?;
+
+        Ok(())
+    }
 }
