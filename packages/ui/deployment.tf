@@ -8,7 +8,14 @@ variable "customer" {
 
 variable "bucket_name" {
   description = "The name of the S3 bucket"
-  default = "op-ruaas"
+  type        = string
+  default     = "op-ruaas"
+}
+
+variable "domain_name" {
+  description = "The domain name to manage in Route 53"
+  type        = string
+  default     = "wakeuplabs.link"
 }
 
 # resources ==================================================================
@@ -125,6 +132,23 @@ resource "aws_cloudfront_origin_access_control" "Site_Access" {
   signing_protocol                  = "sigv4"
 }
 
+# create CNAME. Comment this out if you don't want to create a CNAME
+
+data "aws_route53_zone" "selected_zone" {
+  name         = var.domain_name
+  private_zone = false
+}
+
+resource "aws_route53_record" "cname_record" {
+  depends_on = [aws_cloudfront_distribution.Site_Access]
+
+  zone_id = data.aws_route53_zone.selected_zone.zone_id
+  name    = "opruaas.${var.domain_name}"
+  type    = "CNAME"
+  ttl     = 300
+  records = [aws_cloudfront_distribution.Site_Access.domain_name]
+}
+
 
 # outputs ==================================================================
 
@@ -138,10 +162,10 @@ output "cloudfront_url" {
 
 output "s3_sync" {
   description = "S3 sync command. Run for each deployment, even after `terraform apply`"
-  value = "aws s3 sync dist s3://${aws_s3_bucket.Site_Origin.bucket} --delete"
+  value       = "aws s3 sync dist s3://${aws_s3_bucket.Site_Origin.bucket} --delete"
 }
 
 output "invalidate_cloudfront" {
   description = "Cloudfront invalidation command. Run after each s3 sync command"
-  value = "aws cloudfront create-invalidation --distribution-id ${aws_cloudfront_distribution.Site_Access.id} --paths '/*'"
+  value       = "aws cloudfront create-invalidation --distribution-id ${aws_cloudfront_distribution.Site_Access.id} --paths '/*'"
 }
