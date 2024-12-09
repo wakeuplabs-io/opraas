@@ -16,4 +16,5 @@ tower-http = { version = "0.6.2", features = ["trace"] }
 lambda_http = "0.13.0"
 lambda_runtime = "0.13.0"
 tempfile = "3.14.0"
+opraas_core = { path = "../opraas_core" }
 

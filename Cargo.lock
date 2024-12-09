@@ -1801,6 +1801,7 @@ dependencies = [
  "lambda_http",
  "lambda_runtime",
  "log",
+ "opraas_core",
  "serde",
  "serde_json",
  "tempfile",

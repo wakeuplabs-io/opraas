@@ -40,11 +40,6 @@ impl TCreateProjectService for CreateProjectService {
         config: &CoreConfig,
         init_git: bool,
     ) -> Result<Project, Box<dyn std::error::Error>> {
-        if root.exists() {
-            return Err("Directory already exists".into());
-        }
-        std::fs::create_dir_all(root)?;
-
         let project_factory = ProjectFactory::new();
         let project = project_factory.from_root(root.clone());
 
@@ -70,7 +65,7 @@ impl TCreateProjectService for CreateProjectService {
         if init_git {
             self.version_control.init(&root.to_str().unwrap())?;
             self.version_control.stage(&root.to_str().unwrap())?;
-            
+
             // self.version_control
             //     .commit(&root.to_str().unwrap(), "First commit")?;
         }

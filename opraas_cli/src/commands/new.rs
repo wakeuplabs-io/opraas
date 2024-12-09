@@ -34,6 +34,12 @@ impl NewCommand {
             root = env::current_dir()?.join(root)
         }
 
+        if root.exists() {
+            return Err(format!("Directory already exists: {}", root.display()).into());
+        } else {
+            std::fs::create_dir_all(&root)?;
+        }
+
         let create_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!("⏳ Creating {} at {}...", name, root.display()),
