@@ -12,7 +12,10 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as AboutIndexImport } from './routes/about/index'
+import { Route as ManageIndexImport } from './routes/manage/index'
+import { Route as CreateIndexImport } from './routes/create/index'
+import { Route as ManageLoadImport } from './routes/manage/load'
+import { Route as CreateSuccessImport } from './routes/create/success'
 
 // Create/Update Routes
 
@@ -22,9 +25,27 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const AboutIndexRoute = AboutIndexImport.update({
-  id: '/about/',
-  path: '/about/',
+const ManageIndexRoute = ManageIndexImport.update({
+  id: '/manage/',
+  path: '/manage/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CreateIndexRoute = CreateIndexImport.update({
+  id: '/create/',
+  path: '/create/',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const ManageLoadRoute = ManageLoadImport.update({
+  id: '/manage/load',
+  path: '/manage/load',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const CreateSuccessRoute = CreateSuccessImport.update({
+  id: '/create/success',
+  path: '/create/success',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -39,11 +60,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/about/': {
-      id: '/about/'
-      path: '/about'
-      fullPath: '/about'
-      preLoaderRoute: typeof AboutIndexImport
+    '/create/success': {
+      id: '/create/success'
+      path: '/create/success'
+      fullPath: '/create/success'
+      preLoaderRoute: typeof CreateSuccessImport
+      parentRoute: typeof rootRoute
+    }
+    '/manage/load': {
+      id: '/manage/load'
+      path: '/manage/load'
+      fullPath: '/manage/load'
+      preLoaderRoute: typeof ManageLoadImport
+      parentRoute: typeof rootRoute
+    }
+    '/create/': {
+      id: '/create/'
+      path: '/create'
+      fullPath: '/create'
+      preLoaderRoute: typeof CreateIndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/manage/': {
+      id: '/manage/'
+      path: '/manage'
+      fullPath: '/manage'
+      preLoaderRoute: typeof ManageIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -53,37 +95,58 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutIndexRoute
+  '/create/success': typeof CreateSuccessRoute
+  '/manage/load': typeof ManageLoadRoute
+  '/create': typeof CreateIndexRoute
+  '/manage': typeof ManageIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutIndexRoute
+  '/create/success': typeof CreateSuccessRoute
+  '/manage/load': typeof ManageLoadRoute
+  '/create': typeof CreateIndexRoute
+  '/manage': typeof ManageIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about/': typeof AboutIndexRoute
+  '/create/success': typeof CreateSuccessRoute
+  '/manage/load': typeof ManageLoadRoute
+  '/create/': typeof CreateIndexRoute
+  '/manage/': typeof ManageIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths: '/' | '/create/success' | '/manage/load' | '/create' | '/manage'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about/'
+  to: '/' | '/create/success' | '/manage/load' | '/create' | '/manage'
+  id:
+    | '__root__'
+    | '/'
+    | '/create/success'
+    | '/manage/load'
+    | '/create/'
+    | '/manage/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutIndexRoute: typeof AboutIndexRoute
+  CreateSuccessRoute: typeof CreateSuccessRoute
+  ManageLoadRoute: typeof ManageLoadRoute
+  CreateIndexRoute: typeof CreateIndexRoute
+  ManageIndexRoute: typeof ManageIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutIndexRoute: AboutIndexRoute,
+  CreateSuccessRoute: CreateSuccessRoute,
+  ManageLoadRoute: ManageLoadRoute,
+  CreateIndexRoute: CreateIndexRoute,
+  ManageIndexRoute: ManageIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +160,26 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/about/"
+        "/create/success",
+        "/manage/load",
+        "/create/",
+        "/manage/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/about/": {
-      "filePath": "about/index.tsx"
+    "/create/success": {
+      "filePath": "create/success.tsx"
+    },
+    "/manage/load": {
+      "filePath": "manage/load.tsx"
+    },
+    "/create/": {
+      "filePath": "create/index.tsx"
+    },
+    "/manage/": {
+      "filePath": "manage/index.tsx"
     }
   }
 }
