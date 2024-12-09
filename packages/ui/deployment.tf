@@ -18,6 +18,12 @@ variable "domain_name" {
   default     = "wakeuplabs.link"
 }
 
+variable "subdomain_name" {
+  description = "The subdomain to manage in Route 53"
+  type        = string
+  default     = "opruaas"
+}
+
 # resources ==================================================================
 
 # create bucket
@@ -143,7 +149,7 @@ resource "aws_route53_record" "domain_record" {
   depends_on = [aws_cloudfront_distribution.Site_Access]
 
   zone_id = data.aws_route53_zone.selected_zone.zone_id
-  name    = "opruaas.${var.domain_name}"
+  name    = "${var.subdomain_name}.${var.domain_name}"
   type    = "A"
 
   alias {
