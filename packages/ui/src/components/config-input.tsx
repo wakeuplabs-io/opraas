@@ -13,6 +13,7 @@ export const ConfigInput = forwardRef<
   } & React.InputHTMLAttributes<HTMLInputElement>
 >((props, ref) => {
   const {
+    id,
     title,
     description,
     defaultValue,
@@ -25,7 +26,7 @@ export const ConfigInput = forwardRef<
 
   return (
     <div className="space-y-3 py-2">
-      <span className="block text-base font-medium">{title}</span>
+      <h4 id={id} className="block text-base font-medium">{title}</h4>
       <div className="space-y-1">
         <span className="block text-sm text-neutral">{description}</span>
         <ul className="list-disc pl-4">
