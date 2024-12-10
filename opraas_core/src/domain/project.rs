@@ -40,20 +40,20 @@ pub struct Src {
     pub explorer: PathBuf,
 }
 
-pub trait TProjectRepository {
+pub trait TProjectRepository: Send + Sync {
     fn write(&self, project: &Project, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, project: &Project) -> bool;
     fn has(&self, project: &Project, filepath: &PathBuf) -> bool;
 }
 
-pub trait TProjectVersionControl {
+pub trait TProjectVersionControl: Send + Sync {
     fn init(&self, root: &str) -> Result<(), Box<dyn std::error::Error>>;
     fn stage(&self, root: &str) -> Result<(), Box<dyn std::error::Error>>;
     fn commit(&self, root: &str, message: &str, initial: bool) -> Result<(), Box<dyn std::error::Error>>;
     fn tag(&self, root: &str, tag: &str) -> Result<(), Box<dyn std::error::Error>>;
 }
 
-pub trait TProjectFactory {
+pub trait TProjectFactory: Send + Sync {
     fn from_cwd(&self) -> Option<Project>;
     fn from_root(&self, root: PathBuf) -> Project;
 }
