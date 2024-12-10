@@ -160,13 +160,17 @@ function CreateChain() {
     <div className="max-w-xl mx-auto w-full space-y-10 my-10">
       <h1 className="text-xl font-bold">My Chain</h1>
 
+      <hr />
+
       <div className="space-y-4">
-        <h2 className="text-lg font-bold">Select the L1</h2>
+        <h2 className="text-xl font-bold">L1 chain</h2>
         <L1Selector onSelect={onL1ChainSelect} />
       </div>
 
-      <div className="divide-y">
-        <h2 className="text-lg font-bold">Select the L1</h2>
+      <hr />
+
+      <div className="">
+        <h2 className="text-xl font-bold">Your chain</h2>
 
         <ConfigSection
           title="Proposal fields"

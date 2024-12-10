@@ -6,7 +6,7 @@ use axum::{
 };
 use opraas_core::{
     application::{CreateProjectService, TCreateProjectService},
-    config::CoreConfig,
+    config::{AccountsConfig, ArtifactsConfig, CoreConfig, NetworkConfig},
 };
 use serde::Deserialize;
 use std::{path::PathBuf, sync::Arc};
@@ -15,7 +15,7 @@ use tempfile::TempDir;
 #[derive(Deserialize)]
 pub struct Payload {
     name: String,
-    config: CoreConfig,
+    config: NetworkConfig,
 }
 
 pub async fn build_handler(
@@ -29,9 +29,15 @@ pub async fn build_handler(
         HeaderValue::from_str(&format!("attachment; filename=\"{}.zip\"", data.name)).unwrap(),
     );
 
+    let config = CoreConfig {
+        network: data.config.clone(),
+        accounts: AccountsConfig::null(),
+        artifacts: ArtifactsConfig::null(),
+    };
+
     let tmp_dir = TempDir::new().unwrap(); // automatically clean up on drop
     let project = create_service
-        .create(&PathBuf::from(tmp_dir.path()), &data.config, false)
+        .create(&PathBuf::from(tmp_dir.path()), &config, false)
         .unwrap();
 
     let zip_buffer =
