@@ -1,3 +1,4 @@
+import { Command } from "@/components/command";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/create/success")({
@@ -13,14 +14,19 @@ function CreateChain() {
         <section className="space-y-2 border bg-gray-100 p-3 rounded-md">
           <h2 className="font-medium">Install opruaas</h2>
 
-          <ol>
-            <li>
-              Install opruaas cli with <code>npm i -g @wakeuplabs/opruaas</code>
+          <ol className="space-y-2">
+            <li className="space-y-2">
+              <div>Install opruaas cli with</div>
+              <Command>
+                npm i -g @wakeuplabs/opruaas
+              </Command>
             </li>
             <li>
-              <span>Install dependencies if needed</span>
-              <ul className="list-disc pl-4">
+              <div>Install dependencies if needed</div>
+              <ul className="list-disc pl-4 mt-2">
+                <li>Docker</li>
                 <li>Kubernettes</li>
+                <li>Helm</li>
               </ul>
             </li>
           </ol>
@@ -30,10 +36,11 @@ function CreateChain() {
           <h2 className="font-medium">Run in dev mode</h2>
 
           <ol>
-            <li>
-              Run{" "}
-              <code>npx opruaas dev --default</code>
-              from inside the project directory
+            <li className="space-y-2">
+              <div>Run from inside the project directory</div>
+              <Command>
+                npx opruaas dev --default
+              </Command>
             </li>
           </ol>
         </section>
@@ -42,10 +49,11 @@ function CreateChain() {
           <h2 className="font-medium">Deploy!</h2>
 
           <ol>
-            <li>
-              Run{" "}
-              <code>opruaas deploy --name prod --target all</code>
-              from inside the project directory
+            <li className="space-y-2">
+              <div>Run from inside the project directory</div>
+              <Command>
+                opruaas deploy --name prod --target all
+              </Command>
             </li>
           </ol>
         </section>
@@ -53,7 +61,7 @@ function CreateChain() {
 
       <div className="text-center space-x-2">
         <button className="btn btn-sm">Back</button>
-        <button className="btn btn-sm">Download</button>
+        <button className="btn btn-sm">Done</button>
       </div>
     </div>
   );

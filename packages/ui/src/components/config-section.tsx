@@ -6,11 +6,11 @@ export const ConfigSection = (props: {
 }) => {
   return (
     <section className="space-y-6 py-6">
-      <div className="space-y-2">
+      <div>
         <h3 id={props.id} className="text-lg font-semibold">
           {props.title}
         </h3>
-        {props.description && <p className="text-sm">{props.description}</p>}
+        {props.description && <p className="text-sm mt-2">{props.description}</p>}
       </div>
 
       <div className="space-y-4">{props.children}</div>

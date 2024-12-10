@@ -10,6 +10,7 @@ export const ConfigInput = forwardRef<
     recommendedValue?: string;
     notes?: string;
     standardConfigRequirement?: string;
+    error?: string;
   } & React.InputHTMLAttributes<HTMLInputElement>
 >((props, ref) => {
   const {
@@ -21,6 +22,7 @@ export const ConfigInput = forwardRef<
     recommendedValue,
     notes,
     standardConfigRequirement,
+    error,
     ...inputProps
   } = props;
 
@@ -28,7 +30,7 @@ export const ConfigInput = forwardRef<
     <div className="space-y-3 py-2">
       <h4 id={id} className="block text-base font-medium">{title}</h4>
       <div className="space-y-1">
-        <span className="block text-sm text-neutral">{description}</span>
+        <div className="text-sm text-neutral">{description}</div>
         <ul className="list-disc pl-4">
           {type && (
             <li className="text-sm text-neutral space-x-2">
@@ -65,9 +67,11 @@ export const ConfigInput = forwardRef<
 
       <input
         ref={ref}
-        className="w-full input input-md input-bordered"
+        className={"w-full input input-md input-bordered"}
         {...inputProps}
       />
+
+      {error && <div className="text-error">{error}</div>}
     </div>
   );
 });
