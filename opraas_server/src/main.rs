@@ -1,7 +1,6 @@
 mod handlers;
 mod utils;
 
-use std::sync::Arc;
 use crate::handlers::{build_handler, health_handler};
 use axum::routing::{get, post};
 use axum::{Extension, Router};
@@ -13,6 +12,7 @@ use opraas_core::{
         stack::repo_inmemory::GitStackInfraRepository,
     },
 };
+use std::sync::Arc;
 use tower_http::trace::{self, TraceLayer};
 use tracing::{level_filters::LevelFilter, Level};
 
