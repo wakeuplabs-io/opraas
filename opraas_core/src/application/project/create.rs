@@ -66,8 +66,8 @@ impl TCreateProjectService for CreateProjectService {
             self.version_control.init(&root.to_str().unwrap())?;
             self.version_control.stage(&root.to_str().unwrap())?;
 
-            // self.version_control
-            //     .commit(&root.to_str().unwrap(), "First commit")?;
+            self.version_control
+                .commit(&root.to_str().unwrap(), "First commit", true)?;
         }
 
         Ok(project)
