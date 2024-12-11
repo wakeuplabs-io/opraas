@@ -17,9 +17,7 @@ function CreateChain() {
           <ol className="space-y-2">
             <li className="space-y-2">
               <div>Install opruaas cli with</div>
-              <Command>
-                npm i -g @wakeuplabs/opruaas
-              </Command>
+              <Command command="npm i -g @wakeuplabs/opruaas" />
             </li>
             <li>
               <div>Install dependencies if needed</div>
@@ -38,9 +36,7 @@ function CreateChain() {
           <ol>
             <li className="space-y-2">
               <div>Run from inside the project directory</div>
-              <Command>
-                npx opruaas dev --default
-              </Command>
+              <Command command="npx opruaas dev --default" />
             </li>
           </ol>
         </section>
@@ -51,9 +47,7 @@ function CreateChain() {
           <ol>
             <li className="space-y-2">
               <div>Run from inside the project directory</div>
-              <Command>
-                opruaas deploy --name prod --target all
-              </Command>
+              <Command command="opruaas deploy --name prod --target all" />
             </li>
           </ol>
         </section>

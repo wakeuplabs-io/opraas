@@ -1,6 +1,5 @@
 import { ConfigInput } from "@/components/config-input";
 import { L1Selector } from "@/components/l1-selector";
-import { Button } from "@/components/ui";
 import { createFileRoute } from "@tanstack/react-router";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -20,7 +19,6 @@ const schema = z.object({
   finalization_period_seconds: z.number(),
   l2_output_oracle_submission_interval: z.number(),
   l2_output_oracle_starting_block_number: z.number(),
-  l2_output_oracle_starting_timestamp: z.number(),
 
   // blocks
   l2_block_time: z.number(),
@@ -138,17 +136,7 @@ const networkConfig: {
         type: "Number",
         recommendedValue: "0",
         notes: "Should be 0 for new chains.",
-      },
-      {
-        // TODO: we can probably calculate
-        title: "l2_output_oracle_starting_timestamp",
-        advanced: true,
-        description:
-          "Timestamp of the first OP Stack block. This MUST be the timestamp corresponding to the block defined by the l1StartingBlockTag. Will be removed with the addition of permissionless proposals.",
-        type: "Number",
-        notes:
-          "this MUST be the timestamp corresponding to the block defined by the l1StartingBlockTag",
-      },
+      }
     ],
   },
   {
@@ -665,7 +653,7 @@ function CreateChain() {
         </div>
 
         <div className="py-6">
-          <Button>Download zip file</Button>
+          <button className="btn btn-sm">Download zip file</button>
         </div>
       </div>
     </div>
