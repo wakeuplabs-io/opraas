@@ -15,10 +15,11 @@ use opraas_core::infra::ethereum::{GethTestnetNode, TTestnetNode};
 use opraas_core::infra::release::{DockerReleaseRepository, DockerReleaseRunner};
 use opraas_core::infra::stack::repo_inmemory::GitStackInfraRepository;
 use opraas_core::infra::stack::runner_helm::HelmStackRunner;
+use predicates::boolean;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::thread;
 use std::time::Duration;
+use std::{default, thread};
 
 pub struct DevCommand {
     dialoguer: Box<dyn TDialoguer>,
@@ -29,6 +30,9 @@ pub struct DevCommand {
     contracts_deployer: Box<dyn TStackContractsDeployerService>,
     project_factory: Box<dyn TProjectFactory>,
 }
+
+const DEFAULT_REGISTRY: &str = "wakeuplabs";
+const DEFAULT_RELEASE_TAG: &str = "v0.0.4";
 
 // implementations ================================================
 
@@ -55,7 +59,7 @@ impl DevCommand {
         }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
+    pub fn run(&self, default: bool) -> Result<(), Box<dyn std::error::Error>> {
         self.system_requirement_checker
             .check(vec![DOCKER_REQUIREMENT, K8S_REQUIREMENT, HELM_REQUIREMENT])?;
 
@@ -85,10 +89,17 @@ impl DevCommand {
 
         // request release name and repository to test
 
-        let registry_url: String = self
-            .dialoguer
-            .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
-        let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
+        let registry_url: String = match default {
+            true => DEFAULT_REGISTRY.to_string(),
+            false => self
+                .dialoguer
+                .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) "),
+        };
+
+        let release_name: String = match default {
+            true => DEFAULT_RELEASE_TAG.to_string(),
+            false => self.dialoguer.prompt("Input release name (e.g. v0.1.0)"),
+        };
 
         // update config for devnet mode
 

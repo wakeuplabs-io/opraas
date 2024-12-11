@@ -10,7 +10,7 @@ pub struct Stack {
     pub deployment: Option<Deployment>,
 }
 
-pub trait TStackInfraRepository {
+pub trait TStackInfraRepository: Send + Sync {
     fn pull(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>>;
 }
 

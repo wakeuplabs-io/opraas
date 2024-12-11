@@ -1,21 +1,11 @@
 use std::fs;
 use std::io::Cursor;
 use std::path::Path;
-use std::process::Command;
-
-use super::system;
 
 pub fn clone(source_repo: &str, source_tag: &str, dst_path: &str) -> Result<(), Box<dyn std::error::Error>> {
-    system::execute_command(
-        Command::new("git")
-            .arg("clone")
-            .arg("--branch")
-            .arg(source_tag)
-            .arg("--depth")
-            .arg("1")
-            .arg(format!("https://github.com/{}", source_repo))
-            .arg(dst_path),
-        true,
+    git2::build::RepoBuilder::new().branch(source_tag).clone(
+        &format!("https://github.com/{}", source_repo),
+        Path::new(dst_path),
     )?;
 
     Ok(())

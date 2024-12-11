@@ -38,7 +38,10 @@ enum Commands {
     /// Tags and pushes already built docker images to the registry for usage in the deployment
     Release { target: ReleaseTargets },
     /// Spin up local dev environment
-    Dev {},
+    Dev {
+        #[arg(long, default_value_t = false)]
+        default: bool,
+    },
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
     Deploy {
         target: DeployTarget,
@@ -96,7 +99,7 @@ async fn main() {
         Commands::Init { target } => InitCommand::new().run(target),
         Commands::Build { target } => BuildCommand::new().run(target),
         Commands::Release { target } => ReleaseCommand::new().run(target),
-        Commands::Dev {} => DevCommand::new().run(),
+        Commands::Dev { default } => DevCommand::new().run(default),
         Commands::Deploy {
             target,
             name,

@@ -1,9 +1,6 @@
 use crate::{
     config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
-    infra::{
-        console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
-        version_control::{Git, TVersionControl},
-    },
+    infra::console::{print_error, print_info, print_warning, style_spinner, Dialoguer, TDialoguer},
 };
 use clap::ValueEnum;
 use colored::*;
@@ -11,13 +8,15 @@ use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::{ArtifactReleaserService, TArtifactReleaserService},
     config::CoreConfig,
-    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory},
-    infra::release::DockerReleaseRepository,
+    domain::{
+        ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory, TProjectVersionControl,
+    },
+    infra::{project::GitVersionControl, release::DockerReleaseRepository},
 };
 use std::{sync::Arc, thread, time::Instant};
 
 pub struct ReleaseCommand {
-    git: Box<dyn TVersionControl>,
+    version_control: Box<dyn TProjectVersionControl>,
     dialoguer: Box<dyn TDialoguer>,
     system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
@@ -40,7 +39,7 @@ pub enum ReleaseTargets {
 impl ReleaseCommand {
     pub fn new() -> Self {
         Self {
-            git: Box::new(Git::new()),
+            version_control: Box::new(GitVersionControl::new()),
             dialoguer: Box::new(Dialoguer::new()),
             system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
@@ -72,8 +71,8 @@ impl ReleaseCommand {
             .dialoguer
             .confirm("Would you also like to tag your local git repository?")
         {
-            self.git
-                .tag_release(&project.root.to_str().unwrap(), &release_name)?;
+            self.version_control
+                .tag(&project.root.to_str().unwrap(), &release_name)?;
         }
 
         // Iterate over the artifacts and release =========================
