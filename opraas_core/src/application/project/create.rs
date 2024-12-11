@@ -65,7 +65,6 @@ impl TCreateProjectService for CreateProjectService {
         if init_git {
             self.version_control.init(&root.to_str().unwrap())?;
             self.version_control.stage(&root.to_str().unwrap())?;
-
             self.version_control
                 .commit(&root.to_str().unwrap(), "First commit", true)?;
         }

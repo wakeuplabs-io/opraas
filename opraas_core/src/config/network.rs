@@ -46,10 +46,7 @@ pub struct NetworkConfig {
     pub gas_price_oracle_scalar: u32,
     pub eip1559_denominator_canyon: u32,
     pub l2_genesis_canyon_time_offset: String,
-    pub l1_starting_block_tag: String,
-    pub l2_output_oracle_starting_timestamp: i32,
     pub l1_use_clique: bool,
-    pub l1_genesis_block_timestamp: String,
     pub batch_inbox_address: String,
 }
 
@@ -110,10 +107,7 @@ impl NetworkConfig {
             gas_price_oracle_scalar: 1000000,
             eip1559_denominator_canyon: 250,
             l2_genesis_canyon_time_offset: "0x40".to_string(),
-            l1_starting_block_tag: "0x9e6f90926f2f96c342298a504cb82d66fb43f8c8aa60768d78ea4648b4908ee4".to_string(),
-            l2_output_oracle_starting_timestamp: -1,
             l1_use_clique: true,
-            l1_genesis_block_timestamp: "0x673c1c29".to_string(),
             batch_inbox_address: "0xff69000000000000000000000000001201101712".to_string(),
         }
     }
