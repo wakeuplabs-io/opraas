@@ -1,20 +1,28 @@
-use std::io::Write;
-use zip::write::FileOptions;
+use std::{
+    fs,
+    io::{Cursor, Write},
+};
+use zip::ZipWriter;
 
-pub fn create_zip(name: &str, email: &str, message: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
-    let mut zip_buffer = Vec::new();
+pub fn zip_folder(folder: &std::path::PathBuf) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+    let mut buffer = Vec::new();
 
     {
-        let mut zip = zip::ZipWriter::new(std::io::Cursor::new(&mut zip_buffer));
+        let mut zip = ZipWriter::new(Cursor::new(&mut buffer));
 
-        let options = FileOptions::default()
-            .compression_method(zip::CompressionMethod::Stored)
-            .unix_permissions(0o755);
+        for entry in fs::read_dir(folder)? {
+            let path = entry.unwrap().path();
+            if path.is_file() {
+                zip.start_file(
+                    path.file_name().unwrap().to_string_lossy(),
+                    Default::default(),
+                )?;
+                zip.write(&fs::read(path)?)?;
+            }
+        }
 
-        zip.start_file("form_data.txt", options)?;
-        zip.write_all(format!("Name: {}\nEmail: {}\nMessage: {}", name, email, message).as_bytes())?;
         zip.finish()?;
-    } // Explicitly drop `zip` here to release the borrow on `zip_buffer`.
+    }
 
-    Ok(zip_buffer)
+    Ok(buffer)
 }

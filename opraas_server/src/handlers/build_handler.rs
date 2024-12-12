@@ -1,25 +1,47 @@
-use crate::utils::zip::create_zip;
-use axum::{response::IntoResponse, Form};
+use crate::utils::zip::zip_folder;
+use axum::{
+    http::{HeaderMap, HeaderValue, StatusCode},
+    response::IntoResponse,
+    Extension, Json,
+};
+use opraas_core::{
+    application::{CreateProjectService, TCreateProjectService},
+    config::{AccountsConfig, ArtifactsConfig, CoreConfig, NetworkConfig},
+};
 use serde::Deserialize;
+use std::{path::PathBuf, sync::Arc};
+use tempfile::TempDir;
 
 #[derive(Deserialize)]
-pub struct FormData {
+pub struct Payload {
     name: String,
-    email: String,
-    message: String,
+    config: NetworkConfig,
 }
 
-pub async fn build_handler(Form(data): Form<FormData>) -> impl IntoResponse {
-    match create_zip(&data.name, &data.email, &data.message) {
-        Ok(zip_data) => (
-            axum::http::StatusCode::OK,
-            [(axum::http::header::CONTENT_TYPE, "application/zip")],
-            zip_data,
-        ),
-        Err(_) => (
-            axum::http::StatusCode::INTERNAL_SERVER_ERROR,
-            [(axum::http::header::CONTENT_TYPE, "text/plain")],
-            b"Failed to generate zip file".to_vec(),
-        ),
-    }
+pub async fn build_handler(
+    Extension(create_service): Extension<Arc<CreateProjectService>>,
+    Json(data): Json<Payload>,
+) -> Result<impl IntoResponse, (StatusCode, &'static str)> {
+    let mut headers = HeaderMap::new();
+    headers.insert("Content-Type", HeaderValue::from_static("application/zip"));
+    headers.insert(
+        "Content-Disposition",
+        HeaderValue::from_str(&format!("attachment; filename=\"{}.zip\"", data.name)).unwrap(),
+    );
+
+    let config = CoreConfig {
+        network: data.config.clone(),
+        accounts: AccountsConfig::null(),
+        artifacts: ArtifactsConfig::null(),
+    };
+
+    let tmp_dir = TempDir::new().unwrap(); // automatically clean up on drop
+    let project = create_service
+        .create(&PathBuf::from(tmp_dir.path()), &config, false)
+        .unwrap();
+
+    let zip_buffer =
+        zip_folder(&project.root).map_err(|_| (StatusCode::INTERNAL_SERVER_ERROR, "Failed to zip project"));
+
+    Ok((StatusCode::OK, headers, zip_buffer))
 }

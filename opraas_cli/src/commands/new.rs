@@ -3,6 +3,7 @@ use colored::*;
 use indicatif::ProgressBar;
 use opraas_core::{
     application::{CreateProjectService, TCreateProjectService},
+    config::CoreConfig,
     infra::{
         project::{GitVersionControl, InMemoryProjectRepository},
         stack::repo_inmemory::GitStackInfraRepository,
@@ -33,12 +34,19 @@ impl NewCommand {
             root = env::current_dir()?.join(root)
         }
 
+        if root.exists() {
+            return Err(format!("Directory already exists: {}", root.display()).into());
+        } else {
+            std::fs::create_dir_all(&root)?;
+        }
+
         let create_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!("⏳ Creating {} at {}...", name, root.display()),
         );
 
-        self.project_creator.create(&root)?;
+        let default_config = CoreConfig::default();
+        self.project_creator.create(&root, &default_config, true)?;
 
         create_spinner.finish_with_message(format!(
             "✔️ Success! Created {} at {}\n",
