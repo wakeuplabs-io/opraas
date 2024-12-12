@@ -17,10 +17,11 @@ use opraas_core::infra::ethereum::{GethTestnetNode, TTestnetNode};
 use opraas_core::infra::release::{DockerReleaseRepository, DockerReleaseRunner};
 use opraas_core::infra::stack::repo_inmemory::GitStackInfraRepository;
 use opraas_core::infra::stack::runner_helm::HelmStackRunner;
+use predicates::boolean;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
-use std::thread;
 use std::time::Duration;
+use std::{default, thread};
 
 pub struct DevCommand {
     dialoguer: Box<dyn TDialoguer>,
