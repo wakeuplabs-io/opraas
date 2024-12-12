@@ -22,7 +22,7 @@ pub trait TReleaseRepository: Send + Sync {
     fn pull(&self, release: &Release) -> Result<(), Box<dyn std::error::Error>>;
 }
 
-pub trait TReleaseRunner {
+pub trait TReleaseRunner: Send + Sync {
     fn run(
         &self,
         release: &Release,

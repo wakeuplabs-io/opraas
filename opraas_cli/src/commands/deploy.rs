@@ -11,8 +11,8 @@ use indicatif::ProgressBar;
 use log::info;
 use opraas_core::{
     application::{
+        contracts::deploy::{StackContractsDeployerService, TStackContractsDeployerService},
         stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
-        StackContractsDeployerService, TStackContractsDeployerService,
     },
     config::CoreConfig,
     domain::{ArtifactFactory, ArtifactKind, ProjectFactory, Release, Stack, TArtifactFactory, TProjectFactory},

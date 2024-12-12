@@ -17,7 +17,7 @@ pub struct Deployment {
     pub infra_artifacts: Option<PathBuf>,
 }
 
-pub trait TDeploymentRepository {
+pub trait TDeploymentRepository: Send + Sync {
     fn save(&self, deployment: &mut Deployment) -> Result<(), Box<dyn std::error::Error>>;
     fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>>;
 }

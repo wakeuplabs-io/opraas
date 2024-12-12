@@ -4,8 +4,10 @@ use crate::config::{
 use crate::infra::console::{print_info, print_warning, style_spinner, Dialoguer, TDialoguer};
 use assert_cmd::Command;
 use indicatif::ProgressBar;
-use opraas_core::application::stack::run::{StackRunnerService, TStackRunnerService};
-use opraas_core::application::{StackContractsDeployerService, TStackContractsDeployerService};
+use opraas_core::application::{
+    contracts::deploy::{StackContractsDeployerService, TStackContractsDeployerService},
+    stack::run::{StackRunnerService, TStackRunnerService},
+};
 use opraas_core::config::CoreConfig;
 use opraas_core::domain::{
     ArtifactFactory, ArtifactKind, ProjectFactory, Release, Stack, TArtifactFactory, TProjectFactory,
