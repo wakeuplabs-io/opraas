@@ -14,11 +14,15 @@ export const InspectInfra: React.FC = () => {
 
       try {
         setLoading(true);
-        const res = await axios.post("/inspect/infra", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data", // Make sure to set the correct header
-          },
-        });
+        const res = await axios.post(
+          import.meta.env.VITE_SERVER_URL + "/inspect/infra",
+          formData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data", // Make sure to set the correct header
+            },
+          }
+        );
 
         setInfraInspection(res.data);
       } catch (e) {
@@ -33,7 +37,7 @@ export const InspectInfra: React.FC = () => {
   return (
     <section className="space-y-4 border bg-gray-100 p-3 rounded-md text-sm">
       <div className="space-y-2">
-        <h2 className="font-medium">Inspect contracts deployments</h2>
+        <h2 className="font-medium">Inspect infra deployments</h2>
         <p>
           Find it at{" "}
           <code>/deployments/[name]/artifacts/infra_artifacts.zip</code>
@@ -49,8 +53,8 @@ export const InspectInfra: React.FC = () => {
       {infraInspection && !loading && (
         <div className="border-t mt-4 pt-4">
           <div className="space-y-2">
-            <span>Outputs</span>
-            <pre className="border rounded-md p-2">
+            <span className="font-medium">Outputs</span>
+            <pre className="border rounded-md p-2 overflow-x-scroll">
               {JSON.stringify(infraInspection["outputs"], null, 2)}
             </pre>
           </div>

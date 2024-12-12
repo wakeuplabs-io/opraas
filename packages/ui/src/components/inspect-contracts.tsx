@@ -13,11 +13,15 @@ export const InspectContracts: React.FC = () => {
 
     try {
       setLoading(true);
-      const res = await axios.post("/inspect/contracts", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data", // Make sure to set the correct header
-        },
-      });
+      const res = await axios.post(
+        import.meta.env.VITE_SERVER_URL + "/inspect/contracts",
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data", // Make sure to set the correct header
+          },
+        }
+      );
 
       setContractsInspection(res.data);
     } catch (e) {
@@ -46,15 +50,15 @@ export const InspectContracts: React.FC = () => {
       {contractsInspection && !loading && (
         <div className="border-t mt-4 pt-4 space-y-4">
           <div className="space-y-2">
-            <span>Addresses</span>
-            <pre className="border rounded-md p-2">
+            <span className="font-medium">Addresses</span>
+            <pre className="border rounded-md p-2 overflow-x-scroll">
               {JSON.stringify(contractsInspection["addresses"], null, 2)}
             </pre>
           </div>
 
           <div className="space-y-2">
-            <span>Deploy config</span>
-            <pre className="border rounded-md p-2">
+            <span className="font-medium">Deploy config</span>
+            <pre className="border rounded-md p-2 overflow-x-scroll">
               {JSON.stringify(contractsInspection["deploy-config"], null, 2)}
             </pre>
           </div>
