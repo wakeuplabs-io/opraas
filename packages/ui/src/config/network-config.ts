@@ -23,6 +23,8 @@ export const networkConfigSchema = z.object({
     eip1559_denominator: z.number(),
     eip1559_elasticity: z.number(),
     eip1559_denominator_canyon: z.number(),
+    gas_price_oracle_overhead: z.number(), // deprecated
+    gas_price_oracle_scalar: z.number(), // deprecated
 
     // governance
     enable_governance: z.boolean(),
@@ -258,6 +260,19 @@ export const networkConfig: {
                     notes: "Must not be 0 if Canyon is activated.",
                     recommendedValue: "250",
                 },
+                {
+                    id: "gas_price_oracle_overhead",
+                    title: "gas_price_oracle_overhead",
+                    advanced: true,
+                    description: "GasPriceOracleOverhead represents the initial value of the gas overhead in the GasPriceOracle predeploy.",
+                    type: "Number",
+                },
+                {
+                    id: "gas_price_oracle_scalar",
+                    title: "gas_price_oracle_scalar",
+                    advanced: true,
+                    description: "GasPriceOracleScalar represents the initial value of the gas scalar in the GasPriceOracle predeploy.",
+                }
             ],
         },
         {

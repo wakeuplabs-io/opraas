@@ -80,6 +80,8 @@ function ConfigureChain() {
       fault_game_withdrawal_delay: 604800,
       preimage_oracle_min_proposal_size: 10000,
       preimage_oracle_challenge_period: 120,
+      gas_price_oracle_overhead: 2100,
+      gas_price_oracle_scalar: 1000000,
     },
   })
   const [chainId, setChainId] = useState<number>(1)
@@ -112,9 +114,6 @@ function ConfigureChain() {
           config: {
             l1_chain_id: chainId,
             l1_block_time: l1BlockTimes[chainId],
-            // TODO: these are deprecated, but we still need them, firstly check if we can remove them
-            gas_price_oracle_overhead: 2100,
-            gas_price_oracle_scalar: 1000000,
             l1_use_clique: true,
             ...data,
           },
