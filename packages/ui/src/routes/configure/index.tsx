@@ -1,25 +1,25 @@
-import { ConfigInput } from "@/components/config-input";
-import { L1Selector } from "@/components/l1-selector";
-import { createFileRoute } from "@tanstack/react-router";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useCallback, useMemo, useState } from "react";
-import { ConfigSection } from "@/components/config-section";
-import { cn } from "@/lib/utils";
-import axios from "axios";
+import { ConfigInput } from '@/components/config-input'
+import { createFileRoute, useRouter } from '@tanstack/react-router'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useCallback, useMemo, useState } from 'react'
+import { ConfigSection } from '@/components/config-section'
+import { cn } from '@/lib/utils'
+import axios from 'axios'
 import {
   networkConfig,
   NetworkConfig,
   networkConfigSchema,
-} from "@/config/network-config";
-import { l1BlockTimes } from "@/config/l1-block-times";
+} from '@/config/network-config'
+import { l1BlockTimes } from '@/config/l1-block-times'
 
-export const Route = createFileRoute("/create/")({
-  component: CreateChain,
-});
+export const Route = createFileRoute('/configure/')({
+  component: ConfigureChain,
+})
 
-function CreateChain() {
-  const [loading, setLoading] = useState(false);
+function ConfigureChain() {
+  const router = useRouter()
+  const [loading, setLoading] = useState(false)
   const {
     register,
     formState: { errors },
@@ -37,61 +37,61 @@ function CreateChain() {
       sequencer_window_size: 3600,
       channel_timeout: 300,
       system_config_start_block: 0,
-      batch_inbox_address: "0xff69000000000000000000000000001201101712",
+      batch_inbox_address: '0xff69000000000000000000000000001201101712',
 
       finalization_period_seconds: 12,
 
-      l2_genesis_block_gas_limit: "0x2faf080",
-      l2_genesis_block_base_fee_per_gas: "0x3b9aca00",
+      l2_genesis_block_gas_limit: '0x2faf080',
+      l2_genesis_block_base_fee_per_gas: '0x3b9aca00',
       eip1559_denominator: 50,
       eip1559_elasticity: 10,
       eip1559_denominator_canyon: 250,
 
       enable_governance: false,
-      governance_token_symbol: "OP",
-      governance_token_name: "Optimism",
+      governance_token_symbol: 'OP',
+      governance_token_name: 'Optimism',
 
-      base_fee_vault_minimum_withdrawal_amount: "0x8ac7230489e80000",
-      l1_fee_vault_minimum_withdrawal_amount: "0x8ac7230489e80000",
-      sequencer_fee_vault_minimum_withdrawal_amount: "0x8ac7230489e80000",
+      base_fee_vault_minimum_withdrawal_amount: '0x8ac7230489e80000',
+      l1_fee_vault_minimum_withdrawal_amount: '0x8ac7230489e80000',
+      sequencer_fee_vault_minimum_withdrawal_amount: '0x8ac7230489e80000',
 
       base_fee_vault_withdrawal_network: 0,
       l1_fee_vault_withdrawal_network: 0,
       sequencer_fee_vault_withdrawal_network: 0,
 
-      l2_genesis_regolith_time_offset: "0x0",
-      l2_genesis_canyon_time_offset: "0x40",
+      l2_genesis_regolith_time_offset: '0x0',
+      l2_genesis_canyon_time_offset: '0x40',
 
       required_protocol_version:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       recommended_protocol_version:
-        "0x0000000000000000000000000000000000000000000000000000000000000000",
+        '0x0000000000000000000000000000000000000000000000000000000000000000',
       fund_dev_accounts: false,
 
       fault_game_absolute_prestate:
-        "0x03c7ae758795765c6664a5d39bf63841c71ff191e9189522bad8ebff5d4eca98",
+        '0x03c7ae758795765c6664a5d39bf63841c71ff191e9189522bad8ebff5d4eca98',
       fault_game_max_depth: 30,
       fault_game_clock_extension: 0,
       fault_game_max_clock_duration: 1200,
       fault_game_genesis_block: 0,
       fault_game_genesis_output_root:
-        "0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF",
+        '0xDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEFDEADBEEF',
       fault_game_split_depth: 14,
       fault_game_withdrawal_delay: 604800,
       preimage_oracle_min_proposal_size: 10000,
       preimage_oracle_challenge_period: 120,
     },
-  });
-  const [chainId, setChainId] = useState<number>(1);
-  const [advanced, setAdvanced] = useState<boolean>(false);
+  })
+  const [chainId, setChainId] = useState<number>(1)
+  const [advanced, setAdvanced] = useState<boolean>(false)
 
   const onL1ChainSelect = useCallback((chainId: number) => {
-    setChainId(chainId);
-  }, []);
+    setChainId(chainId)
+  }, [])
 
   const filteredNetworkConfig = useMemo(() => {
     if (advanced) {
-      return networkConfig;
+      return networkConfig
     }
 
     return networkConfig
@@ -99,15 +99,15 @@ function CreateChain() {
         ...nc,
         inputs: nc.inputs.filter((i) => !i.advanced),
       }))
-      .filter((i) => i.inputs.length > 0);
-  }, [advanced]);
+      .filter((i) => i.inputs.length > 0)
+  }, [advanced])
 
   const onSubmit = useCallback(async (data: NetworkConfig) => {
     try {
-      setLoading(true);
+      setLoading(true)
 
       const response = await axios.post(
-        import.meta.env.VITE_SERVER_URL + "/build",
+        import.meta.env.VITE_SERVER_URL + '/build',
         {
           config: {
             l1_chain_id: chainId,
@@ -120,18 +120,20 @@ function CreateChain() {
           },
         },
         {
-          responseType: "blob",
-        }
-      );
+          responseType: 'blob',
+        },
+      )
 
-      const url = window.URL.createObjectURL(response.data);
-      window.open(url, "_blank");
+      const url = window.URL.createObjectURL(response.data)
+      window.open(url, '_blank')
+
+      router.navigate({ to: '/deploy' })
     } catch (e: any) {
-      window.alert("Failed to create deployment: " + e?.message);
+      window.alert('Failed to create deployment: ' + e?.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  }, []);
+  }, [])
 
   return (
     <div className="min-h-screen w-screen flex">
@@ -190,8 +192,8 @@ function CreateChain() {
 
             <select
               className="select select-bordered w-full"
-              value={advanced ? "enabled" : "disabled"}
-              onChange={(e) => setAdvanced(e.target.value === "enabled")}
+              value={advanced ? 'enabled' : 'disabled'}
+              onChange={(e) => setAdvanced(e.target.value === 'enabled')}
             >
               <option value="disabled">Disabled</option>
               <option value="enabled">Enabled</option>
@@ -207,7 +209,13 @@ function CreateChain() {
               Think of it as an exchange between costs and security.
             </p>
 
-            <L1Selector value={chainId} onSelect={onL1ChainSelect} />
+            <select
+              value={chainId}
+              onChange={(e) => onL1ChainSelect(Number(e.target.value))}
+              className="select select-bordered w-full"
+            >
+              <option value={1}>Ethereum</option>
+            </select>
           </div>
         </div>
 
@@ -238,8 +246,8 @@ function CreateChain() {
           <button
             type="submit"
             disabled={loading}
-            className={cn("btn btn-sm", {
-              "loading loading-spinner": loading,
+            className={cn('btn btn-sm', {
+              'loading loading-spinner': loading,
             })}
           >
             Download zip file
@@ -247,5 +255,5 @@ function CreateChain() {
         </form>
       </div>
     </div>
-  );
+  )
 }

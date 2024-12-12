@@ -17,11 +17,14 @@ export const Route = createRootRoute({
         <Link to="/" className="[&.active]:font-bold">
           Home
         </Link>
-        <Link to="/create" className="[&.active]:font-bold">
-          Create
+        <Link to="/configure" className="[&.active]:font-bold">
+          Configure
         </Link>
-        <Link to="/manage" className="[&.active]:font-bold">
-          Manage
+        <Link to="/deploy" className="[&.active]:font-bold">
+          Deploy
+        </Link>
+        <Link to="/inspect" className="[&.active]:font-bold">
+          Inspect
         </Link>
       </div>
       <hr />

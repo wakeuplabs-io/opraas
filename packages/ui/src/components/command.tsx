@@ -2,7 +2,7 @@ import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard";
 import { Check, ClipboardCopy } from "lucide-react";
 import { useCallback } from "react";
 
-export const Command = (props: { command: string }) => {
+export const Command: React.FC<{ command: string }> = (props) => {
   const { isCopied, copyToClipboard } = useCopyToClipboard({});
 
   const onCopyClick = useCallback(() => {
