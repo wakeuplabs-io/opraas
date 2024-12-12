@@ -1,30 +1,15 @@
 import axios from "axios";
 import { useCallback, useState } from "react";
-import { Button } from "./ui";
 
 export const InspectContracts: React.FC = () => {
   const [loading, setLoading] = useState(false);
-  const [contractsArtifacts, setContractsArtifacts] = useState(null);
   const [contractsInspection, setContractsInspection] = useState<any>(null);
 
-  const onContractsChange = useCallback(
-    (e: any) => {
-      setContractsArtifacts(e.target.files[0]);
-      setContractsArtifacts(null);
-    },
-    [setContractsArtifacts]
-  );
-
-  const onInspectContracts = useCallback(async (e: any) => {
-    e.preventDefault();
-
-    if (!contractsArtifacts) {
-      alert("No file selected!");
-      return;
-    }
+  const onContractsChange = useCallback(async (e: any) => {
+    setContractsInspection(null);
 
     const formData = new FormData();
-    formData.append("file", contractsArtifacts);
+    formData.append("file", e.target.files[0]);
 
     try {
       setLoading(true);
@@ -48,34 +33,30 @@ export const InspectContracts: React.FC = () => {
         <h2 className="font-medium">Inspect contracts deployments</h2>
         <p>
           Find it at{" "}
-          <code>
-            /deployments/[name]/artifacts/contracts_artifacts.zip
-          </code>
+          <code>/deployments/[name]/artifacts/contracts_artifacts.zip</code>
         </p>
       </div>
 
-      <form className="space-y-2" onSubmit={onInspectContracts}>
-        <input
-          type="file"
-          className="file-input block file-input-bordered file-input-sm w-full max-w-xs"
-          onChange={onContractsChange}
-        />
-
-        <Button className="btn-sm" loading={loading} type="submit">
-          Inspect
-        </Button>
-      </form>
+      <input
+        type="file"
+        className="file-input block file-input-bordered file-input-sm w-full max-w-xs"
+        onChange={onContractsChange}
+      />
 
       {contractsInspection && !loading && (
-        <div>
-          <div>
+        <div className="border-t mt-4 pt-4 space-y-4">
+          <div className="space-y-2">
             <span>Addresses</span>
-            <pre>{contractsInspection["addresses"]}</pre>
+            <pre className="border rounded-md p-2">
+              {JSON.stringify(contractsInspection["addresses"], null, 2)}
+            </pre>
           </div>
 
-          <div>
-            <span>Config</span>
-            <pre>{contractsInspection["deploy-config"]}</pre>
+          <div className="space-y-2">
+            <span>Deploy config</span>
+            <pre className="border rounded-md p-2">
+              {JSON.stringify(contractsInspection["deploy-config"], null, 2)}
+            </pre>
           </div>
         </div>
       )}
