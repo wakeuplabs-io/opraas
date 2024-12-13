@@ -28,15 +28,14 @@ While current tools excel in certain areas, they often fall short in others. The
 
 - Functional implementation: it's the only solution we've been able to run locally without significant debugging.
 - Out-of-the-box integration of BlockScout as a block explorer.
+- Still an unmerged PR but if approved would include support for latest versions of optimism.
+- Quick spin up of dev command to try it all locally.
 
 **Cons:**
 
 - Written in Python, which could lead us to rely on Python for the entire development process—a choice we wish to avoid due to concerns over performance and code quality.
-- Low code quality: the structure is disorganized, and the codebase lacks proper organization.
 - Tied to a specific version of the source code, with no straightforward way to support additional versions.
 - Deploys contracts from the same release used to build the binaries, which contradicts best practices outlined in the official documentation.
-- Lacks bridge deployment functionality.
-- Contains excessive and unnecessary dependencies.
 - Does not provide tools for infrastructure deployment and management.
 
 **Source:**
