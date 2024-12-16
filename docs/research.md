@@ -91,12 +91,12 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 
 - We will develop a CLI to handle deployments.
 - A Web UI will be created to facilitate quick and easy project spin-ups.
-- We chose Rust for its performance, and growing community support, ensuring the development of reliable and scalable solutions.
+- We have chosen Rust for its exceptional performance, reliability, and scalability. As Rust continues to gain significant traction in the developer community, we see it as the ideal language to ensure the long-term success of our solutions. Rust's growing ecosystem and active support make it a cornerstone of our development strategy, guaranteeing robust and efficient code for critical infrastructure.
 
 ### CLI
 
 - The CLI will provide local self-service capabilities.
-- It will be built as an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows for testable code and enables multiple client implementations, including the cli and server themselves.
+- It will be built as an implementation of a core Rust package that manages the business logic for creating the blockchain. This approach allows for testable code and enables multiple client implementations, including the cli and server themselves. Rust's powerful features, such as memory safety and concurrency handling, make it the perfect choice for building a performant and secure solution.
 - Binaries will be distributed via GitHub releases and made widely accessible through an npm package that consumes them.
 - To ensure a flexible build process, we will avoid hardcoding the build steps, as seen in many current solutions. Instead, we will pull Docker files into the infrastructure directory (shown below), allowing us to support most use cases while staying adaptable for custom configurations. This approach reduces dependencies to essentially Docker.
 - Sources will be downloaded directly from GitHub releases.
