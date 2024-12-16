@@ -3,7 +3,11 @@ kind: Service
 metadata:
   name: {{ .Values.node.name }}-sequencer-service
   labels:
-    app: {{ .Values.node.name }}-sequencer
+    app: {{ .Values.node.name }}-sequencer    
+  annotations:
+    prometheus.io/scrape: {{ .Values.monitoring.enabled | quote }}
+    prometheus.io/port: {{ .Values.node.ports.metrics | quote }}
+    prometheus.io/job: "op-node-sequencer"
 spec:
   type: ClusterIP
   selector:
@@ -20,6 +24,3 @@ spec:
       port: {{ .Values.node.ports.p2p }}
       targetPort: {{ .Values.node.ports.p2p }}
       protocol: UDP
-    - name: metrics
-      port: {{ .Values.node.ports.metrics }}
-      targetPort: {{ .Values.node.ports.metrics }}
