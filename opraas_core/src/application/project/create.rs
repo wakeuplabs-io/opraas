@@ -1,37 +1,47 @@
 use crate::{
     config::CoreConfig,
-    domain::{self, Project, Stack, TStackInfraRepository},
-    infra::{self, repositories::stack_infra::GitStackInfraRepository},
+    domain::{self, Project, ProjectFactory, Stack, TProjectFactory, TStackInfraRepository},
 };
+use std::path::PathBuf;
 
 pub struct CreateProjectService {
     repository: Box<dyn domain::project::TProjectRepository>,
-    version_control: Box<dyn infra::version_control::TVersionControl>,
+    version_control: Box<dyn domain::project::TProjectVersionControl>,
     stack_infra_repository: Box<dyn TStackInfraRepository>,
 }
 
 pub trait TCreateProjectService {
-    fn create(&self, root: &std::path::PathBuf) -> Result<Project, Box<dyn std::error::Error>>;
+    fn create(
+        &self,
+        root: &PathBuf,
+        config: &CoreConfig,
+        init_git: bool,
+    ) -> Result<Project, Box<dyn std::error::Error>>;
 }
 
 impl CreateProjectService {
-    pub fn new() -> Self {
+    pub fn new(
+        repository: Box<dyn domain::project::TProjectRepository>,
+        version_control: Box<dyn domain::project::TProjectVersionControl>,
+        stack_infra_repository: Box<dyn TStackInfraRepository>,
+    ) -> Self {
         Self {
-            repository: Box::new(infra::repositories::project::InMemoryProjectRepository::new()),
-            version_control: Box::new(infra::version_control::GitVersionControl::new()),
-            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
+            repository,
+            version_control,
+            stack_infra_repository,
         }
     }
 }
 
 impl TCreateProjectService for CreateProjectService {
-    fn create(&self, root: &std::path::PathBuf) -> Result<Project, Box<dyn std::error::Error>> {
-        if root.exists() {
-            return Err("Directory already exists".into());
-        }
-        std::fs::create_dir_all(root)?;
-
-        let project = Project::new_from_root(root.to_path_buf());
+    fn create(
+        &self,
+        root: &PathBuf,
+        config: &CoreConfig,
+        init_git: bool,
+    ) -> Result<Project, Box<dyn std::error::Error>> {
+        let project_factory = ProjectFactory::new();
+        let project = project_factory.from_root(root.clone());
 
         self.repository
             .write(&project, &root.join("README.md"), README)?;
@@ -41,11 +51,8 @@ impl TCreateProjectService for CreateProjectService {
             .write(&project, &root.join(".env"), ENV_FILE)?;
         self.repository
             .write(&project, &root.join(".env.sample"), ENV_FILE)?;
-        self.repository.write(
-            &project,
-            &root.join("config.toml"),
-            &toml::to_string(&CoreConfig::default()).unwrap(),
-        )?;
+        self.repository
+            .write(&project, &project.config, &toml::to_string(config).unwrap())?;
 
         // pull stack infra
         self.stack_infra_repository.pull(&Stack::new(
@@ -55,10 +62,12 @@ impl TCreateProjectService for CreateProjectService {
         ))?;
 
         // initialize git and create first commit
-        self.version_control.init(&root.to_str().unwrap())?;
-        self.version_control.stage(&root.to_str().unwrap())?;
-        self.version_control
-            .commit(&root.to_str().unwrap(), "First commit")?;
+        if init_git {
+            self.version_control.init(&root.to_str().unwrap())?;
+            self.version_control.stage(&root.to_str().unwrap())?;
+            self.version_control
+                .commit(&root.to_str().unwrap(), "First commit", true)?;
+        }
 
         Ok(project)
     }

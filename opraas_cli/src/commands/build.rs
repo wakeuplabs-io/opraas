@@ -1,18 +1,22 @@
 use crate::{
-    config::{get_config_path, BIN_NAME},
-    console::{print_error, style_spinner},
+    config::{SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, GIT_REQUIREMENT},
+    infra::console::{print_error, style_spinner},
 };
 use colored::*;
 use indicatif::{HumanDuration, ProgressBar};
 use opraas_core::{
     application::build::{ArtifactBuilderService, TArtifactBuilderService},
     config::CoreConfig,
-    domain::{Artifact, ArtifactFactory, ArtifactKind, Project},
+    domain::{ArtifactFactory, ArtifactKind, ProjectFactory, TArtifactFactory, TProjectFactory},
+    infra::artifact::{DockerArtifactRepository, GitArtifactSourceRepository},
 };
 use std::{sync::Arc, thread, time::Instant};
 
 pub struct BuildCommand {
-    artifacts: Vec<Arc<Artifact>>,
+    artifacts_factory: Box<dyn TArtifactFactory>,
+    artifacts_builder: Arc<dyn TArtifactBuilderService>,
+    system_requirements_checker: Box<dyn TSystemRequirementsChecker>,
+    project_factory: Box<dyn TProjectFactory>,
 }
 
 #[derive(Debug, Clone, clap::ValueEnum)]
@@ -28,31 +32,52 @@ pub enum BuildTargets {
 // implementations ================================================
 
 impl BuildCommand {
-    pub fn new(target: BuildTargets) -> Self {
-        let config = CoreConfig::new_from_toml(&get_config_path()).unwrap();
-        let project = Project::new_from_root(std::env::current_dir().unwrap());
-
-        let artifacts_factory = ArtifactFactory::new(&project, &config);
-        let artifacts = match target {
-            BuildTargets::All => artifacts_factory.get_all(),
-            BuildTargets::Batcher => vec![artifacts_factory.get(ArtifactKind::Batcher)],
-            BuildTargets::Node => vec![artifacts_factory.get(ArtifactKind::Node)],
-            BuildTargets::Contracts => vec![artifacts_factory.get(ArtifactKind::Contracts)],
-            BuildTargets::Proposer => vec![artifacts_factory.get(ArtifactKind::Proposer)],
-            BuildTargets::Geth => vec![artifacts_factory.get(ArtifactKind::Geth)],
-        };
-
-        Self { artifacts }
+    pub fn new() -> Self {
+        Self {
+            artifacts_factory: Box::new(ArtifactFactory::new()),
+            artifacts_builder: Arc::new(ArtifactBuilderService::new(
+                Box::new(DockerArtifactRepository::new()),
+                Box::new(GitArtifactSourceRepository::new()),
+            )),
+            system_requirements_checker: Box::new(SystemRequirementsChecker::new()),
+            project_factory: Box::new(ProjectFactory::new()),
+        }
     }
 
-    pub fn run(&self) -> Result<(), Box<dyn std::error::Error>> {
-        let started = Instant::now();
+    pub fn run(&self, target: BuildTargets) -> Result<(), Box<dyn std::error::Error>> {
+        self.system_requirements_checker
+            .check(vec![GIT_REQUIREMENT, DOCKER_REQUIREMENT])?;
 
+        let project = self.project_factory.from_cwd().unwrap();
+        let config = CoreConfig::new_from_toml(&project.config).unwrap();
+
+        // assemble list of artifacts to build
+        let artifacts = match target {
+            BuildTargets::All => self.artifacts_factory.get_all(&project, &config),
+            BuildTargets::Batcher => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Batcher, &project, &config)],
+            BuildTargets::Node => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Node, &project, &config)],
+            BuildTargets::Contracts => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Contracts, &project, &config)],
+            BuildTargets::Proposer => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Proposer, &project, &config)],
+            BuildTargets::Geth => vec![self
+                .artifacts_factory
+                .get(&ArtifactKind::Geth, &project, &config)],
+        };
+
+        // start time count and spinner
+        let started = Instant::now();
         let build_spinner = style_spinner(
             ProgressBar::new_spinner(),
             &format!(
                 "⏳ Building {}...",
-                self.artifacts
+                artifacts
                     .iter()
                     .map(|e| e.to_string())
                     .collect::<Vec<_>>()
@@ -61,14 +86,14 @@ impl BuildCommand {
         );
 
         // Iterate over the artifacts and build
-        let handles: Vec<_> = self
-            .artifacts
+        let handles: Vec<_> = artifacts
             .iter()
             .map(|&ref artifact| {
                 let artifact = Arc::clone(artifact); // Clone the Arc for thread ownership
+                let builder_service = Arc::clone(&self.artifacts_builder);
 
                 thread::spawn(move || -> Result<(), String> {
-                    match ArtifactBuilderService::new().build(&artifact) {
+                    match builder_service.build(&artifact) {
                         Ok(_) => {}
                         Err(e) => {
                             print_error(&format!("❌ Error building {}", artifact));
@@ -107,7 +132,7 @@ impl BuildCommand {
             - {bin} {deploy_cmd}\n\
             \tUse your artifacts to create contracts deployments or whole infra.\n",
             title = "What's Next?".bright_white().bold(),
-            bin = BIN_NAME.blue(),
+            bin = env!("CARGO_BIN_NAME").blue(),
             release_cmd = "release [contracts|node|etc...]".blue(),
             dev_cmd = "dev".blue(),
             deploy_cmd = "deploy [contracts|infra|all] --name <deployment_name>".blue()

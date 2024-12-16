@@ -1,7 +1,4 @@
-use crate::domain::{Stack, TStackInfraRepository};
-use crate::infra::repositories::stack_infra::inmemory::GitStackInfraRepository;
-use crate::infra::stack_runner::helm::HelmStackRunner;
-use crate::infra::stack_runner::stack_runner::TStackRunner;
+use crate::domain::{Stack, TStackInfraRepository, TStackRunner};
 
 pub struct StackRunnerService {
     stack_runner: Box<dyn TStackRunner>,
@@ -16,10 +13,10 @@ pub trait TStackRunnerService {
 // implementations ===================================================
 
 impl StackRunnerService {
-    pub fn new(release_name: &str, namespace: &str) -> Self {
+    pub fn new(stack_runner: Box<dyn TStackRunner>, stack_infra_repository: Box<dyn TStackInfraRepository>) -> Self {
         Self {
-            stack_runner: Box::new(HelmStackRunner::new(release_name, namespace)),
-            stack_infra_repository: Box::new(GitStackInfraRepository::new()),
+            stack_runner,
+            stack_infra_repository,
         }
     }
 }

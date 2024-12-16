@@ -1,4 +1,4 @@
-name: Cross-Platform Rust Build and Release
+name: Cross-Platform Cli Rust Build and Release
 
 on:
   push:
@@ -154,7 +154,7 @@ jobs:
             tag_name: ${{ github.ref_name }}
             draft: false
             prerelease: false
-
+ 
     # npm_release:
     #     needs: 
     #       - cli_release
@@ -173,14 +173,14 @@ jobs:
     #         node-version: '16'  
 
     #     - name: Install dependencies
-    #       working-directory: ./npm 
+    #       working-directory: ./packages/cli 
     #       run: npm install
 
     #     - name: Login to npm
     #       run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
 
     #     - name: Publish to npm
-    #       working-directory: ./npm 
+    #       working-directory: ./packages/cli
     #       run: npm publish --access public
     #       env:
     #         NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }} 

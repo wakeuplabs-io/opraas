@@ -1,27 +1,22 @@
 mod commands;
 mod config;
-mod console;
-mod utils;
+mod infra;
 
 use build::BuildTargets;
+use clap::{Parser, Subcommand};
 use colored::Colorize;
+use commands::*;
 use deploy::DeployTarget;
+use dotenv::dotenv;
+use infra::console::print_error;
 use init::InitTargets;
 use inspect::InspectTarget;
 use log::{Level, LevelFilter};
 use release::ReleaseTargets;
-pub use utils::*;
-
-use clap::{Parser, Subcommand};
-use commands::*;
-use config::{Comparison, Requirement, SystemRequirementsChecker, TSystemRequirementsChecker};
-use console::print_error;
-use dotenv::dotenv;
-use semver::Version;
 
 #[derive(Parser)]
 #[clap(name = "opruaas")]
-#[clap(version = "0.0.3")]
+#[clap(version = "0.0.12")]
 #[clap(about = "Easily deploy and manage rollups with the Optimism stack.", long_about = None)]
 struct Args {
     #[command(subcommand)]
@@ -43,7 +38,10 @@ enum Commands {
     /// Tags and pushes already built docker images to the registry for usage in the deployment
     Release { target: ReleaseTargets },
     /// Spin up local dev environment
-    Dev {},
+    Dev {
+        #[arg(long, default_value_t = false)]
+        default: bool,
+    },
     /// Deploy your blockchain. Target must be one of: contracts, infra, all
     Deploy {
         target: DeployTarget,
@@ -69,7 +67,6 @@ enum Commands {
 async fn main() {
     dotenv().ok();
 
-    // parse args
     let args = Args::parse();
 
     let log_level = if args.verbose {
@@ -96,52 +93,13 @@ async fn main() {
         .filter_module("opraas_core", log_level)
         .init();
 
-    // Check requirements
-    SystemRequirementsChecker::new()
-        .check(vec![
-            Requirement {
-                program: "docker",
-                version_arg: "-v",
-                required_version: Version::parse("24.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "kubectl",
-                version_arg: "version",
-                required_version: Version::parse("1.28.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "helm",
-                version_arg: "version",
-                required_version: Version::parse("3.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "terraform",
-                version_arg: "-v",
-                required_version: Version::parse("1.9.8").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-            Requirement {
-                program: "git",
-                version_arg: "--version",
-                required_version: Version::parse("2.0.0").unwrap(),
-                required_comparator: Comparison::GreaterThanOrEqual,
-            },
-        ])
-        .unwrap_or_else(|e| {
-            print_error(&format!("\n\nError: {}\n\n", e));
-            std::process::exit(1);
-        });
-
     // run commands
     if let Err(e) = match args.cmd {
         Commands::New { name } => NewCommand::new().run(name),
-        Commands::Init { target } => InitCommand::new(target).run(),
-        Commands::Build { target } => BuildCommand::new(target).run(),
-        Commands::Release { target } => ReleaseCommand::new(target).run(),
-        Commands::Dev {} => DevCommand::new().run(),
+        Commands::Init { target } => InitCommand::new().run(target),
+        Commands::Build { target } => BuildCommand::new().run(target),
+        Commands::Release { target } => ReleaseCommand::new().run(target),
+        Commands::Dev { default } => DevCommand::new().run(default),
         Commands::Deploy {
             target,
             name,

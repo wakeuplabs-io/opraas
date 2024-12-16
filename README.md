@@ -11,7 +11,7 @@ Install with `npm i -g @wakeuplabs/opruaas`
 Ensure you have the following tools installed and properly configured:
 
 - **Docker**: `>= 24.0.0`
-- **kubectl**: `>= 1.28.0`
+- **kubectl**: `>= 1.28.0` (ensure kubernetes engine is running when calling the cli, you can check with `kubectl version`)
 - **Helm**: `>= 3.0.0`
 - **Terraform**: `>= 1.9.8` (with AWS authentication configured)
 - **Git**: `>= 2.0.0`
@@ -189,9 +189,36 @@ Follow these steps to prepare and publish a new version of the package:
 4. Verify Actions:  
    Ensure the GitHub Actions workflow completes successfully.
 
-5. Publish the Package:
-   From the `npm` folder, run the following command to publish the package:
+5. Publish the Package:  
+   From the `packages/cli` folder, run the following command to publish the package:
 
 ```bash
-npm run publish --access public
+ npm publish --access public
 ```
+
+### WWW Deployments
+
+#### UI
+
+1. Setup `terraform` with `aws`
+2. `cd packages/ui` -> `terraform init` -> `terraform plan` -> `terraform apply`
+3. After this actions can take place. Or manually (assuming bucket name to be `op-ruaas`, otherwise you can get this commands from `terraform output`):
+
+- `npm run build`
+- `aws s3 sync dist s3://op-ruaas --delete`
+- `DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='op-ruaas.s3.amazonaws.com'].DomainName].Id" --output text) && aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"`
+
+#### Server
+
+**debug**
+
+1. Install [cargo-lambda](https://www.cargo-lambda.info/guide/getting-started.html)
+2. Run `cargo lambda watch`
+3. Base url is `http://localhost:9000/lambda-url/opraas_server`, so for example you can try `curl http://localhost:9000/lambda-url/opraas_server/health`
+
+**Build & Deploy**
+
+1. Install [cargo-lambda](https://www.cargo-lambda.info/guide/getting-started.html)
+2. Install [cross](https://crates.io/crates/cross)
+3. Build the function with `cargo lambda build --package opraas_server --release --compiler cross`
+4. Deploy the function to AWS Lambda with `cargo lambda deploy opraas_server --tag customer=op-ruaas --enable-function-url`

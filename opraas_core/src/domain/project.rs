@@ -1,11 +1,14 @@
-use std::path::PathBuf;
+use std::{env, path::PathBuf};
 
 #[derive(Debug, Clone)]
 pub struct Project {
     pub root: PathBuf,
+    pub config: PathBuf,
     pub infra: Infra,
     pub src: Src,
 }
+
+pub struct ProjectFactory;
 
 #[derive(Debug, Clone)]
 pub struct Infra {
@@ -37,18 +40,53 @@ pub struct Src {
     pub explorer: PathBuf,
 }
 
-pub trait TProjectRepository {
+pub trait TProjectRepository: Send + Sync {
     fn write(&self, project: &Project, filepath: &PathBuf, content: &str) -> Result<(), Box<dyn std::error::Error>>;
     fn exists(&self, project: &Project) -> bool;
     fn has(&self, project: &Project, filepath: &PathBuf) -> bool;
 }
 
+pub trait TProjectVersionControl: Send + Sync {
+    fn init(&self, root: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn stage(&self, root: &str) -> Result<(), Box<dyn std::error::Error>>;
+    fn commit(&self, root: &str, message: &str, initial: bool) -> Result<(), Box<dyn std::error::Error>>;
+    fn tag(&self, root: &str, tag: &str) -> Result<(), Box<dyn std::error::Error>>;
+}
+
+pub trait TProjectFactory: Send + Sync {
+    fn from_cwd(&self) -> Option<Project>;
+    fn from_root(&self, root: PathBuf) -> Project;
+}
+
 // implementations =================================================================
 
-impl Project {
-    pub fn new_from_root(root: PathBuf) -> Self {
-        Self {
+impl ProjectFactory {
+    pub fn new() -> Self {
+        Self
+    }
+}
+
+impl TProjectFactory for ProjectFactory {
+    /// walk back to find config.toml
+    fn from_cwd(&self) -> Option<Project> {
+        let mut current = env::current_dir().unwrap();
+
+        for _ in 0..10 {
+            if current.join("config.toml").exists() {
+                return Some(self.from_root(current));
+            }
+
+            current = current.parent().unwrap().to_path_buf()
+        }
+
+        None
+    }
+
+    /// creates from given root
+    fn from_root(&self, root: PathBuf) -> Project {
+        Project {
             root: root.clone(),
+            config: root.join("config.toml"),
             infra: Infra {
                 root: root.join("infra"),
                 aws: root.join("infra").join("aws"),

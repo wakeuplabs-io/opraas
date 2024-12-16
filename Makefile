@@ -28,3 +28,10 @@ build-linux:
 
 build-apple:
 	cargo build --target=${APPLE_TARGET} --release
+
+server-deploy:
+	cargo lambda build --package opraas_server --release
+	cargo lambda deploy opraas_server --tag customer=op-ruaas --enable-function-url
+
+server-watch:
+	cargo lambda watch --package opraas_server

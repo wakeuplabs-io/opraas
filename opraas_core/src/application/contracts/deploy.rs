@@ -1,23 +1,23 @@
 use crate::{
     config::CoreConfig,
     domain::{self, Deployment, Release},
-    infra::{
-        self,
-        release_runner::DockerArtifactRunner,
-        repositories::{deployment::InMemoryDeploymentRepository, release::DockerReleaseRepository},
-    },
 };
 use rand::Rng;
-use std::collections::HashMap;
+use serde_json::Value;
+use std::io::Read;
+use std::{collections::HashMap, io::Cursor};
 use tempfile::TempDir;
+use zip::ZipArchive;
 
 pub struct StackContractsDeployerService {
     deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
     release_repository: Box<dyn domain::release::TReleaseRepository>,
-    release_runner: Box<dyn infra::release_runner::TReleaseRunner>,
+    release_runner: Box<dyn domain::release::TReleaseRunner>,
 }
 
-pub trait TStackContractsDeployerService {
+pub struct StackContractsInspectorService {}
+
+pub trait TStackContractsDeployerService: Send + Sync {
     fn deploy(
         &self,
         name: &str,
@@ -30,17 +30,27 @@ pub trait TStackContractsDeployerService {
     fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>>;
 }
 
+pub trait TStackContractsInspectorService: Send + Sync {
+    fn inspect(&self, artifact: Cursor<Vec<u8>>) -> Result<Value, Box<dyn std::error::Error>>;
+}
+
 const IN_NETWORK: &str = "in/deploy-config.json";
 const OUT_ARTIFACTS: &str = "out/artifacts.zip";
+const OUT_ARTIFACTS_ADDRESSES: &str = "addresses.json";
+const OUT_ARTIFACTS_DEPLOY_CONFIG: &str = "deploy-config.json";
 
 // implementations ===================================================
 
 impl StackContractsDeployerService {
-    pub fn new(root: &std::path::PathBuf) -> Self {
+    pub fn new(
+        deployment_repository: Box<dyn domain::deployment::TDeploymentRepository>,
+        release_repository: Box<dyn domain::release::TReleaseRepository>,
+        release_runner: Box<dyn domain::release::TReleaseRunner>,
+    ) -> Self {
         Self {
-            deployment_repository: Box::new(InMemoryDeploymentRepository::new(root)),
-            release_repository: Box::new(DockerReleaseRepository::new()),
-            release_runner: Box::new(DockerArtifactRunner::new()),
+            deployment_repository,
+            release_repository,
+            release_runner,
         }
     }
 }
@@ -77,24 +87,18 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
         // create environment
         let mut env: HashMap<&str, String> = HashMap::new();
+
+        #[rustfmt::skip]
         env.insert("ETH_RPC_URL", config.network.l1_rpc_url.clone());
+        #[rustfmt::skip]
         env.insert("DEPLOYER_ADDRESS", config.accounts.deployer_address.clone());
-        env.insert(
-            "DEPLOYER_PRIVATE_KEY",
-            config.accounts.deployer_private_key.clone(),
-        );
-        env.insert(
-            "IMPL_SALT",
-            rand::thread_rng()
-                .gen::<[u8; 16]>()
-                .iter()
-                .map(|b| format!("{:02x}", b))
-                .collect::<String>(),
-        );
-        env.insert(
-            "DEPLOY_DETERMINISTIC_DEPLOYER",
-            deploy_deterministic_deployer.to_string(),
-        );
+        #[rustfmt::skip]
+        env.insert("DEPLOYER_PRIVATE_KEY", config.accounts.deployer_private_key.clone());
+        #[rustfmt::skip]
+        env.insert("IMPL_SALT", rand::thread_rng() .gen::<[u8; 16]>() .iter() .map(|b| format!("{:02x}", b)) .collect::<String>());
+        #[rustfmt::skip]
+        env.insert("DEPLOY_DETERMINISTIC_DEPLOYER",deploy_deterministic_deployer.to_string());
+        #[rustfmt::skip]
         env.insert("SLOW_ARG", if slow { "--slow" } else { "" }.to_string());
 
         // using contracts artifact, create a deployment
@@ -113,5 +117,57 @@ impl TStackContractsDeployerService for StackContractsDeployerService {
 
     fn find(&self, name: &str) -> Result<Option<Deployment>, Box<dyn std::error::Error>> {
         self.deployment_repository.find(name)
+    }
+}
+
+impl StackContractsInspectorService {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
+impl TStackContractsInspectorService for StackContractsInspectorService {
+    fn inspect(&self, artifact_reader: Cursor<Vec<u8>>) -> Result<Value, Box<dyn std::error::Error>> {
+        let mut file_contents: HashMap<String, String> = HashMap::new();
+
+        let mut archive = ZipArchive::new(artifact_reader).map_err(|e| e.to_string())?;
+
+        // Iterate through the files in the archive
+        for i in 0..archive.len() {
+            let file_name;
+            {
+                let file = archive.by_index(i).map_err(|e| e.to_string())?;
+                file_name = file.name().to_string();
+            }
+
+            if file_name == OUT_ARTIFACTS_ADDRESSES || file_name == OUT_ARTIFACTS_DEPLOY_CONFIG {
+                let mut file = archive.by_index(i).map_err(|e| e.to_string())?;
+                let mut contents = String::new();
+
+                file.read_to_string(&mut contents)
+                    .map_err(|e| e.to_string())?;
+
+                file_contents.insert(file_name.clone(), contents);
+            }
+        }
+
+        if let (Some(addresses), Some(deploy_config)) = (
+            file_contents.get(OUT_ARTIFACTS_ADDRESSES),
+            file_contents.get(OUT_ARTIFACTS_DEPLOY_CONFIG),
+        ) {
+            // Parse the JSON content of both files
+            let addresses_json: Value = serde_json::from_str(addresses).map_err(|e| e.to_string())?;
+            let deploy_config_json: Value = serde_json::from_str(deploy_config).map_err(|e| e.to_string())?;
+
+            // Combine the results into a single JSON response
+            let result = serde_json::json!({
+                "addresses": addresses_json,
+                "deploy-config": deploy_config_json,
+            });
+
+            return Ok(result);
+        }
+
+        Err("Required deployment files not found in the ZIP".into())
     }
 }

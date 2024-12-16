@@ -1,0 +1,31 @@
+{
+    "name": "@wakeuplabs/opruaas",
+    "version": "0.0.12",
+    "description": "Spin up Optimism rollups with ease",
+    "bin": {
+        "opruaas": "./lib/run.js"
+    },
+    "scripts": {
+        "test": "jest",
+        "postinstall": "node ./lib/install.js"
+    },
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/wakeuplabs-io/op-ruaas"
+    },
+    "license": "MIT",
+    "bugs": {
+        "url": "https://github.com/wakeuplabs-io/op-ruaas/issues"
+    },
+    "homepage": "https://github.com/wakeuplabs-io/op-ruaas#readme",
+    "dependencies": {
+        "console.table": "^0.10.0",
+        "binary-install": "1.1.0"
+    },
+    "devDependencies": {
+        "jest": "^27.5.1",
+        "prettier": "^1.19.1",
+        "rimraf": "^3.0.2",
+        "shelljs": "^0.8.5"
+    }
+}
