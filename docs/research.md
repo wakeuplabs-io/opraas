@@ -167,6 +167,7 @@ config.toml
 - For deployment, we will leverage **Kubernetes** to coordinate all services and enable scaling. We will combine this with **Helm** for simple deployment customization and management, along with **Terraform** to specify resources and provide a seamless one-click experience.
 - One key reason for selecting **Kubernetes** over other solutions is its broad compatibility with various cloud providers. This ensures that users can choose where to host their chain while minimizing setup differences. While we will provide Terraform configurations for a few cloud vendors, the Helm chart will be open for users to deploy anywhere they prefer.
 - As outlined in the [documentation](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#offchain-component-monitoring), we will include **Prometheus** and **Grafana** services in the deployment chart, along with preconfigured dashboards for Grafana. This will provide users with a robust monitoring system out of the box.
+- With our rust cli we'll make developments and deployments a one command thing, adjusting values.yaml, installing dependencies, waiting for processes, etc.
 
 **Scaling Diagram:**
 
@@ -193,7 +194,7 @@ For the block explorer, **Blockscout** ([link](https://www.blockscout.com/)) app
 
 ### Web Dev Console
 
-The dev console will focus on generating a complete configuration for the user to download and deploy with a single command using the CLI. We will prompt users for input to populate the initial configuration, and then generate a ZIP file containing the full `config.toml` file and the CLI binaries. This will allow users to simply run `npx opruaas dev` or `npx opruaas deploy` to get started with deployment.
+The dev console will focus on generating a complete configuration for the user to download and deploy with a single command using the CLI. We will prompt users for input to populate the initial configuration, and then generate a ZIP ready for deployment. This will allow users to simply run `npx opruaas dev` or `npx opruaas deploy` to get started. We'll also do an inspection page where users can submit the result of their deployments to see details about it, addresses, links, etc. We'll leverage the rust core crate to build the initial zip and inspect the deployments, doing this will speed up our development and allow us to create lightweight and fast lambda functions.
 
 ## Risks and Uncertainties
 
