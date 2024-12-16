@@ -1,4 +1,4 @@
-import axios from "axios";
+import { ApiService } from "@/lib/api";
 import { useCallback, useState } from "react";
 
 export const InspectContracts: React.FC = () => {
@@ -8,20 +8,9 @@ export const InspectContracts: React.FC = () => {
   const onContractsChange = useCallback(async (e: any) => {
     setContractsInspection(null);
 
-    const formData = new FormData();
-    formData.append("file", e.target.files[0]);
-
     try {
       setLoading(true);
-      const res = await axios.post(
-        import.meta.env.VITE_SERVER_URL + "/inspect/contracts",
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data", // Make sure to set the correct header
-          },
-        }
-      );
+      const res = await ApiService.inspectContracts(e.target.files[0]);
 
       setContractsInspection(res.data);
     } catch (e) {

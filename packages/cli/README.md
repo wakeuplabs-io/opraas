@@ -12,10 +12,14 @@ Install with `npm i -g @wakeuplabs/opruaas`
 Ensure you have the following tools installed and properly configured:  
 
 - **Docker**: `>= 24.0.0`  
-- **kubectl**: `>= 1.28.0`  
+- **kubectl**: `>= 1.28.0` (ensure kubernetes engine is running when calling the cli, you can check with `kubectl version`)
 - **Helm**: `>= 3.0.0`  
 - **Terraform**: `>= 1.9.8` (with AWS authentication configured)  
 - **Git**: `>= 2.0.0`  
+
+Recommended PC specifications to run it all smoothly:
+- 8 GB RAM
+- + 25 GB storage available on top of installed programs
 
 ### Commands
 
@@ -137,6 +141,7 @@ In dev mode, all wallets on both L1 and L2 will be funded by default. This is ac
 Once the setup is complete, you can access the following services:
 - L1 RPC: http://localhost:8545
 - L2 RPC: http://localhost:80/rpc
+- Off-chain Monitoring: http://localhost:80/monitoring
 - Explorer: http://localhost:80
 
 ### Deploy contracts/infra/all
@@ -157,4 +162,3 @@ The deployment process will create a deployments/my-prod-deployment directory co
   These files are crucial for running your chain. Ensure you keep them safe and do not lose them.
 - Inspecting Artifacts:
   You can manually review the artifacts or use the inspect command for easier analysis.
-

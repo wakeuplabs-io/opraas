@@ -17,6 +17,10 @@ Ensure you have the following tools installed and properly configured:
 - **Terraform**: `>= 1.9.8` (with AWS authentication configured)  
 - **Git**: `>= 2.0.0`  
 
+Recommended PC specifications to run it all smoothly:
+- 8 GB RAM
+- + 25 GB storage available on top of installed programs
+
 ### Commands
 
 Usage: `opruaas [OPTIONS] <COMMAND>`  
@@ -137,6 +141,7 @@ In dev mode, all wallets on both L1 and L2 will be funded by default. This is ac
 Once the setup is complete, you can access the following services:
 - L1 RPC: http://localhost:8545
 - L2 RPC: http://localhost:80/rpc
+- Off-chain Monitoring: http://localhost:80/monitoring
 - Explorer: http://localhost:80
 
 ### Deploy contracts/infra/all
@@ -157,7 +162,6 @@ The deployment process will create a deployments/my-prod-deployment directory co
   These files are crucial for running your chain. Ensure you keep them safe and do not lose them.
 - Inspecting Artifacts:
   You can manually review the artifacts or use the inspect command for easier analysis.
-
 
 ## Dev
 
@@ -203,8 +207,6 @@ Follow these steps to prepare and publish a new version of the package:
   - `npm run build`
   - `aws s3 sync dist s3://op-ruaas --delete`
   - `DISTRIBUTION_ID=$(aws cloudfront list-distributions --query "DistributionList.Items[?Origins.Items[?DomainName=='op-ruaas.s3.amazonaws.com'].DomainName].Id" --output text) && aws cloudfront create-invalidation --distribution-id $DISTRIBUTION_ID --paths "/*"`
-
-
 
 #### Server
 

@@ -1,4 +1,4 @@
-import axios from "axios";
+import { ApiService } from "@/lib/api";
 import { useCallback, useState } from "react";
 
 export const InspectInfra: React.FC = () => {
@@ -9,20 +9,9 @@ export const InspectInfra: React.FC = () => {
     async (e: any) => {
       setInfraInspection(null);
 
-      const formData = new FormData();
-      formData.append("file", e.target.files[0]);
-
       try {
         setLoading(true);
-        const res = await axios.post(
-          import.meta.env.VITE_SERVER_URL + "/inspect/infra",
-          formData,
-          {
-            headers: {
-              "Content-Type": "multipart/form-data", // Make sure to set the correct header
-            },
-          }
-        );
+        const res = await ApiService.inspectInfra(e.target.files[0]);
 
         setInfraInspection(res.data);
       } catch (e) {

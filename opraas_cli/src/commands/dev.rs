@@ -172,6 +172,7 @@ impl DevCommand {
 
         print_info("L1 rpc available at http://localhost:8545");
         print_info("L2 rpc available at http://localhost:80/rpc");
+        print_info("Off-chain monitoring at http://localhost:80/monitoring");
         print_info("Explorer available at http://localhost:80");
         print_warning("It may take a little bit for rpc to respond and explorer to index...");
 
