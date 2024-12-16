@@ -4,6 +4,10 @@ metadata:
   name: {{ .Values.batcher.name }}-service
   labels:
     app: {{ .Values.batcher.name }}
+  annotations:
+    prometheus.io/scrape: {{ .Values.monitoring.enabled | quote }}
+    prometheus.io/port: {{ .Values.batcher.ports.metrics | quote }}
+    prometheus.io/job: "op-batcher"
 spec:
   type: ClusterIP
   selector:
@@ -12,6 +16,3 @@ spec:
     - name: rpc
       port: {{ .Values.batcher.ports.rpc }}
       targetPort: {{ .Values.batcher.ports.rpc }}
-    - name: metrics
-      port: {{ .Values.batcher.ports.metrics }}
-      targetPort: {{ .Values.batcher.ports.metrics }}
