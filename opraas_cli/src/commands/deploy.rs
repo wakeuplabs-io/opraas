@@ -93,12 +93,17 @@ impl DeployCommand {
             return Err("Name cannot contain spaces".into());
         }
 
-        // TODO: check if it already exists.
-
         let registry_url: String = self
             .dialoguer
             .prompt("Input Docker registry url (e.g. dockerhub.io/wakeuplabs) ");
         let release_name: String = self.dialoguer.prompt("Input release name (e.g. v0.1.0)");
+
+        if !self
+            .dialoguer
+            .confirm("This may involve some costs. Have you double-checked the configuration? Please review .env, config.toml, infra/helm/values.yaml to ensure it's what you expect. Help yourself with the README.md files if in doubt.")
+        {
+            return Ok(());
+        }
 
         // contracts deployment ===========================================================
 
@@ -148,7 +153,7 @@ impl DeployCommand {
                 let artifact_cursor = Cursor::new(std::fs::read(&deployment.contracts_artifacts.unwrap())?);
                 println!(
                     "{}",
-                    serde_json::to_string_pretty(&self.infra_inspector.inspect(artifact_cursor)?)?
+                    serde_json::to_string_pretty(&self.contracts_inspector.inspect(artifact_cursor)?)?
                 );
             } else {
                 return Err("Contracts deployment not found".into());
