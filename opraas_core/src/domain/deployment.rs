@@ -1,10 +1,5 @@
 use crate::config::{AccountsConfig, NetworkConfig};
-use colored::Colorize;
-use serde_json::Value;
-use std::{
-    fs::{self, File},
-    path::PathBuf,
-};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub struct Deployment {
