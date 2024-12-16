@@ -1,3 +1,5 @@
+use std::io::Cursor;
+
 use crate::{
     config::{
         SystemRequirementsChecker, TSystemRequirementsChecker, DOCKER_REQUIREMENT, HELM_REQUIREMENT, K8S_REQUIREMENT,
@@ -11,8 +13,8 @@ use indicatif::ProgressBar;
 use log::info;
 use opraas_core::{
     application::{
-        contracts::deploy::{StackContractsDeployerService, TStackContractsDeployerService},
-        stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
+        contracts::{deploy::{StackContractsDeployerService, TStackContractsDeployerService}, StackContractsInspectorService, TStackContractsInspectorService},
+        stack::{deploy::{StackInfraDeployerService, TStackInfraDeployerService}, StackInfraInspectorService, TStackInfraInspectorService},
     },
     config::CoreConfig,
     domain::{ArtifactFactory, ArtifactKind, ProjectFactory, Release, Stack, TArtifactFactory, TProjectFactory},
@@ -33,7 +35,9 @@ pub enum DeployTarget {
 pub struct DeployCommand {
     dialoguer: Box<dyn TDialoguer>,
     contracts_deployer: Box<dyn TStackContractsDeployerService>,
+    contracts_inspector: Box<dyn TStackContractsInspectorService>,
     infra_deployer: Box<dyn TStackInfraDeployerService>,
+    infra_inspector: Box<dyn TStackInfraInspectorService>,
     system_requirement_checker: Box<dyn TSystemRequirementsChecker>,
     artifacts_factory: Box<dyn TArtifactFactory>,
     project_factory: Box<dyn TProjectFactory>,
@@ -53,11 +57,13 @@ impl DeployCommand {
                 Box::new(DockerReleaseRepository::new()),
                 Box::new(DockerReleaseRunner::new()),
             )),
+            contracts_inspector: Box::new(StackContractsInspectorService::new()),
             infra_deployer: Box::new(StackInfraDeployerService::new(
                 Box::new(TerraformDeployer::new(&project.root)),
                 Box::new(GitStackInfraRepository::new()),
                 Box::new(InMemoryDeploymentRepository::new(&project.root)),
             )),
+            infra_inspector: Box::new(StackInfraInspectorService::new()),
             system_requirement_checker: Box::new(SystemRequirementsChecker::new()),
             artifacts_factory: Box::new(ArtifactFactory::new()),
             project_factory,
@@ -138,7 +144,12 @@ impl DeployCommand {
 
             if let Some(deployment) = deployment {
                 info!("Inspecting contracts deployment: {}", deployment.name);
-                deployment.display_contracts_artifacts()?;
+                
+                let artifact_cursor = Cursor::new(std::fs::read(&deployment.contracts_artifacts.unwrap())?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&self.infra_inspector.inspect(artifact_cursor)?)?
+                );
             } else {
                 return Err("Contracts deployment not found".into());
             }
@@ -149,7 +160,12 @@ impl DeployCommand {
 
             if let Some(deployment) = deployment {
                 info!("Inspecting infra deployment: {}", deployment.name);
-                deployment.display_infra_artifacts()?;
+                
+                let artifact_cursor = Cursor::new(std::fs::read(&deployment.infra_artifacts.unwrap())?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&self.infra_inspector.inspect(artifact_cursor)?)?
+                );
             } else {
                 return Err("Infra deployment not found".into());
             }
