@@ -4,6 +4,10 @@ metadata:
   name: {{ .Values.node.name }}-replica-service
   labels:
     app: {{ .Values.node.name }}-replica
+  annotations:
+    prometheus.io/scrape: {{ .Values.monitoring.enabled | quote }}
+    prometheus.io/port: {{ .Values.node.ports.metrics | quote }}
+    prometheus.io/job: "op-node-replica"
 spec:
   type: ClusterIP
   selector:

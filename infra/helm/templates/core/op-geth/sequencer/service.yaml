@@ -4,6 +4,10 @@ metadata:
   name: {{ .Values.geth.name }}-sequencer-service
   labels:
     app: {{ .Values.geth.name }}-sequencer
+  annotations:
+    prometheus.io/scrape: {{ .Values.monitoring.enabled | quote }}
+    prometheus.io/port: {{ .Values.geth.ports.metrics | quote }}
+    prometheus.io/job: "op-geth-sequencer"
 spec:
   type: ClusterIP
   selector:
@@ -18,6 +22,3 @@ spec:
     - name: rpc-auth
       port: {{ .Values.geth.ports.rpcAuth }}
       targetPort: {{ .Values.geth.ports.rpcAuth }}
-    - name: metrics
-      port: {{ .Values.geth.ports.metrics }}
-      targetPort: {{ .Values.geth.ports.metrics }}
