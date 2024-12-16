@@ -12,10 +12,9 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as ManageIndexImport } from './routes/manage/index'
-import { Route as CreateIndexImport } from './routes/create/index'
-import { Route as ManageLoadImport } from './routes/manage/load'
-import { Route as CreateSuccessImport } from './routes/create/success'
+import { Route as InspectIndexImport } from './routes/inspect/index'
+import { Route as DeployIndexImport } from './routes/deploy/index'
+import { Route as ConfigureIndexImport } from './routes/configure/index'
 
 // Create/Update Routes
 
@@ -25,27 +24,21 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ManageIndexRoute = ManageIndexImport.update({
-  id: '/manage/',
-  path: '/manage/',
+const InspectIndexRoute = InspectIndexImport.update({
+  id: '/inspect/',
+  path: '/inspect/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const CreateIndexRoute = CreateIndexImport.update({
-  id: '/create/',
-  path: '/create/',
+const DeployIndexRoute = DeployIndexImport.update({
+  id: '/deploy/',
+  path: '/deploy/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const ManageLoadRoute = ManageLoadImport.update({
-  id: '/manage/load',
-  path: '/manage/load',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const CreateSuccessRoute = CreateSuccessImport.update({
-  id: '/create/success',
-  path: '/create/success',
+const ConfigureIndexRoute = ConfigureIndexImport.update({
+  id: '/configure/',
+  path: '/configure/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -60,32 +53,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/create/success': {
-      id: '/create/success'
-      path: '/create/success'
-      fullPath: '/create/success'
-      preLoaderRoute: typeof CreateSuccessImport
+    '/configure/': {
+      id: '/configure/'
+      path: '/configure'
+      fullPath: '/configure'
+      preLoaderRoute: typeof ConfigureIndexImport
       parentRoute: typeof rootRoute
     }
-    '/manage/load': {
-      id: '/manage/load'
-      path: '/manage/load'
-      fullPath: '/manage/load'
-      preLoaderRoute: typeof ManageLoadImport
+    '/deploy/': {
+      id: '/deploy/'
+      path: '/deploy'
+      fullPath: '/deploy'
+      preLoaderRoute: typeof DeployIndexImport
       parentRoute: typeof rootRoute
     }
-    '/create/': {
-      id: '/create/'
-      path: '/create'
-      fullPath: '/create'
-      preLoaderRoute: typeof CreateIndexImport
-      parentRoute: typeof rootRoute
-    }
-    '/manage/': {
-      id: '/manage/'
-      path: '/manage'
-      fullPath: '/manage'
-      preLoaderRoute: typeof ManageIndexImport
+    '/inspect/': {
+      id: '/inspect/'
+      path: '/inspect'
+      fullPath: '/inspect'
+      preLoaderRoute: typeof InspectIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -95,58 +81,47 @@ declare module '@tanstack/react-router' {
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/create/success': typeof CreateSuccessRoute
-  '/manage/load': typeof ManageLoadRoute
-  '/create': typeof CreateIndexRoute
-  '/manage': typeof ManageIndexRoute
+  '/configure': typeof ConfigureIndexRoute
+  '/deploy': typeof DeployIndexRoute
+  '/inspect': typeof InspectIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/create/success': typeof CreateSuccessRoute
-  '/manage/load': typeof ManageLoadRoute
-  '/create': typeof CreateIndexRoute
-  '/manage': typeof ManageIndexRoute
+  '/configure': typeof ConfigureIndexRoute
+  '/deploy': typeof DeployIndexRoute
+  '/inspect': typeof InspectIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/create/success': typeof CreateSuccessRoute
-  '/manage/load': typeof ManageLoadRoute
-  '/create/': typeof CreateIndexRoute
-  '/manage/': typeof ManageIndexRoute
+  '/configure/': typeof ConfigureIndexRoute
+  '/deploy/': typeof DeployIndexRoute
+  '/inspect/': typeof InspectIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create/success' | '/manage/load' | '/create' | '/manage'
+  fullPaths: '/' | '/configure' | '/deploy' | '/inspect'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create/success' | '/manage/load' | '/create' | '/manage'
-  id:
-    | '__root__'
-    | '/'
-    | '/create/success'
-    | '/manage/load'
-    | '/create/'
-    | '/manage/'
+  to: '/' | '/configure' | '/deploy' | '/inspect'
+  id: '__root__' | '/' | '/configure/' | '/deploy/' | '/inspect/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  CreateSuccessRoute: typeof CreateSuccessRoute
-  ManageLoadRoute: typeof ManageLoadRoute
-  CreateIndexRoute: typeof CreateIndexRoute
-  ManageIndexRoute: typeof ManageIndexRoute
+  ConfigureIndexRoute: typeof ConfigureIndexRoute
+  DeployIndexRoute: typeof DeployIndexRoute
+  InspectIndexRoute: typeof InspectIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  CreateSuccessRoute: CreateSuccessRoute,
-  ManageLoadRoute: ManageLoadRoute,
-  CreateIndexRoute: CreateIndexRoute,
-  ManageIndexRoute: ManageIndexRoute,
+  ConfigureIndexRoute: ConfigureIndexRoute,
+  DeployIndexRoute: DeployIndexRoute,
+  InspectIndexRoute: InspectIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -160,26 +135,22 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/create/success",
-        "/manage/load",
-        "/create/",
-        "/manage/"
+        "/configure/",
+        "/deploy/",
+        "/inspect/"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/create/success": {
-      "filePath": "create/success.tsx"
+    "/configure/": {
+      "filePath": "configure/index.tsx"
     },
-    "/manage/load": {
-      "filePath": "manage/load.tsx"
+    "/deploy/": {
+      "filePath": "deploy/index.tsx"
     },
-    "/create/": {
-      "filePath": "create/index.tsx"
-    },
-    "/manage/": {
-      "filePath": "manage/index.tsx"
+    "/inspect/": {
+      "filePath": "inspect/index.tsx"
     }
   }
 }

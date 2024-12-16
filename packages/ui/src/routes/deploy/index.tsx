@@ -1,14 +1,14 @@
-import { Command } from "@/components/command";
-import { createFileRoute } from "@tanstack/react-router";
+import { Command } from '@/components/command'
+import { createFileRoute } from '@tanstack/react-router'
 
-export const Route = createFileRoute("/create/success")({
-  component: CreateChain,
-});
+export const Route = createFileRoute('/deploy/')({
+  component: DeployChain,
+})
 
-function CreateChain() {
+function DeployChain() {
   return (
     <div className="max-w-xl mx-auto w-full space-y-10 my-10">
-      <h1 className="text-xl font-bold text-center">What's next?</h1>
+      <h1 className="text-xl font-bold text-center">Deploy your chain locally</h1>
 
       <div className="space-y-4 text-sm">
         <section className="space-y-2 border bg-gray-100 p-3 rounded-md">
@@ -52,11 +52,6 @@ function CreateChain() {
           </ol>
         </section>
       </div>
-
-      <div className="text-center space-x-2">
-        <button className="btn btn-sm">Back</button>
-        <button className="btn btn-sm">Done</button>
-      </div>
     </div>
-  );
+  )
 }

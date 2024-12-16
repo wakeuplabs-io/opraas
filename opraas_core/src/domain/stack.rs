@@ -14,7 +14,7 @@ pub trait TStackInfraRepository: Send + Sync {
     fn pull(&self, stack: &Stack) -> Result<(), Box<dyn std::error::Error>>;
 }
 
-pub trait TStackInfraDeployer {
+pub trait TStackInfraDeployer: Send + Sync {
     fn deploy(&self, stack: &Stack) -> Result<Deployment, Box<dyn std::error::Error>>;
 }
 

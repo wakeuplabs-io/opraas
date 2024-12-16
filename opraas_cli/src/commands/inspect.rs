@@ -1,8 +1,14 @@
 use clap::ValueEnum;
 use opraas_core::{
     application::{
-        stack::deploy::{StackInfraDeployerService, TStackInfraDeployerService},
-        StackContractsDeployerService, TStackContractsDeployerService,
+        contracts::{
+            StackContractsDeployerService, StackContractsInspectorService, TStackContractsDeployerService,
+            TStackContractsInspectorService,
+        },
+        stack::{
+            StackInfraDeployerService, StackInfraInspectorService, TStackInfraDeployerService,
+            TStackInfraInspectorService,
+        },
     },
     domain::{ProjectFactory, TProjectFactory},
     infra::{
@@ -11,6 +17,7 @@ use opraas_core::{
         stack::{deployer_terraform::TerraformDeployer, repo_inmemory::GitStackInfraRepository},
     },
 };
+use std::io::Cursor;
 
 #[derive(Debug, Clone, ValueEnum)]
 pub enum InspectTarget {
@@ -21,7 +28,9 @@ pub enum InspectTarget {
 
 pub struct InspectCommand {
     contracts_deployer: Box<dyn TStackContractsDeployerService>,
+    contracts_inspector: Box<dyn TStackContractsInspectorService>,
     infra_deployer: Box<dyn TStackInfraDeployerService>,
+    infra_inspector: Box<dyn TStackInfraInspectorService>,
 }
 
 // implementations ===================================================
@@ -37,11 +46,13 @@ impl InspectCommand {
                 Box::new(DockerReleaseRepository::new()),
                 Box::new(DockerReleaseRunner::new()),
             )),
+            contracts_inspector: Box::new(StackContractsInspectorService::new()),
             infra_deployer: Box::new(StackInfraDeployerService::new(
                 Box::new(TerraformDeployer::new(&project.root)),
                 Box::new(GitStackInfraRepository::new()),
                 Box::new(InMemoryDeploymentRepository::new(&project.root)),
             )),
+            infra_inspector: Box::new(StackInfraInspectorService::new()),
         }
     }
 
@@ -50,7 +61,11 @@ impl InspectCommand {
             let deployment = self.contracts_deployer.find(&deployment_name)?;
 
             if let Some(deployment) = deployment {
-                println!("{}", deployment.display_contracts_artifacts()?);
+                let artifact_cursor = Cursor::new(std::fs::read(&deployment.contracts_artifacts.unwrap())?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&self.contracts_inspector.inspect(artifact_cursor)?)?
+                );
             } else {
                 return Err("Contracts deployment not found".into());
             }
@@ -60,7 +75,11 @@ impl InspectCommand {
             let deployment = self.infra_deployer.find(&deployment_name)?;
 
             if let Some(deployment) = deployment {
-                println!("{}", deployment.display_infra_artifacts()?);
+                let artifact_cursor = Cursor::new(std::fs::read(&deployment.infra_artifacts.unwrap())?);
+                println!(
+                    "{}",
+                    serde_json::to_string_pretty(&self.infra_inspector.inspect(artifact_cursor)?)?
+                );
             } else {
                 return Err("Infra deployment not found".into());
             }

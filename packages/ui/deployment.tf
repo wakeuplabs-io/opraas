@@ -12,18 +12,6 @@ variable "bucket_name" {
   default     = "op-ruaas"
 }
 
-variable "domain_name" {
-  description = "The domain name to manage in Route 53"
-  type        = string
-  default     = "wakeuplabs.link"
-}
-
-variable "subdomain_name" {
-  description = "The subdomain to manage in Route 53"
-  type        = string
-  default     = "opruaas"
-}
-
 # resources ==================================================================
 
 # create bucket
@@ -136,27 +124,6 @@ resource "aws_cloudfront_origin_access_control" "site_access" {
   origin_access_control_origin_type = "s3"
   signing_behavior                  = "always"
   signing_protocol                  = "sigv4"
-}
-
-# create CNAME. Comment this out if you don't want to create a CNAME
-
-data "aws_route53_zone" "selected_zone" {
-  name         = var.domain_name
-  private_zone = false
-}
-
-resource "aws_route53_record" "domain_record" {
-  depends_on = [aws_cloudfront_distribution.site_access]
-
-  zone_id = data.aws_route53_zone.selected_zone.zone_id
-  name    = "${var.subdomain_name}.${var.domain_name}"
-  type    = "A"
-
-  alias {
-    name                   = aws_cloudfront_distribution.site_access.domain_name
-    zone_id                = aws_cloudfront_distribution.site_access.hosted_zone_id
-    evaluate_target_health = false
-  }
 }
 
 # outputs ==================================================================
