@@ -295,3 +295,5 @@ If decentralized marketplace is not pursued we can instead:
 - Generate tutorials, dive deep in chain parameters, provide example configurations for other chains including testnets like Holensky where eth is more available.
 - Add more extras like data availability, paymaster setup, bridge ui, etc
 - Add more cloud providers, for instance GCP and Azure.
+- Add options to switch explorer
+- Possibility to run dev method just with docker to further reduce dependencies.

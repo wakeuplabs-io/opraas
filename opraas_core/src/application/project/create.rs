@@ -93,6 +93,10 @@ Ensure you have the following tools installed and properly configured:
 - **Terraform**: `>= 1.9.8` (with AWS authentication configured)  
 - **Git**: `>= 2.0.0`  
 
+To run it all smoothly we recommend:
+- 16 GB Ram (Specially if building contracts image)
+- 80 GB free on top of installed programs (This should account for images and volume claims (customizable from values.yaml))
+
 ### Commands
 
 Usage: `opruaas [OPTIONS] <COMMAND>`  
