@@ -6,7 +6,7 @@ global:
     pullPolicy: IfNotPresent
 
 domain:
-  host: localhost # demo.example.com
+  host: &domain_host localhost # demo.example.com
   email: email@email.com
 
 # chain ===============================================================
@@ -122,8 +122,12 @@ grafana:
 
   dashboards:
     default:
-      prometheus:
+      system:
         gnetId: 315
+        revision: 1
+        datasource: Prometheus
+      geth:
+        gnetId: 18463
         revision: 1
         datasource: Prometheus
 
@@ -136,7 +140,7 @@ grafana:
       nginx.ingress.kubernetes.io/rewrite-target: /$2
     labels: {}
     hosts:
-      - localhost  # Replace with your actual domain or wildcard like "*"
+      - *domain_host
 
   grafana.ini:
     server:
@@ -144,14 +148,20 @@ grafana:
 
 prometheus:
   enabled: true
+  
   alertmanager:
     enabled: false
+  
   pushgateway:
     enabled: false
+  
   server:
     enabled: true
     service:
       type: ClusterIP
+
+  prometheus-node-exporter:
+    enabled: false
 
 
 # explorer ===============================================================
