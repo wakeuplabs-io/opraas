@@ -94,7 +94,7 @@ Ensure you have the following tools installed and properly configured:
 - **Git**: `>= 2.0.0`  
 
 To run it all smoothly we recommend:
-- 16 GB Ram (Specially if building contracts image)
+- 16 GB Ram specially if building contracts image, otherwise 8 GB should get things moving as well.
 - 80 GB free on top of installed programs (This should account for images and volume claims (customizable from values.yaml))
 
 ### Commands
