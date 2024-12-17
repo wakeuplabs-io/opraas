@@ -122,8 +122,12 @@ grafana:
 
   dashboards:
     default:
-      prometheus:
+      system:
         gnetId: 315
+        revision: 1
+        datasource: Prometheus
+      geth:
+        gnetId: 18463
         revision: 1
         datasource: Prometheus
 
@@ -144,14 +148,20 @@ grafana:
 
 prometheus:
   enabled: true
+  
   alertmanager:
     enabled: false
+  
   pushgateway:
     enabled: false
+  
   server:
     enabled: true
     service:
       type: ClusterIP
+
+  prometheus-node-exporter:
+    enabled: false
 
 
 # explorer ===============================================================
