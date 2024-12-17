@@ -18,7 +18,7 @@ Ensure you have the following tools installed and properly configured:
 - **Git**: `>= 2.0.0`  
 
 Recommended PC specifications to run it all smoothly:
-- 8 GB RAM
+- 16 GB RAM 
 - + 25 GB storage available on top of installed programs
 
 ### Commands
