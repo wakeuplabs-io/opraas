@@ -1,17 +1,23 @@
-domain:
-  host: localhost # demo.example.com
-  email: email@email.com
+# global configs ===============================================================
 
 global:
   storageClassName: gp2 # Override with "" for default (recommended in local environment)
   image:
     pullPolicy: IfNotPresent
 
+domain:
+  host: &domain_host localhost # demo.example.com
+  email: email@email.com
+
+# chain ===============================================================
+
 chain:
   id: "override" 
   l1Rpc: "override"
   artifacts: "config/artifacts.zip"
   addresses: "config/addresses.json"
+
+# core ===============================================================
 
 geth:
   name: op-geth
@@ -26,6 +32,9 @@ geth:
     rpcAuth: 9551
     metrics: 7300
   datadir: /app/data/datadir/data
+  storage:
+    sequencer: 5Gi
+    replica: 5Gi
 
 node:
   name: op-node
@@ -77,30 +86,90 @@ proxyd:
       repository: redis
       tag: latest
 
-explorer:
-  enabled: true
+# monitoring ===============================================================
 
 monitoring:
   enabled: false
 
-kube-prometheus-stack:
-  grafana:
-    ingress:
-      enabled: true
-      ingressClassName: nginx
-      paths:
-        - /grafana
-      hosts:
-        - "localhost"
-  prometheus:
-    serviceAccount:
-      name: "" # prometheus
-  prometheus-node-exporter:
-    hostRootFsMount:
-      enabled: false # Workaround for Error: path / is mounted on / but it is not a shared or slave mount
-      mountPropagation: HostToContainer
+grafana:
+  enabled: true
 
-blockscoutStack:
+  adminUser: admin
+  adminPassword: admin
+
+  datasources:
+    datasources.yaml:
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          type: prometheus
+          access: proxy
+          url: http://{{ .Release.Name }}-prometheus-server
+          isDefault: true
+
+  dashboardProviders:
+    dashboardproviders.yaml:
+      apiVersion: 1
+      providers:
+        - name: 'default'
+          orgId: 1
+          folder: ''
+          type: file
+          disableDeletion: false
+          editable: true
+          options:
+            path: /var/lib/grafana/dashboards/default
+
+  dashboards:
+    default:
+      system:
+        gnetId: 315
+        revision: 1
+        datasource: Prometheus
+      geth:
+        gnetId: 18463
+        revision: 1
+        datasource: Prometheus
+
+  ingress:
+    enabled: true
+    path: /monitoring(/|$)(.*)
+    annotations:
+      kubernetes.io/ingress.class: "nginx"
+      nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+      nginx.ingress.kubernetes.io/rewrite-target: /$2
+    labels: {}
+    hosts:
+      - *domain_host
+
+  grafana.ini:
+    server:
+      root_url: "%(protocol)s://%(domain)s/monitoring"  # Dynamically adapts to ingress host
+
+prometheus:
+  enabled: true
+  
+  alertmanager:
+    enabled: false
+  
+  pushgateway:
+    enabled: false
+  
+  server:
+    enabled: true
+    service:
+      type: ClusterIP
+
+  prometheus-node-exporter:
+    enabled: false
+
+
+# explorer ===============================================================
+
+explorer:
+  enabled: true
+
+blockscout:
   postgres:
     dbName: bs
     user: bs-db-user
@@ -108,6 +177,7 @@ blockscoutStack:
     image:
       repository: postgres
       tag: latest
+    storage: 5Gi
 
 blockscout-stack:
   blockscout:

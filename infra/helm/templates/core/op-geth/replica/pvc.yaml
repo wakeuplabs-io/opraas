@@ -9,7 +9,7 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 5Gi # 3Ti optimal
+      storage: {{ .Values.geth.storage.replica }}
   {{- if ne .Values.global.storageClassName "" }}
   storageClassName: {{ .Values.global.storageClassName }}
   {{- end }}
@@ -26,4 +26,6 @@ spec:
   resources:
     requests:
       storage: 50Mi
-  # storageClassName: gp2
+  {{- if ne .Values.global.storageClassName "" }}
+  storageClassName: {{ .Values.global.storageClassName }}
+  {{- end }}

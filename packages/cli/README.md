@@ -19,7 +19,7 @@ Ensure you have the following tools installed and properly configured:
 To run it all smoothly we recommend:
 
 - 16 GB Ram specially if building contracts image, otherwise 8 GB should get things moving as well.
-- 80 GB free on top of installed programs (This should account for images and volume claims (customizable from values.yaml))
+- 25+ GB free on top of installed programs (This should account for images and volume claims (customizable from values.yaml))
 
 ### Commands
 
@@ -146,6 +146,7 @@ Once the setup is complete, you can access the following services:
 
 - L1 RPC: http://localhost:8545
 - L2 RPC: http://localhost:80/rpc
+- Off-chain Monitoring: http://localhost:80/monitoring
 - Explorer: http://localhost:80
 
 ### Deploy contracts/infra/all

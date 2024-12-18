@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
       - name: db
-        image: "{{ .Values.blockscoutStack.postgres.image.repository }}:{{ .Values.blockscoutStack.postgres.image.tag }}"
+        image: "{{ .Values.blockscout.postgres.image.repository }}:{{ .Values.blockscout.postgres.image.tag }}"
         envFrom:
           - secretRef:
               name: blockscout-postgres-secret

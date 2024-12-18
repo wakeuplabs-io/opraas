@@ -16,7 +16,8 @@ impl domain::artifact::TArtifactSourceRepository for GitArtifactSourceRepository
     fn pull(&self, artifact: &Artifact) -> Result<(), Box<dyn std::error::Error>> {
         let (source_repo, source_tag) = artifact.source_info();
 
-        git::clone(
+
+        git::clone_tag(
             source_repo,
             source_tag,
             artifact.context().as_path().to_str().unwrap(),
