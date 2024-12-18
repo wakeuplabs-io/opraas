@@ -116,7 +116,7 @@ We have decided to develop our own CLI and infrastructure tooling to create a mo
 - `deploy <contracts | infra | all>`:
 
   - `contracts`: Deploys contracts to L1 and generates the necessary files for connecting to it, `genesis.json`, `rollup.json`, etc.
-  - `infra`: Updates the default `values.yaml` file in the Helm chart with the latest config and deploys the infrastructure to the cloud provider via Terraform (initially AWS).
+  - `infra`: Creates a kubernetes cluster as leveraging terraform and based on user input configures and installs charts for core (as sequencer or replica), explorer, monitoring, etc.
   - `all`: Deploys contracts and then deploys the infrastructure.
   - With a full configuration, this command can be run on it's own. It will serve as the starting point when accessed from the UI.
 
@@ -143,13 +143,20 @@ deployments/
       network.json
       addresses.json
       ...
-infra/
-  terraform/
+infrastructure/
+  provider/
     aws/
     gcp/
-    others...
-  docker/
-	helm/
+    ...
+  images/
+    contracts.dockerfile
+    node.dockerfile
+    ...
+	charts/
+    opstack/
+    blockscout/
+    monitoring/
+    ...
 src/
 	contracts/
 	node/
@@ -167,7 +174,7 @@ config.toml
 - For deployment, we will leverage **Kubernetes** to coordinate all services and enable scaling. We will combine this with **Helm** for simple deployment customization and management, along with **Terraform** to specify resources and provide a seamless one-click experience.
 - One key reason for selecting **Kubernetes** over other solutions is its broad compatibility with various cloud providers. This ensures that users can choose where to host their chain while minimizing setup differences. While we will provide Terraform configurations for a few cloud vendors, the Helm chart will be open for users to deploy anywhere they prefer.
 - As outlined in the [documentation](https://docs.optimism.io/builders/chain-operators/tools/chain-monitoring#offchain-component-monitoring), we will include **Prometheus** and **Grafana** services in the deployment chart, along with preconfigured dashboards for Grafana. This will provide users with a robust monitoring system out of the box.
-- With our rust cli we'll make developments and deployments a one command thing, adjusting values.yaml, installing dependencies, waiting for processes, etc.
+- With our rust cli we'll make developments and deployments a one command thing, adjusting values, installing dependencies, waiting for processes, etc.
 
 **Scaling Diagram:**
 
@@ -186,7 +193,13 @@ To allow the sequencer to focus on creating new transactions, we will set up nod
 - Cache immutable responses from backends.
 - Provide metrics to measure request latency, error rates, and more.
 
-Regarding networking, only **proxyd** and the analytics services will be exposed.
+Regarding networking, only **proxyd**, **explorer** and **monitoring** services will be exposed.
+
+Building on this, we will also enable the deployment of replica nodes independently. Through a single configuration chart, users will be able to enable or disable the sequencer component, providing flexibility for external users to deploy and manage their own nodes with ease. This feature will be crucial not only for enhancing network scalability and redundancy but also for supporting vendor migrations and ensuring data persistence, as we will discuss further in the following sections.
+
+### Provider Migrations and Backups
+
+To facilitate vendor flexibility and ensure the persistence of blockchain data, we will leverage the distributed nature of the blockchain itself. Our solution will allow users to easily switch between providers by spinning up replica nodes. We will encourage clients to set up these replica nodes from the outset, so that if the primary sequencer encounters issues, already-synced nodes can seamlessly take over the sequencer role. This transition will be governed by on-chain permissions and new payment contract arrangements. Additionally, if needed, new nodes can be launched and synchronized with the existing replica data. These replica nodes will enhance the network’s request capacity, bolster security, and will be open to anyone wishing to participate in running them.
 
 ### Block Explorer
 
@@ -273,6 +286,10 @@ The marketplace will be integrated into the Ruaas website as another page. The m
 - **Monitoring the Relationship**: Both the vendor and client can monitor the status of their relationship, including balances, health status, and service endpoints. This will allow them to track contract progress and performance in real time.
 - **L1 Contract Deployment**: The website can assist in facilitating the deployment of L1 contracts, but the client is ultimately responsible for initiating the deployment and ensuring the security of their Admin keys.
 
+### Vendor migration
+
+For vendor migrations we'll take the same procedure as specified for `Provider Migrations and Backups`. We'll facilitate switching a node from replica to sequencer as well as encouraging the client to spin up those extra replicas from the get go as a safety mode. Our ui will list the nodes the user is paying for and the mode in which they're running.
+
 ## Risks and uncertainties
 
 - Given that the CLI makes it very easy to deploy new chains using the Optimism stack, the marketplace will aim to cater to those who do not want to be involved in infrastructure management.
@@ -287,8 +304,8 @@ At this point, we want to assess the feasibility of pursuing the decentralized m
 
 Stipulated timelines:
 
-- **Contracts Development**: 3 weeks
-- **Contracts Integration** (including cronjob for vendors to call oracles and UI integration): 3 weeks
+- **Contracts Development**: 5 weeks
+- **Contracts Integration** (including cronjob for vendors to call oracles and UI integration): 4 weeks
 
 If decentralized marketplace is not pursued we can instead:
 

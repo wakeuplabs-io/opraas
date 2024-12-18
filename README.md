@@ -24,7 +24,7 @@ To run it all smoothly we recommend:
 Recommended PC specifications to run it all smoothly:
 
 - 16 GB RAM
-- - 25 GB storage available on top of installed programs
+- 25+ GB storage available on top of installed programs
 
 ### Commands
 
