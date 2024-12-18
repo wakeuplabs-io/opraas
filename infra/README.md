@@ -1,13 +1,14 @@
-
 # Instructions
 
 With terraform:
+
 1. Fill the values in `helm/values.yaml`
 2. Fill up variables in `aws/variables.tf`
 3. Deploy infra with `terraform apply` from aws dir
 4. Use `terraform output <output_name>` to quickly gain data from your deployment like `elb_dnsname` for setting up the domain records, or `configure_kubectl` to help you connect to the cluster or to get output urls.
 
 Without terraform:
+
 1. Spin up your cluster
 2. Deploy nginx as follows
 
@@ -30,15 +31,13 @@ helm install cert-manager jetstack/cert-manager --namespace cert-manager --creat
 helm install opraas ./helm --namespace opraas --create-namespace -f ./helm/values.yaml
 ```
 
-
-## SSL certificate 
+## SSL certificate
 
 For https domain make sure to create an A record pointing to `elb_dnsname` as specified here: https://github.com/amcginlay/venafi-demos/tree/main/demos/01-eks-ingress-nginx-cert-manager#configure-route53
 
 You can get `elb_dnsname` with `terraform output elb_dnsname` or with `kubectl -n ingress-nginx get service ingress-nginx-controller -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'`
 
 Also, all ingress should be defined in `helm/templates/ingress.yaml`
-
 
 ## Volume claims
 
@@ -60,7 +59,7 @@ spec:
 
 db-svc.yaml
 
-``` yaml
+```yaml
 apiVersion: v1
 kind: Service
 metadata:
@@ -95,32 +94,37 @@ spec:
     spec:
       containers:
         - name: postgres
-          image: postgres:latest  # Use a specific version for production
+          image: postgres:latest # Use a specific version for production
           env:
             - name: POSTGRES_DB
-              value: "dbname"  # Change to your desired database name
+              value: "dbname" # Change to your desired database name
             - name: POSTGRES_USER
-              value: "user"  # Change to your desired username
+              value: "user" # Change to your desired username
             - name: POSTGRES_PASSWORD
-              value: "password"  # Change to your desired password
+              value: "password" # Change to your desired password
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           ports:
             - containerPort: 5432
           volumeMounts:
             - name: postgres-storage
-              mountPath: /var/lib/postgresql/data  # Persistent storage path
+              mountPath: /var/lib/postgresql/data # Persistent storage path
       volumes:
         - name: postgres-storage
           persistentVolumeClaim:
-            claimName: postgres-pvc  # Reference to the PVC
+            claimName: postgres-pvc # Reference to the PVC
 ```
 
 ## Wait for service
 
 ```yaml
- initContainers:
-        - name: wait-for-db
-          image: busybox
-          command: ['sh', '-c', 'until nc -z postgres-service 5432; do echo waiting for db; sleep 2; done;']
+initContainers:
+  - name: wait-for-db
+    image: busybox
+    command:
+      [
+        "sh",
+        "-c",
+        "until nc -z postgres-service 5432; do echo waiting for db; sleep 2; done;",
+      ]
 ```
