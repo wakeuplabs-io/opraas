@@ -105,7 +105,7 @@ impl HelmStackRunner {
         // global ================================================
 
         updates.insert("global.storageClassName", "".to_string());
-        updates.insert("domain.host", "&domain_host localhost".to_string());
+        updates.insert("domain.host", "localhost".to_string());
 
         // private keys ================================================
 
