@@ -27,7 +27,7 @@ spec:
             - "--rollup-rpc=http://{{ .Values.node.name }}-sequencer-service:{{ .Values.node.ports.rpc }}"
             - "--poll-interval=1s"
             - "--sub-safety-margin=4"
-            - "--max-channel-duration=0"
+            - "--max-channel-duration=1"
             # Tx Manager Options
             # https://github.com/ethereum-optimism/optimism/blob/develop/op-service/txmgr/cli.go
             - "--num-confirmations=1"

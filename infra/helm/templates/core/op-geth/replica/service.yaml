@@ -18,6 +18,9 @@ spec:
     - name: rpc-auth
       port: {{ .Values.geth.ports.rpcAuth }}
       targetPort: {{ .Values.geth.ports.rpcAuth }}
+    - name: discovery
+      port: {{ .Values.geth.ports.p2p }}
+      targetPort: {{ .Values.geth.ports.p2p }}
     - name: metrics
       port: {{ .Values.geth.ports.metrics }}
       targetPort: {{ .Values.geth.ports.metrics }}

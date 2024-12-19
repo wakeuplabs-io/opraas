@@ -5,7 +5,7 @@ metadata:
 data:
   entrypoint.sh: |
     sleep 3
-
+    
     if [ ! -d "{{ .Values.geth.datadir }}" ]; then
       echo "Initializing geth using /app/data/configurations/genesis.json genesis"
       /usr/local/bin/geth \
@@ -17,34 +17,49 @@ data:
       echo "Skipping initialization, geth datadir is not empty"
     fi
 
+    while true; do
+                  SEQUENCER_ENODE=$(wget -qO- --timeout=1 --header="Content-Type: application/json" --post-data='{"jsonrpc":"2.0","method":"admin_nodeInfo","params":[],"id":1}' http://op-geth-sequencer-service:8545 | sed -n 's/.*"enode":"\([^"]*\)".*/\1/p' 2>/dev/null)
+                
+                  if [ -n "$SEQUENCER_ENODE" ] && [ "$SEQUENCER_ENODE" != "null" ]; then
+                    SEQUENCER_ENODE=$(echo "$SEQUENCER_ENODE" | sed 's/127\.0\.0\.1/op-geth-sequencer-service/')
+                    
+                    echo "Sequencer enode found: $SEQUENCER_ENODE"
+                    echo "$SEQUENCER_ENODE" > /app/sequencer-enode
+                    break
+                  else
+                    echo "Unable to fetch SEQUENCER_ENODE" 
+                    sleep 2
+                  fi
+                done
+
     /usr/local/bin/geth \
-      --datadir={{ .Values.geth.datadir }} \
       --verbosity=3 \
       --networkid={{ .Values.chain.id }} \
+      --datadir={{ .Values.geth.datadir }} \
       --syncmode=full \
-      --gcmode=full \
-      --nodiscover \
-      --maxpeers=0 \
-      --port=30313 \
+      --gcmode=archive \
+      --port={{ .Values.geth.ports.p2p }} \
+      --bootnodes=$(cat /app/sequencer-enode) \
+      --rollup.sequencerhttp=http://op-geth-sequencer-service:8545 \
       --rpc.allow-unprotected-txs \
+      --rollup.disabletxpoolgossip=True \
+      --state.scheme=hash \
       --http \
       --http.corsdomain=* \
       --http.vhosts=* \
       --http.addr=0.0.0.0 \
       --http.port={{ .Values.geth.ports.rpc }} \
-      --http.api=web3,debug,eth,txpool,net,engine \
+      --http.api=admin,web3,debug,eth,txpool,net,engine \
       --ws \
       --ws.addr=0.0.0.0 \
       --ws.port={{ .Values.geth.ports.ws }} \
       --ws.origins=* \
-      --ws.api=debug,eth,txpool,net,engine \
-      --authrpc.addr=0.0.0.0 \
-      --authrpc.port={{ .Values.geth.ports.rpcAuth }} \
-      --authrpc.vhosts=* \
-      --authrpc.jwtsecret=/app/data/configurations/jwt-secret.txt \
+      --ws.api=admin,debug,eth,txpool,net,engine \
       --metrics \
       --metrics.addr=0.0.0.0 \
       --metrics.port={{ .Values.geth.ports.metrics }} \
-      --rollup.disabletxpoolgossip=True \
-      --history.transactions=2350000 \
-      --state.scheme=hash
+      --authrpc.addr=0.0.0.0 \
+      --authrpc.port={{ .Values.geth.ports.rpcAuth }} \
+      --authrpc.vhosts=* \
+      --authrpc.jwtsecret=/app/data/configurations/jwt-secret.txt 
+      

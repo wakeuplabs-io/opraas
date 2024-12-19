@@ -31,6 +31,7 @@ geth:
     ws: 8546
     rpcAuth: 9551
     metrics: 7300
+    p2p: 30313
   datadir: /app/data/datadir/data
   storage:
     sequencer: 5Gi
